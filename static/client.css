@@ -1,35 +1,170 @@
 
+/* ============================================
+   🎨 DDS FOCUS PRO - DESIGN SYSTEM VARIABLES
+   ============================================ */
+
+:root {
+  /* 🎨 Primary Brand Colors */
+  --primary-color: #006039;
+  --primary-hover: #004d2e;
+  --primary-active: #003a22;
+  --primary-light: #e8f5f0;
+  --primary-dark: #002f1c;
+
+  /* 🌈 Secondary Colors */
+  --secondary-color: #2c3e50;
+  --secondary-hover: #34495e;
+  --secondary-active: #1a252f;
+
+  /* 🔘 Accent Colors */
+  --accent-color: #3498db;
+  --accent-hover: #2980b9;
+  --accent-active: #1f639a;
+
+  /* ⚠️ Status Colors */
+  --success-color: #27ae60;
+  --success-hover: #229954;
+  --success-light: #d5f4e6;
+  --warning-color: #f39c12;
+  --warning-hover: #e67e22;
+  --warning-light: #fdeaa7;
+  --error-color: #e74c3c;
+  --error-hover: #c0392b;
+  --error-light: #fadbd8;
+  --info-color: #3498db;
+  --info-hover: #2980b9;
+  --info-light: #d6eaf8;
+
+  /* 🎯 Interactive States */
+  --loading-color: #74b9ff;
+  --disabled-color: #bdc3c7;
+  --disabled-bg: #ecf0f1;
+  --disabled-text: #95a5a6;
+
+  /* 🌑 Neutral Colors */
+  --white: #ffffff;
+  --black: #000000;
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f4;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+
+  /* 📝 Typography */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* 📏 Font Sizes */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+  --font-size-5xl: 3rem;       /* 48px */
+
+  /* 📐 Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* 📏 Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* 🔲 Spacing Scale */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+
+  /* 🔘 Border Radius */
+  --radius-sm: 0.25rem;    /* 4px */
+  --radius-base: 0.375rem; /* 6px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
+  /* 🌊 Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* ⏱️ Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+
+  /* 📐 Z-Index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* ============================================
+   🎨 EXISTING STYLES (PRESERVED)
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-family-primary);
 }
 
 body {
-    background-color: #f5f5f5;
+    background-color: var(--gray-50);
     overflow: hidden;
 }
 
 .container {
     /* max-width: 600px; */
     margin: 0 auto;
-    /* background-color: #fff;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); */
+    /* background-color: var(--white);
+    box-shadow: var(--shadow-base); */
 }
 
 .header {
-    background-color: #262626;
-    color: white;
-    padding: 10px 20px;
+    background-color: var(--gray-800);
+    color: var(--white);
+    padding: var(--space-2) var(--space-5);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .logo {
-    font-weight: bold;
-    font-size: 20px;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
     letter-spacing: 0.5px;
 }
 .logo figure img{
@@ -40,14 +175,14 @@ body {
 }
 .user-controls {
     display: flex;
-    gap: 10px;
+    gap: var(--space-2);
 }
 
 .user-controls button {
     background: none;
     border: none;
-    color: white;
-    font-weight: 500;
+    color: var(--white);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -103,16 +238,16 @@ body {
 
 }
 .form-control:hover{
-        border: 1px solid #006039;
-    background-color: #fff;
-    color: #000;
+        border: 1px solid var(--primary-color);
+    background-color: var(--white);
+    color: var(--black);
     cursor: pointer;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #006039;
-    box-shadow: 0 0 0 2px #00603912;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
     background-color: #fff;
 }
 
@@ -162,9 +297,9 @@ body {
 }
 
 .state-label {
-    font-weight: bold;
-    color: #006039;
-    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-color);
+    font-size: var(--font-size-lg);
 }
 
 .state-icons {
@@ -271,11 +406,11 @@ body {
 }
 
 .start-button {
-    background-color: #006039;
+    background-color: var(--primary-color);
 }
 
 .break-button {
-    background-color: #ff9800;
+    background-color: var(--warning-color);
 }
 
 .footer {
@@ -447,12 +582,12 @@ body {
 }
 
 .submit-btn {
-    background-color: #006039;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--white);
 }
 
 .submit-btn:hover {
-    background-color: #218838;
+    background-color: var(--primary-hover);
 }
 
 .cancel-btn {

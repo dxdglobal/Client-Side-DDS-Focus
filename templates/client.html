@@ -6,29 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DDS-FocusPro V-1.3</title>
 
-  <!-- Stylesheets -->
+  <!-- Main Application Styles -->
   <link rel="stylesheet" href="../static/client.css" />
+  
+  <!-- External Libraries -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
   <link rel="icon" type="image/png" href="https://dxdglobal.com/wp-content/uploads/2024/12/cropped-Favicon-1-180x180.webp">
 
-  <!-- Scripts -->
-  <!-- <script src="/eel.js"></script> -->
-
-  <style> 
-     /* Language Dropdown Styles */
+  <style>
         .language-dropdown {
             position: relative;
             display: inline-block;
         }
 
         .language-btn {
-            background-color: #ffffff;
-            color: #006039;
+            background-color: var(--white);
+            color: var(--primary-color);
             border: 2px solid transparent;
-            border-radius: 4px;
+            border-radius: var(--radius-base);
             padding: 5px 10px;
             cursor: pointer;
             font-size: 12px;
@@ -164,14 +166,12 @@
 
         .drawer-arrow-btn.active {
             transform: translateY(-50%) translateX(380px);
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #a71e2a 100%);
+            
             box-shadow: -5px 0 20px rgba(220, 53, 69, 0.4);
             border-color: rgba(255, 255, 255, 0.2);
         }
 
         .drawer-arrow-btn.active:hover {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #a93226 100%);
-            box-shadow: -8px 0 30px rgba(220, 53, 69, 0.6);
             transform: translateY(-50%) translateX(372px) scale(1.05);
         }
 
@@ -268,7 +268,7 @@
   left: -380px;
   width: 380px;
   height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
+  background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 0 50px rgba(0, 96, 57, 0.15);
   z-index: 999;
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
@@ -281,7 +281,7 @@
 .drawer.active {
   left: 0;
   box-shadow: 20px 0 60px rgba(0, 96, 57, 0.2);
-  z-index: 999;
+  z-index: 9999;
 }
 
 .drawer-header {
@@ -355,16 +355,15 @@
 
 .drawer-content {
   padding: 0;
-  background: linear-gradient(to bottom, transparent, rgba(0, 96, 57, 0.02));
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .drawer-section {
   border-bottom: 1px solid rgba(0, 96, 57, 0.08);
   animation: slideInRight 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-  opacity: 0;
-  transform: translateX(40px);
+  transform: translateX(0px);
   margin-bottom: 5px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
@@ -422,7 +421,7 @@
   border-left: 4px solid transparent;
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.8);
   margin: 2px 5px;
   border-radius: 12px;
 }
@@ -645,14 +644,10 @@
 
 .drawer-arrow-btn.active {
   transform: translateY(-50%) translateX(380px);
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #a71e2a 100%);
-  box-shadow: -5px 0 20px rgba(220, 53, 69, 0.4);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .drawer-arrow-btn.active:hover {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #a93226 100%);
-  box-shadow: -8px 0 30px rgba(220, 53, 69, 0.6);
   transform: translateY(-50%) translateX(372px) scale(1.05);
 }
 
@@ -1092,6 +1087,8 @@
 
   <!-- External Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <!-- Configuration Manager -->
+  <script src="../static/script/config-manager.js"></script>
   <script>
         function toggleLanguageDropdown() {
             const dropdown = document.getElementById('languageDropdown');

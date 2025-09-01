@@ -53,6 +53,7 @@ import openai
 # from moduller.tracker import stop_browser_tracking
 # from moduller.tracker import collect_all_history
 import logging
+from moduller.config_manager import config_manager
 
 is_user_idle = False  # Global idle flag
 
@@ -446,7 +447,7 @@ def start_screen_recording(folder_path, email, task_name):
                     else:
                         logging.error(f"❌ Failed to upload screenshot to S3")
 
-                    time.sleep(5)  # every 5 seconds
+                    time.sleep(30)  # every 30 seconds
                 except Exception as e:
                     logging.error(f"❌ Screenshot error: {e}")
                     break
@@ -505,6 +506,69 @@ def index():
 def client():
     """Render the client page after successful login"""
     return render_template('client.html')  # This will render client.html from the templates folder
+
+# --- Configuration API Endpoints ---
+@app.route('/api/config', methods=['GET'])
+def get_configuration():
+    """
+    Get application configuration for frontend
+    Returns safe configuration without sensitive credentials
+    """
+    try:
+        # Get safe configuration for frontend
+        safe_config = config_manager.get_config_for_frontend()
+        
+        return jsonify({
+            'success': True,
+            'config': safe_config,
+            'source': 'api' if config_manager.config_cache else 'default'
+        })
+    except Exception as e:
+        logging.error(f"Error getting configuration: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/config/refresh', methods=['POST'])
+def refresh_configuration():
+    """
+    Force refresh configuration from API
+    """
+    try:
+        # Force refresh configuration
+        fresh_config = config_manager.get_config(force_refresh=True)
+        safe_config = config_manager.get_config_for_frontend()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Configuration refreshed successfully',
+            'config': safe_config
+        })
+    except Exception as e:
+        logging.error(f"Error refreshing configuration: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/config/screenshot-interval', methods=['GET'])
+def get_screenshot_interval():
+    """
+    Get current screenshot capture interval
+    """
+    try:
+        interval = config_manager.get_screenshot_interval()
+        return jsonify({
+            'success': True,
+            'interval_seconds': interval
+        })
+    except Exception as e:
+        logging.error(f"Error getting screenshot interval: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 
 
@@ -657,7 +721,10 @@ def start_screen_recording(folder_path, email, task_name):
     def record():
         global recording_active
 
-        print(f" Starting screenshot capture - uploading directly to S3")
+        # Get screenshot interval from configuration
+        screenshot_interval = config_manager.get_screenshot_interval()
+        print(f"🔧 Starting screenshot capture - uploading directly to S3 (interval: {screenshot_interval}s)")
+        
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
 
@@ -675,20 +742,20 @@ def start_screen_recording(folder_path, email, task_name):
                     img.save(img_buffer, format="WEBP")
                     img_bytes = img_buffer.getvalue()
 
-                    print(f" Screenshot captured: {timestamp}.webp")
+                    print(f"📸 Screenshot captured: {timestamp}.webp")
 
                     # Upload directly to S3 without saving locally
                     from moduller.s3_uploader import upload_screenshot_direct
                     result_url = upload_screenshot_direct(img_bytes, email, task_name, "webp")
                     
                     if result_url:
-                        print(f" Screenshot uploaded to S3: {result_url}")
+                        print(f"☁️ Screenshot uploaded to S3: {result_url}")
                     else:
-                        print(f" Failed to upload screenshot to S3")
+                        print(f"❌ Failed to upload screenshot to S3")
 
-                    time.sleep(5)  # every 5 seconds
+                    time.sleep(screenshot_interval)  # Use configurable interval
                 except Exception as e:
-                    print(f" Screenshot error: {e}")
+                    print(f"❌ Screenshot error: {e}")
                     break
 
     global recording_thread

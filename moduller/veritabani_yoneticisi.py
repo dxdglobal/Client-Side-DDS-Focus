@@ -1,17 +1,23 @@
 import pymysql
+from .config_manager import config_manager
 
 class VeritabaniYoneticisi:
     """
     Veritaban ilemlerini gerekletirmek iin bir snf.
     """
 
-    def __init__(self, host, user, password, database, port=3306):
-        self.host = "92.113.22.65"
-        self.user = "u906714182_sqlrrefdvdv"
-        self.password = "3@6*t:lU"
-        self.database = "u906714182_sqlrrefdvdv"
-        self.port = 3306
+    def __init__(self, host=None, user=None, password=None, database=None, port=None):
+        # Get database credentials from configuration manager
+        db_config = config_manager.get_database_credentials()
+        
+        self.host = host or db_config.get("host", "92.113.22.65")
+        self.user = user or db_config.get("user", "u906714182_sqlrrefdvdv")
+        self.password = password or db_config.get("password", "3@6*t:lU")
+        self.database = database or db_config.get("database", "u906714182_sqlrrefdvdv")
+        self.port = port or db_config.get("port", 3306)
         self.connection = None
+        
+        print(f"🔧 Database config loaded: {self.host}:{self.port}/{self.database}")
 
     def baglanti_olustur(self):
         """
@@ -26,9 +32,9 @@ class VeritabaniYoneticisi:
                 port=self.port,
                 cursorclass=pymysql.cursors.DictCursor
             )
-            print(" Veritabanna baaryla balanld.")
+            print("✅ Veritabanna baaryla balanld.")
         except Exception as e:
-            print(f" Veritaban balant hatas: {e}")
+            print(f"❌ Veritaban balant hatas: {e}")
             self.connection = None
 
     def baglanti_testi(self):

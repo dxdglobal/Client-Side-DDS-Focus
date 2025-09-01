@@ -4,6 +4,7 @@ import logging
 import boto3
 import os
 import io
+from .config_manager import config_manager
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +23,14 @@ def upload_screenshot_direct(image_bytes, email, task_name, file_extension="webp
     """
     logger.info("📤 [upload_screenshot_direct] started")
 
-    # Load AWS credentials from environment variables
-    access_key = os.getenv("AWS_ACCESS_KEY_ID")
-    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    bucket = os.getenv("S3_BUCKET_NAME", "ddsfocustime")
-    region = os.getenv("AWS_REGION", "us-east-1")
+    # Get S3 credentials from configuration manager
+    s3_config = config_manager.get_s3_credentials()
+    access_key = s3_config.get("access_key")
+    secret_key = s3_config.get("secret_key")
+    bucket = s3_config.get("bucket_name", "ddsfocustime")
+    region = s3_config.get("region", "us-east-1")
 
-    logger.info("🔐 AWS_ACCESS_KEY_ID: %s", access_key)
+    logger.info("🔐 Using S3 config from configuration manager")
     logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
     logger.info("🌍 AWS_REGION: %s", region)
 
