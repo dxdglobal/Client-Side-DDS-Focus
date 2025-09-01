@@ -1,0 +1,212 @@
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #003366;
+        color: white;
+        height: 100vh;
+        overflow: hidden;
+    }
+  
+    .container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+  
+    .window-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        /* background-color: #f0f0f0; */
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        /* border-bottom: 1px solid #ccc; */
+    }
+  
+    .window-title {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: #333;
+    }
+  
+    .window-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
+        background-color: #0078C1;
+    }
+  
+    .window-controls {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        height: 30px;
+    }
+  
+    .window-button {
+        width: 45px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+  
+    .minimize {
+        font-size: 14px;
+    }
+  
+    .maximize {
+        font-size: 12px;
+    }
+  
+    .close {
+        font-size: 16px;
+    }
+  
+    .wave-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 30%;
+        background-color: #006039;
+        border-radius: 0 0 50% 50% / 0 0 100% 100%;
+        z-index: 0;
+    }
+  
+    .logo {
+        margin-top: 60px;
+        z-index: 10;
+        text-align: center;
+    }
+  
+    .logo img {
+        width: 200px;
+    }
+  
+    .content {
+        margin-top: 30px;
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 5;
+    }
+  
+    .title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+  
+    .subtitle {
+        font-size: 16px;
+        text-align: center;
+        margin-bottom: 30px;
+        opacity: 0.9;
+    }
+  
+    .login-form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+  
+    .input-field {
+        width: 100%;
+        height: 45px;
+        border-radius: 5px;
+        border: none;
+        padding: 0 15px;
+        font-size: 16px;
+        color: #333;
+        box-sizing: border-box;
+    }
+  
+    .checkbox-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin: 5px 0 20px;
+    }
+  
+    .save-password {
+        display: flex;
+        align-items: center;
+    }
+  
+    .save-password input {
+        margin-right: 5px;
+        width: 16px;
+        height: 16px;
+    }
+  
+    .forgot-password {
+        color: white;
+        text-decoration: none;
+    }
+  
+    .login-button {
+        width: 100%;
+        height: 45px;
+        background-color: #0056A4;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+  
+    .guest-button {
+        width: 100%;
+        height: 45px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+  
+    .language-selector {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+    }
+  
+    .language-selector select {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+    }
+  
+    .version {
+        position: absolute;
+        bottom: 20px;
+        right: 50%;
+        transform: translateX(50%);
+        font-size: 12px;
+        opacity: 0.7;
+    }

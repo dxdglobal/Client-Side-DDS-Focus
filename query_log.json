@@ -1,0 +1,22 @@
+[
+    {
+        "sql": "ERROR",
+        "error": "object of type 'NoneType' has no len()"
+    },
+    {
+        "sql": "ERROR",
+        "error": "object of type 'NoneType' has no len()"
+    },
+    {
+        "sql": "ERROR",
+        "error": "Returned SQL is invalid"
+    },
+    {
+        "sql": "ERROR",
+        "error": "object of type 'NoneType' has no len()"
+    },
+    {
+        "sql": "ERROR",
+        "error": "object of type 'NoneType' has no len()"
+    }
+]

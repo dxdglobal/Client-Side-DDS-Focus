@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DDS-FocusPro V-1.3</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../static/client.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://dxdglobal.com/wp-content/uploads/2024/12/cropped-Favicon-1-180x180.webp">
+
+  <!-- Scripts -->
+  <!-- <script src="/eel.js"></script> -->
+
+  <style> 
+     /* Language Dropdown Styles */
+        .language-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .language-btn {
+            background-color: #ffffff;
+            color: #006039;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .language-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .language-btn.active {
+            border-color: #006039;
+        }
+
+        .language-dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 1000;
+            top: 100%;
+            right: 0;
+            margin-top: 2px;
+        }
+
+        .language-dropdown-content.show {
+            display: block;
+        }
+
+        .language-option {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .language-option:hover {
+            background-color: #f1f1f1;
+        }
+
+        .language-option:first-child {
+            border-radius: 4px 4px 0 0;
+        }
+
+        .language-option:last-child {
+            border-radius: 0 0 4px 4px;
+        }
+
+        .language-flag {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .flag-french { background: linear-gradient(to right, #002868 33%, white 33%, white 66%, #ED2939 66%); }
+        .flag-german { background: linear-gradient(to bottom, #000 33%, #DD0000 33%, #DD0000 66%, #FFCE00 66%); }
+        .flag-ukrainian { background: linear-gradient(to bottom, #005BBB 50%, #FFD500 50%); }
+        .flag-english { background: linear-gradient(45deg, #012169 25%, transparent 25%), linear-gradient(-45deg, #012169 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #012169 75%), linear-gradient(-45deg, transparent 75%, #012169 75%); background-size: 4px 4px; background-color: #FFFFFF; }
+
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .language-btn.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Demo header styles */
+        .header {
+            background-color: #006039;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Center Arrow Drawer Button */
+        .drawer-arrow-btn {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #006039 0%, #004d2e 100%);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 80px;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 3px 0 15px rgba(0, 96, 57, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .drawer-arrow-btn:hover {
+            background: linear-gradient(135deg, #007a42 0%, #005a35 100%);
+            box-shadow: 5px 0 25px rgba(0, 96, 57, 0.5);
+            transform: translateY(-50%) translateX(5px);
+        }
+
+        .drawer-arrow-btn.active {
+            transform: translateY(-50%) translateX(350px);
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: -3px 0 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .drawer-arrow-btn.active:hover {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: -5px 0 25px rgba(220, 53, 69, 0.5);
+            transform: translateY(-50%) translateX(345px);
+        }
+
+        .arrow-icon {
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .drawer-arrow-btn.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-controls button{
+          background-color: #fff;
+          color: #000;
+        }
+
+        #profileImage {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        #displayUserName {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        #logout {
+            margin-left: 10px;
+            padding: 4px 10px;
+            background-color: #ffffff;
+            color: #006039;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            border: solid 2px transparent;
+            font-size: 12px;
+        }
+
+
+        .state-circle.idle {
+  background-color: gray;
+  transition: background-color 0.3s ease;
+}
+
+.state-circle.work {
+  background-color: green;
+}
+
+.state-circle.break {
+  background-color: orange;
+}
+
+#idleModal button:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+/* ====== SMOOTH DRAWER STYLES ====== */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(0px);
+}
+
+.drawer-overlay.active {
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  visibility: visible;
+  backdrop-filter: blur(3px);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -350px;
+  width: 350px;
+  height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  border-right: 1px solid rgba(0, 96, 57, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.drawer.active {
+  left: 0;
+  box-shadow: 15px 0 40px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+}
+
+.drawer-header {
+  background: linear-gradient(135deg, #006039 0%, #004d2e 100%);
+  color: white;
+  padding: 25px 20px;
+  position: relative;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.drawer-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.drawer-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 5px;
+  font-weight: 300;
+}
+
+.drawer-close {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.drawer-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.drawer-content {
+  padding: 0;
+}
+
+.drawer-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  animation: slideInRight 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.drawer-section:nth-child(1) { animation-delay: 0.1s; }
+.drawer-section:nth-child(2) { animation-delay: 0.2s; }
+.drawer-section:nth-child(3) { animation-delay: 0.3s; }
+.drawer-section:nth-child(4) { animation-delay: 0.4s; }
+
+.drawer-section-header {
+  padding: 20px;
+  background: linear-gradient(90deg, rgba(0, 96, 57, 0.03) 0%, transparent 100%);
+  font-weight: 600;
+  color: #006039;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-left: 4px solid #006039;
+  margin: 0;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.drawer-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 96, 57, 0.05), transparent);
+  transition: left 0.5s ease;
+}
+
+.drawer-item:hover::before {
+  left: 100%;
+}
+
+.drawer-item:hover {
+  background: rgba(0, 96, 57, 0.03);
+  border-left-color: #006039;
+  transform: translateX(5px);
+  padding-left: 25px;
+}
+
+.drawer-item-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+  color: #006039;
+  transition: all 0.3s ease;
+}
+
+.drawer-item:hover .drawer-item-icon {
+  transform: scale(1.1);
+  color: #004d2e;
+}
+
+.drawer-item-text {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Project and Task Details Styles */
+.project-info, .task-info, .time-info {
+  flex-direction: column;
+  align-items: flex-start !important;
+  padding: 20px !important;
+  background: linear-gradient(135deg, rgba(0, 96, 57, 0.05) 0%, rgba(0, 96, 57, 0.02) 100%);
+  border-radius: 8px;
+  margin: 0 10px 10px 10px;
+  border: 1px solid rgba(0, 96, 57, 0.1);
+}
+
+.project-details, .task-details, .time-details {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.project-name, .task-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #006039;
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+
+.project-client, .task-status {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.current-time {
+  font-size: 18px;
+  font-weight: 700;
+  color: #006039;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 5px;
+}
+
+.total-time {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.project-info svg, .task-info svg, .time-info svg {
+  margin-bottom: 5px;
+  color: #006039 !important;
+}
+
+.drawer-item-badge {
+  background: linear-gradient(135deg, #006039, #004d2e);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.drawer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+  margin: 10px 20px;
+}
+
+/* Drawer Trigger Button */
+
+/* ====== DRAWER ANIMATIONS ====== */
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .drawer {
+    width: 280px;
+  }
+  
+  .drawer-arrow-btn {
+    width: 40px;
+    height: 70px;
+  }
+  
+  .drawer-arrow-btn.active {
+    transform: translateY(-50%) translateX(280px);
+  }
+  
+  .drawer-arrow-btn.active:hover {
+    transform: translateY(-50%) translateX(275px);
+  }
+  
+  .header {
+    padding: 10px 15px;
+  }
+  
+  .logo img {
+    width: 100px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .drawer {
+    width: 90vw;
+    max-width: 300px;
+  }
+  
+  .drawer-arrow-btn.active {
+    transform: translateY(-50%) translateX(90vw);
+  }
+  
+  .drawer-arrow-btn.active:hover {
+    transform: translateY(-50%) translateX(calc(90vw - 5px));
+  }
+}
+.drawer-trigger {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #006039 0%, #004d2e 100%);
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 50px;
+  cursor: pointer;
+  z-index: 997;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 96, 57, 0.3);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.drawer-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 96, 57, 0.4);
+  background: linear-gradient(135deg, #007a42 0%, #005a35 100%);
+}
+
+.drawer-trigger-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.drawer-trigger:hover .drawer-trigger-icon {
+  transform: rotate(180deg);
+}
+
+/* Animations */
+@keyframes slideInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive Drawer */
+@media (max-width: 768px) {
+  .drawer {
+    width: 90%;
+    max-width: 320px;
+  }
+  
+  .drawer-trigger {
+    top: 15px;
+    right: 15px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <!-- Center Arrow Drawer Button -->
+  <button class="drawer-arrow-btn" id="drawerArrowBtn" onclick="toggleDrawer()" aria-label="Toggle navigation menu">
+    <span class="arrow-icon">▶</span>
+  </button>
+
+  <div class="container">
+    <!-- Header -->
+<div class="header">
+        <div class="logo">
+            <figure>
+                <img src="https://dxdglobal.com/wp-content/uploads/2024/08/Logo-Light-H-small.webp" alt="" width="113px" height="" />
+            </figure>
+        </div>
+        <div class="user-controls">
+            <img id="profileImage" src="https://crm.deluxebilisim.com/assets/images/user_placeholder.png">
+            <span id="displayUserName" style="margin-right: 10px;">Loading ...</span>
+            
+            <!-- Language Dropdown -->
+            <div class="language-dropdown">
+              <button class="language-btn" onclick="toggleLanguageDropdown()">
+                <span id="currentLanguage">Language</span>
+                <span class="dropdown-arrow">▼</span>
+              </button>
+
+              <!-- Language Dropdown Content -->
+
+                <div class="language-dropdown-content" id="languageDropdown">
+                   <div class="language-option" id="option-tr" onclick="selectLanguage('tr')">
+                    <svg xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 512 356.18"><g fill-rule="nonzero"><path fill="#E30A17" d="M28.137 0H483.86C499.337 0 512 12.663 512 28.14v299.9c0 15.477-12.663 28.14-28.14 28.14H28.137C12.663 356.18 0 343.517 0 328.04V28.14C0 12.663 12.663 0 28.137 0z"/><path fill="#fff" d="M253.365 130.516c-15.783-24.923-43.598-41.473-75.281-41.473-49.179 0-89.047 39.868-89.047 89.047 0 49.179 39.868 89.047 89.047 89.047 31.684 0 59.498-16.55 75.282-41.475-13.042 14.526-31.963 23.665-53.021 23.665-39.342 0-71.237-31.893-71.237-71.237 0-39.344 31.895-71.237 71.237-71.237 21.058 0 39.978 9.138 53.02 23.663zm-4.785 47.574l80.543 26.169-49.778-68.514v84.688l49.778-68.514-80.543 26.171z"/></g></svg>
+                    <span>Türkçe</span>
+                  </div>
+                  <div class="language-option" id="option-en" onclick="selectLanguage('en')">
+                    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55.2 38.4" style="enable-background:new 0 0 55.2 38.4" xml:space="preserve"><style type="text/css">.st0{fill:#FEFEFE;} .st1{fill:#C8102E;} .st2{fill:#012169;}</style><g><path class="st0" d="M2.87,38.4h49.46c1.59-0.09,2.87-1.42,2.87-3.03V3.03c0-1.66-1.35-3.02-3.01-3.03H3.01 C1.35,0.01,0,1.37,0,3.03v32.33C0,36.98,1.28,38.31,2.87,38.4L2.87,38.4z"/><polygon class="st1" points="23.74,23.03 23.74,38.4 31.42,38.4 31.42,23.03 55.2,23.03 55.2,15.35 31.42,15.35 31.42,0 23.74,0 23.74,15.35 0,15.35 0,23.03 23.74,23.03"/><path class="st2" d="M33.98,12.43V0h18.23c1.26,0.02,2.34,0.81,2.78,1.92L33.98,12.43L33.98,12.43z"/><path class="st2" d="M33.98,25.97V38.4h18.35c1.21-0.07,2.23-0.85,2.66-1.92L33.98,25.97L33.98,25.97z"/><path class="st2" d="M21.18,25.97V38.4H2.87c-1.21-0.07-2.24-0.85-2.66-1.94L21.18,25.97L21.18,25.97z"/><path class="st2" d="M21.18,12.43V0H2.99C1.73,0.02,0.64,0.82,0.21,1.94L21.18,12.43L21.18,12.43z"/><polygon class="st2" points="0,12.8 7.65,12.8 0,8.97 0,12.8"/><polygon class="st2" points="55.2,12.8 47.51,12.8 55.2,8.95 55.2,12.8"/><polygon class="st2" points="55.2,25.6 47.51,25.6 55.2,29.45 55.2,25.6"/><polygon class="st2" points="0,25.6 7.65,25.6 0,29.43 0,25.6"/><polygon class="st1" points="55.2,3.25 36.15,12.8 40.41,12.8 55.2,5.4 55.2,3.25"/><polygon class="st1" points="19.01,25.6 14.75,25.6 0,32.98 0,35.13 19.05,25.6 19.01,25.6"/><polygon class="st1" points="10.52,12.81 14.78,12.81 0,5.41 0,7.55 10.52,12.81"/><polygon class="st1" points="44.63,25.59 40.37,25.59 55.2,33.02 55.2,30.88 44.63,25.59"/></g></svg>
+                    <span>English</span>
+                  </div>
+              </div>
+            </div>
+            
+            <button id="logout" onclick="openLogoutModal()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="grid-container">
+        <!-- Client & Task Info -->
+        <div>
+          <div class="form-group">
+            <label for="clientNameInput">Client</label>
+            <input type="text" class="form-control" id="clientNameInput" style="width: 90%" readonly />
+          </div>
+          <div class="form-group">
+            <label for="project">Project</label>
+            <select id="project" class="form-control" onchange="loadTasksForProject()" style="width: 90%"></select>
+          </div>
+          <div class="form-group">
+            <label for="task">Task</label>
+            <select id="task" class="form-control" style="width: 90%">
+              <option disabled selected value="">-- Select a Task --</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Timer Block -->
+        <div class="container floating">
+<div class="state-circle" id="stateCircle">
+  <div class="state-label" id="stateLabel">IDLE</div>
+</div>
+
+
+
+          <div class="timer-display">
+            <div class="timer-unit">
+              <div class="timer-value" id="hours">00</div>
+              <div class="timer-label">HRS</div>
+            </div>
+            <div class="timer-unit">
+              <div class="timer-value" id="minutes">00</div>
+              <div class="timer-label">MIN</div>
+            </div>
+            <div class="timer-unit">
+              <div class="timer-value" id="seconds">00</div>
+              <div class="timer-label">SEC</div>
+            </div>
+          </div>
+<p id="statusText" style="text-align: center; color: #000; font-weight: bold; margin-top: 10px;"></p>
+
+          <div class="action-buttons">
+            <button class="action-button start-button" id="startBtn">START</button>
+        <!-- <button class="state-btn break" onclick="handleBreak()" id="breakBtn">☕ Break</button> -->
+
+            <button class="action-button reset-button" id="resetBtn" style="background-color: orange;">Finish</button>
+          </div>
+        </div>
+
+        <!-- Misc Info -->
+        <div>
+          <div class="form-group">
+            <label for="todayDate">Today</label>
+            <input type="text" class="form-control" id="todayDate" disabled />
+          </div>
+          <div class="form-group">
+            <label for="totaltimecount">Total Time Count</label>
+            <div id="totaltimecount" class="form-control">00:00</div>
+          </div>
+          <div class="form-group">
+            <label for="loggingInput">Screen Recording</label>
+            <input type="text" class="form-control" id="loggingInput" value="NO" disabled />
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Buttons -->
+      <div class="controls">
+    
+      </div>
+
+      <div id="work-animation" style="display: none; text-align: center; margin-top: 10px;">
+        <img src="" alt="Working Animation" style="width: auto; border-radius: 8px; max-width: 250px;" />
+        <p style="margin-top: 8px; font-weight: bold;">Welcome...</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+<div class="nav-container">
+  <ul class="nav-menu">
+
+    <li class="nav-item active">
+      <a href="#" class="nav-link" onclick="openInNewTab('https://crm.deluxebilisim.com/')">
+       <svg width="40px" height="40px" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.918 10.0005H7.082C6.66587 9.99708 6.26541 10.1591 5.96873 10.4509C5.67204 10.7427 5.50343 11.1404 5.5 11.5565V17.4455C5.5077 18.3117 6.21584 19.0078 7.082 19.0005H9.918C10.3341 19.004 10.7346 18.842 11.0313 18.5502C11.328 18.2584 11.4966 17.8607 11.5 17.4445V11.5565C11.4966 11.1404 11.328 10.7427 11.0313 10.4509C10.7346 10.1591 10.3341 9.99708 9.918 10.0005Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.918 4.0006H7.082C6.23326 3.97706 5.52559 4.64492 5.5 5.4936V6.5076C5.52559 7.35629 6.23326 8.02415 7.082 8.0006H9.918C10.7667 8.02415 11.4744 7.35629 11.5 6.5076V5.4936C11.4744 4.64492 10.7667 3.97706 9.918 4.0006Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M15.082 13.0007H17.917C18.3333 13.0044 18.734 12.8425 19.0309 12.5507C19.3278 12.2588 19.4966 11.861 19.5 11.4447V5.55666C19.4966 5.14054 19.328 4.74282 19.0313 4.45101C18.7346 4.1592 18.3341 3.9972 17.918 4.00066H15.082C14.6659 3.9972 14.2654 4.1592 13.9687 4.45101C13.672 4.74282 13.5034 5.14054 13.5 5.55666V11.4447C13.5034 11.8608 13.672 12.2585 13.9687 12.5503C14.2654 12.8421 14.6659 13.0041 15.082 13.0007Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M15.082 19.0006H17.917C18.7661 19.0247 19.4744 18.3567 19.5 17.5076V16.4936C19.4744 15.6449 18.7667 14.9771 17.918 15.0006H15.082C14.2333 14.9771 13.5256 15.6449 13.5 16.4936V17.5066C13.525 18.3557 14.2329 19.0241 15.082 19.0006Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="nav-text" id="navDashboard">Dashboard</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-page="help">
+<svg fill="#000000" width="40px" height="40px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm1 16h-2v-2h2v2zm.976-4.885c-.196.158-.385.309-.535.459-.408.407-.44.777-.441.793v.133h-2v-.167c0-.118.029-1.177 1.026-2.174.195-.195.437-.393.691-.599.734-.595 1.216-1.029 1.216-1.627a1.934 1.934 0 0 0-3.867.001h-2C8.066 7.765 9.831 6 12 6s3.934 1.765 3.934 3.934c0 1.597-1.179 2.55-1.958 3.181z"/></svg>
+        <span class="nav-text" id="navHelp">Help</span>
+      </a>  
+    </li>
+
+    <li class="nav-item">
+      <a href="#" class="nav-link" data-page="settings">
+        <svg width="40px" height="40px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#000000" d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z"/></svg>
+        <span class="nav-text" id="navSettings">Settings</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a onclick="openReviewModal()" class="nav-link" data-page="logout">
+       <svg fill="#000000" width="40px" height="40px" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+    <path d="M84 0v1423.143h437.875V1920l621.235-496.857h692.39V0H84Zm109.469 109.464H1726.03V1313.57h-621.235l-473.452 378.746V1313.57H193.469V109.464Z" fill-rule="evenodd"/>
+</svg>
+        <span class="nav-text" id="navFeedback">Feedback</span>
+      </a>
+    </li>
+
+  </ul>
+</div>
+
+
+  </div>
+
+  <!-- Smooth Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h2 class="drawer-title">DDS FocusPro</h2>
+      <p class="drawer-subtitle">Navigation Menu</p>
+      <!-- <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button> -->
+    </div>
+    
+    <div class="drawer-content">
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+          </svg>
+          Current Project Details
+        </div>
+        <div class="drawer-item project-info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
+          </svg>
+          <div class="project-details">
+            <div class="project-name" id="drawerProjectName">No Project Selected</div>
+            <div class="project-client" id="drawerClientName">Please select a project</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+          Current Task Details
+        </div>
+        <div class="drawer-item task-info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
+          </svg>
+          <div class="task-details">
+            <div class="task-name" id="drawerTaskName">No Task Selected</div>
+            <div class="task-status" id="drawerTaskStatus">Please select a task to start working</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+          </svg>
+          Time Tracking
+        </div>
+        <div class="drawer-item time-info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12.5,7H11V12.5L15.75,15.85L16.5,14.6L12.5,11.75V7Z"/>
+          </svg>
+          <div class="time-details">
+            <div class="current-time" id="drawerCurrentTime">00:00:00</div>
+            <div class="total-time" id="drawerTotalTime">Total: 00:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          Quick Actions
+        </div>
+        <div class="drawer-item" onclick="openLogoutModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          Logout
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- For Logout Modal  -->
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <h2 id="logoutModalTitle" data-translatable="logoutTitle">🔒 Confirm Logout</h2>
+      <p id="logoutModalDesc" data-translatable="logoutDesc">Are you sure you want to log out from DDS-FocusPro?</p>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel-btn" onclick="closeLogoutModal()" data-translatable="logoutCancel">Cancel</button>
+        <button class="modal-btn submit-btn" onclick="confirmLogout()" data-translatable="logoutConfirm">Logout</button>
+      </div>
+    </div>
+  </div>
+
+   <!-- Logout Confirmation Modal -->
+<!-- Idle Timeout Modal -->
+<!-- Idle Timeout Modal -->
+<!-- <div id="idleModal" class="modal">
+  <div class="modal-content idle-shake" style="text-align: center;">
+    <h2 id="idleModalTitle">⏸️ You're Idle</h2>
+    <p id="idleModalDesc">You’ve been inactive. Timer is paused.</p>
+    
+    <p id="idleCountdownText" style="font-size: 22px; font-weight: bold; color: #e67e22; margin-top: 10px;">
+      Auto-saving in <span id="idleCounter">10</span> seconds...
+    </p>
+
+    <button onclick="cancelIdleCountdown()" 
+            style="margin-top: 20px; padding: 10px 20px; font-size: 16px; font-weight: bold; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      ❌ Cancel & Resume Work
+    </button>
+  </div>
+</div> -->
+
+
+
+<!-- For Idle Modal  -->
+<div id="idleModal" class="modal" onclick="closeIdleModal()">
+  <div class="modal-content idle-shake">
+    <h2 id="idleModalTitle" data-translatable="idleTitle">⏸️ You're Idle</h2>
+    <p id="idleModalDesc" data-translatable="idleDesc">You’ve been inactive. Timer is paused.</p>
+  </div>
+</div>
+
+
+  <!-- Modals -->
+  <div id="finishModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">×</span>
+      <h2 id="modalTitle">📝 Task Completion</h2>
+      <p id="modalDesc">Please describe what you have completed for this task:</p>
+      <textarea id="taskDetailInput" placeholder="Type your task details here..." rows="5"></textarea>
+      <div class="modal-buttons">
+        <button id="modalSubmitBtn" class="modal-btn submit-btn" onclick="submitTaskDetails()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reviewModal" class="modal-review">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeReviewModal()">×</span>
+      <h2 id="reviewModalTitle">💬 Share Your Feedback</h2>
+      <p id="reviewModalDesc">We'd love to hear your thoughts about DDSFocusPro:</p>
+      <textarea id="reviewInput" placeholder="Type your feedback here..." rows="5"></textarea>
+      <div class="modal-buttons">
+        <button id="reviewSubmitBtn" class="modal-btn submit-btn" onclick="submitUserReview()">Submit Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div id="syncLoader" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="padding: 20px; background: white; border-radius: 8px; font-weight: bold;">
+      🔄 Syncing timesheets...Please wait
+    </div>
+  </div>
+
+  <!-- External Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script>
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('languageDropdown');
+            const button = document.querySelector('.language-btn');
+            
+            dropdown.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+// ====== SMOOTH DRAWER FUNCTIONS ======
+function toggleDrawer() {
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const arrowBtn = document.getElementById('drawerArrowBtn');
+    
+    if (drawer.classList.contains('active')) {
+        closeDrawer();
+    } else {
+        openDrawer();
+    }
+}
+
+function openDrawer() {
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const arrowBtn = document.getElementById('drawerArrowBtn');
+    
+    drawer.classList.add('active');
+    overlay.classList.add('active');
+    arrowBtn.classList.add('active');
+    
+    // Prevent body scroll when drawer is open
+    document.body.style.overflow = 'hidden';
+    
+    // Add staggered animation to drawer sections
+    const sections = document.querySelectorAll('.drawer-section');
+    sections.forEach((section, index) => {
+        section.style.animationDelay = `${0.1 + (index * 0.1)}s`;
+        section.style.animation = 'slideInFromLeft 0.4s ease-out forwards';
+    });
+}
+
+function closeDrawer() {
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const arrowBtn = document.getElementById('drawerArrowBtn');
+    
+    drawer.classList.remove('active');
+    overlay.classList.remove('active');
+    arrowBtn.classList.remove('active');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    
+    // Reset animations
+    const sections = document.querySelectorAll('.drawer-section');
+    sections.forEach((section) => {
+        section.style.animation = '';
+        section.style.animationDelay = '';
+    });
+}
+
+// Helper functions for drawer actions
+function showHelp() {
+    closeDrawer();
+    // Add help functionality here
+    console.log('Help requested');
+}
+
+function openSettings() {
+    closeDrawer();
+    // Add settings functionality here
+    console.log('Settings opened');
+}
+
+function showAbout() {
+    closeDrawer();
+    // Add about functionality here
+    alert('DDS FocusPro v1.3\\n\\nA professional time tracking application for enhanced productivity.');
+}
+
+// ====== DRAWER INFO UPDATE FUNCTIONS ======
+function updateDrawerProjectInfo() {
+    const projectSelect = document.getElementById('project');
+    const clientInput = document.getElementById('clientNameInput');
+    const drawerProjectName = document.getElementById('drawerProjectName');
+    const drawerClientName = document.getElementById('drawerClientName');
+    
+    if (projectSelect && projectSelect.selectedOptions.length > 0) {
+        const selectedProject = projectSelect.selectedOptions[0].text;
+        const clientName = clientInput ? clientInput.value : 'Unknown Client';
+        
+        drawerProjectName.textContent = selectedProject !== '-- Select a Project --' ? selectedProject : 'No Project Selected';
+        drawerClientName.textContent = clientName || 'Please select a project';
+    } else {
+        drawerProjectName.textContent = 'No Project Selected';
+        drawerClientName.textContent = 'Please select a project';
+    }
+}
+
+function updateDrawerTaskInfo() {
+    const taskSelect = document.getElementById('task');
+    const drawerTaskName = document.getElementById('drawerTaskName');
+    const drawerTaskStatus = document.getElementById('drawerTaskStatus');
+    const stateLabel = document.getElementById('stateLabel');
+    
+    if (taskSelect && taskSelect.selectedOptions.length > 0) {
+        const selectedTask = taskSelect.selectedOptions[0].text;
+        const currentState = stateLabel ? stateLabel.textContent : 'IDLE';
+        
+        drawerTaskName.textContent = selectedTask !== '-- Select a Task --' ? selectedTask : 'No Task Selected';
+        drawerTaskStatus.textContent = selectedTask !== '-- Select a Task --' ? `Status: ${currentState}` : 'Please select a task to start working';
+    } else {
+        drawerTaskName.textContent = 'No Task Selected';
+        drawerTaskStatus.textContent = 'Please select a task to start working';
+    }
+}
+
+function updateDrawerTimeInfo() {
+    const hoursElement = document.getElementById('hours');
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    const totalTimeElement = document.getElementById('totaltimecount');
+    
+    const drawerCurrentTime = document.getElementById('drawerCurrentTime');
+    const drawerTotalTime = document.getElementById('drawerTotalTime');
+    
+    if (hoursElement && minutesElement && secondsElement) {
+        const hours = hoursElement.textContent || '00';
+        const minutes = minutesElement.textContent || '00';
+        const seconds = secondsElement.textContent || '00';
+        
+        drawerCurrentTime.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    if (totalTimeElement) {
+        const totalTime = totalTimeElement.textContent || '00:00';
+        drawerTotalTime.textContent = `Total: ${totalTime}`;
+    }
+}
+
+// Auto-update drawer info every second
+setInterval(function() {
+    updateDrawerTimeInfo();
+    updateDrawerTaskInfo(); // Update task status in case state changes
+}, 1000);
+
+// Update drawer info when dropdowns change
+document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('project');
+    const taskSelect = document.getElementById('task');
+    
+    if (projectSelect) {
+        projectSelect.addEventListener('change', updateDrawerProjectInfo);
+    }
+    
+    if (taskSelect) {
+        taskSelect.addEventListener('change', updateDrawerTaskInfo);
+    }
+    
+    // Initial update
+    setTimeout(function() {
+        updateDrawerProjectInfo();
+        updateDrawerTaskInfo();
+        updateDrawerTimeInfo();
+    }, 500);
+});
+
+// Close drawer when clicking outside
+document.addEventListener('click', function(event) {
+    const drawer = document.getElementById('drawer');
+    const arrowBtn = document.getElementById('drawerArrowBtn');
+    
+    if (drawer && drawer.classList.contains('active')) {
+        if (!drawer.contains(event.target) && !arrowBtn.contains(event.target)) {
+            closeDrawer();
+        }
+    }
+});
+
+// Close drawer with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const drawer = document.getElementById('drawer');
+        if (drawer && drawer.classList.contains('active')) {
+            closeDrawer();
+        }
+    }
+});
+
+function selectLanguage(langCode) {
+    const currentLanguage = document.getElementById('currentLanguage');
+
+    // Define flag paths and labels
+    const flags = {
+        en: '/static/images/uk-flag.svg',
+        tr: '/static/images/turkish-flag.svg'
+    };
+
+    const labels = {
+        en: 'English',
+        tr: 'Türkçe'
+    };
+
+    // Fallback to English if langCode is invalid
+    if (!flags[langCode]) langCode = 'en';
+
+    // ✨ Fade-out before changing content
+    currentLanguage.style.opacity = 0;
+
+    setTimeout(() => {
+        // Update flag + label
+        currentLanguage.innerHTML = `
+            <span class="language-flag" style="background-image: url('${flags[langCode]}');"></span>
+            ${labels[langCode]}
+        `;
+
+        // ✨ Fade-in after update
+        currentLanguage.style.opacity = 1;
+    }, 200); // match CSS transition duration
+
+    // Save and apply language
+    sessionStorage.setItem('selectedLanguage', langCode);
+    applyClientLanguage(langCode);
+
+    // Close dropdown
+    document.getElementById('languageDropdown')?.classList.remove('show');
+    document.querySelector('.language-btn')?.classList.remove('active');
+
+    // Highlight selection
+    document.getElementById('option-tr')?.classList.remove('selected');
+    document.getElementById('option-en')?.classList.remove('selected');
+    document.getElementById(`option-${langCode}`)?.classList.add('selected');
+}
+
+
+
+
+
+
+
+
+
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.language-btn') && !event.target.closest('.language-dropdown')) {
+                const dropdown = document.getElementById('languageDropdown');
+                const button = document.querySelector('.language-btn');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                    button.classList.remove('active');
+                }
+            }
+        }
+
+    </script>
+  <script src="../static/script/client.js"></script>
+</body>
+
+</html>

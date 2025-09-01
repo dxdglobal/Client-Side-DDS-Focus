@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome - Sign Into Your Account</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+  <style>
+    .login-animation {
+      width: 100%;
+      height: auto;
+      max-width: 500px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Side - Illustration with GIF -->
+    <div class="left-side">
+      <div class="floating-elements">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+      </div>
+      <div class="illustration">
+        <img src="{{ url_for('static', filename='animations/animation-login.gif') }}" alt="Login Animation" class="login-animation">
+      </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="right-side">
+      <div class="header">
+        <a href="#" id="loginLink">Login</a>
+        <a href="#" id="registerLink">Register</a>
+      </div>
+
+      <div class="login-form">
+        <div class="welcome-text">
+          <h1>Welcome!</h1>
+          <p>Sign Into Your Account</p>
+        </div>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" required placeholder="Email Address"/>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required placeholder="Password"/>
+          </div>
+          <div class="form-options">
+            <div class="checkbox-group">
+              <input type="checkbox" id="remember"/>
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#" class="forgot-password">Forgot Password</a>
+          </div>
+          <button type="submit" class="login-btn">Login</button>
+        </form>
+        <div class="help-support"><a href="#">Help & Support</a></div>
+        <div class="social-icons">
+          <a href="#" class="social-icon">f</a>
+          <a href="#" class="social-icon">t</a>
+          <a href="#" class="social-icon">G</a>
+          <a href="#" class="social-icon">in</a>
+          <a href="#" class="social-icon">@</a>
+          <a href="#" class="social-icon">📺</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const remember = document.getElementById('remember').checked;
+      const loginBtn = document.querySelector('.login-btn');
+      const originalText = loginBtn.textContent;
+
+      loginBtn.textContent = 'Signing in...';
+      loginBtn.disabled = true;
+
+      setTimeout(() => {
+        alert(`Login simulation completed!\n\nEmail: ${email}\nRemember: ${remember}`);
+        loginBtn.textContent = originalText;
+        loginBtn.disabled = false;
+      }, 2000);
+    });
+
+    document.getElementById('loginLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector('.welcome-text h1').textContent = 'Welcome!';
+      document.querySelector('.welcome-text p').textContent = 'Sign Into Your Account';
+      document.querySelector('.login-btn').textContent = 'Login';
+    });
+
+    document.getElementById('registerLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector('.welcome-text h1').textContent = 'Join Us!';
+      document.querySelector('.welcome-text p').textContent = 'Create Your Account';
+      document.querySelector('.login-btn').textContent = 'Register';
+    });
+
+    // Ripple effect on button
+    document.querySelector('.login-btn').addEventListener('click', function(e) {
+      const ripple = document.createElement('span');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      ripple.style.position = 'absolute';
+      ripple.style.borderRadius = '50%';
+      ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+      ripple.style.transform = 'scale(0)';
+      ripple.style.animation = 'ripple 0.6s linear';
+      ripple.style.pointerEvents = 'none';
+
+      this.style.position = 'relative';
+      this.style.overflow = 'hidden';
+      this.appendChild(ripple);
+
+      setTimeout(() => ripple.remove(), 600);
+    });
+
+    // Add ripple animation CSS dynamically
+    const style = document.createElement('style');
+    style.textContent = `@keyframes ripple { to { transform: scale(4); opacity: 0; } }`;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
