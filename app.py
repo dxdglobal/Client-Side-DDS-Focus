@@ -87,13 +87,14 @@ PERFEX_API_URL = "https://crm.deluxebilisim.com/api/timesheets"
 # DB_NAME = os.getenv("DB_NAME")
 # DB_PORT = int(os.getenv("DB_PORT", 3306))
 # Hardcoded database config
-AUTH_TOKEN="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o"
+AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 
-DB_HOST = "92.113.22.65"  # ✅ WORKING
-DB_USER = "u906714182_sqlrrefdvdv"
-DB_PASSWORD = "3@6*t:lU"
-DB_NAME = "u906714182_sqlrrefdvdv"
-DB_PORT = 3306
+# Database configuration from environment variables
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_PORT = int(os.getenv("DB_PORT", 3306))
 
 
 
@@ -409,29 +410,39 @@ def upload_log_file():
 
 
 def start_screen_recording(folder_path, email, task_name):
-
-
     def record():
         global recording_active
 
-        print(f" Starting screenshot capture to: {folder_path}")
+        print(f" Starting screenshot capture - uploading directly to S3")
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
 
             while recording_active:
                 try:
                     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    filename = os.path.join(folder_path, f"{timestamp}.webp")
                     sct_img = sct.grab(monitor)
 
-                    # Convert mss image to PIL image and save as webp
+                    # Convert mss image to PIL image and save to bytes buffer
                     img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
-                    img.save(filename, "WEBP")
+                    
+                    # Save to bytes buffer instead of local file
+                    import io
+                    img_buffer = io.BytesIO()
+                    img.save(img_buffer, format="WEBP")
+                    img_bytes = img_buffer.getvalue()
 
-                    logging.info(f"📸 Screenshot saved: {filename}")
-                    upload_screenshot(filename, email, task_name)
-                    time.sleep(5)
+                    print(f" Screenshot captured: {timestamp}.webp")
 
+                    # Upload directly to S3 without saving locally
+                    from moduller.s3_uploader import upload_screenshot_direct
+                    result_url = upload_screenshot_direct(img_bytes, email, task_name, "webp")
+                    
+                    if result_url:
+                        logging.info(f"📸 Screenshot uploaded to S3: {result_url}")
+                    else:
+                        logging.error(f"❌ Failed to upload screenshot to S3")
+
+                    time.sleep(5)  # every 5 seconds
                 except Exception as e:
                     logging.error(f"❌ Screenshot error: {e}")
                     break
@@ -642,21 +653,34 @@ def start_screen_recording(folder_path, email, task_name):
     def record():
         global recording_active
 
-        print(f" Starting screenshot capture to: {folder_path}")
+        print(f" Starting screenshot capture - uploading directly to S3")
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
 
             while recording_active:
                 try:
                     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    filename = os.path.join(folder_path, f"{timestamp}.webp")
                     sct_img = sct.grab(monitor)
-                    mss.tools.to_png(sct_img.rgb, sct_img.size, output=filename)
-                    print(f" Screenshot saved: {filename}")
 
-                    #  Auto-upload right after saving
-                    from moduller.s3_uploader import upload_screenshot
-                    upload_screenshot(filename, email, task_name)
+                    # Convert mss image to PIL image and save to bytes buffer
+                    img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
+                    
+                    # Save to bytes buffer instead of local file
+                    import io
+                    img_buffer = io.BytesIO()
+                    img.save(img_buffer, format="WEBP")
+                    img_bytes = img_buffer.getvalue()
+
+                    print(f" Screenshot captured: {timestamp}.webp")
+
+                    # Upload directly to S3 without saving locally
+                    from moduller.s3_uploader import upload_screenshot_direct
+                    result_url = upload_screenshot_direct(img_bytes, email, task_name, "webp")
+                    
+                    if result_url:
+                        print(f" Screenshot uploaded to S3: {result_url}")
+                    else:
+                        print(f" Failed to upload screenshot to S3")
 
                     time.sleep(5)  # every 5 seconds
                 except Exception as e:
@@ -808,10 +832,27 @@ def insert_user_timesheet():
     from datetime import datetime
     import pymysql
 
-    req = request.get_json()
-    email = req.get('email')
-    if not email:
-        return jsonify({'error': 'Missing email'}), 400
+    try:
+        req = request.get_json()
+        
+        # Debug: Log the type and content of the request
+        logging.info(f"Request type: {type(req)}, Content: {req}")
+        
+        # Handle if request is a list (take the first item if it's a dict)
+        if isinstance(req, list):
+            if len(req) > 0 and isinstance(req[0], dict):
+                req = req[0]
+            else:
+                return jsonify({'error': 'Invalid request format'}), 400
+        elif not isinstance(req, dict):
+            return jsonify({'error': 'Request must be JSON object'}), 400
+            
+        email = req.get('email')
+        if not email:
+            return jsonify({'error': 'Missing email'}), 400
+    except Exception as e:
+        logging.error(f"Error processing request: {e}")
+        return jsonify({'error': 'Invalid JSON data'}), 400
 
 
 

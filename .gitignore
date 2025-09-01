@@ -60,6 +60,9 @@ logs.json
 .DS_Store
 Thumbs.db
 
+# Screen recordings and sensitive user data
+Screen-Recordings/
+
 # Backup files
 *-backup*
 *backup*
