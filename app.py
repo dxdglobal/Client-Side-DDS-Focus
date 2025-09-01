@@ -29,6 +29,10 @@ from moduller.system_idle_detector import start_idle_monitor
 import json
 from datetime import datetime
 from flask_mail import Message
+from PIL import Image
+import mss
+import threading
+import time
 # from moduller.s3_uploader import logs
 # from moduller.tracker import logs_file
 # from moduller.tracker import collect_program_usage, logs_file

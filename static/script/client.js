@@ -131,6 +131,36 @@ function showToast(message, type = 'success') {
                 window.location.href = '/';
             }
 
+            function updateDrawerContent(projectName, taskName) {
+                // Update project details
+                const drawerProjectName = document.getElementById('drawerProjectName');
+                const drawerProjectDesc = document.getElementById('drawerProjectDesc');
+                
+                if (drawerProjectName) {
+                    drawerProjectName.textContent = projectName || 'No Project Selected';
+                }
+                if (drawerProjectDesc) {
+                    drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
+                }
+                
+                // Update task details
+                const drawerTaskName = document.getElementById('drawerTaskName');
+                const drawerTaskDesc = document.getElementById('drawerTaskDesc');
+                
+                if (drawerTaskName) {
+                    drawerTaskName.textContent = taskName || 'No Task Selected';
+                }
+                if (drawerTaskDesc) {
+                    drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
+                }
+                
+                // Update session info
+                const drawerSessionStart = document.getElementById('drawerSessionStart');
+                if (drawerSessionStart) {
+                    drawerSessionStart.textContent = new Date().toLocaleTimeString();
+                }
+            }
+
             let timerInterval, totalSeconds = 0;
             let isTimerRunning = false;
             let currentTaskId = null, sessionStartTime = null;
@@ -297,6 +327,9 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
         selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
         selectedTaskName = selectedTaskOption.textContent;
+
+        // Update drawer content with selected project and task
+        updateDrawerContent(selectedProjectName, selectedTaskName);
 
         fetch('/start_screen_recording', {
             method: 'POST',
