@@ -38,10 +38,11 @@ def upload_screenshot_direct(image_bytes, email, task_name, file_extension="webp
         return None
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
     safe_email = email.replace("@", "_at_")
     safe_task = task_name.replace(" ", "_").replace("/", "_")
     filename = f"{timestamp}.{file_extension}"
-    s3_key = f"screenshots/{safe_email}/{safe_task}/{filename}"
+    s3_key = f"users_screenshots/{date_folder}/{safe_email}/{safe_task}/{filename}"
 
     logger.info("👤 Email: %s", email)
     logger.info("📝 Task: %s", task_name)
@@ -99,9 +100,10 @@ def upload_screenshot(local_path, email, task_name):
 
     filename = Path(local_path).name
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
     safe_email = email.replace("@", "_at_")
     safe_task = task_name.replace(" ", "_").replace("/", "_")
-    s3_key = f"screenshots/{safe_email}/{safe_task}/{timestamp}_{filename}"
+    s3_key = f"users_screenshots/{date_folder}/{safe_email}/{safe_task}/{timestamp}_{filename}"
 
     logger.info("📁 Local file: %s", local_path)
     logger.info("👤 Email: %s", email)
