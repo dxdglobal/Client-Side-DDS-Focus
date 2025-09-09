@@ -552,6 +552,62 @@ def refresh_configuration():
             'error': str(e)
         }), 500
 
+# --- Styling API Proxy (CORS Fix) ---
+@app.route('/api/styling/proxy', methods=['GET'])
+def get_styling_proxy():
+    """
+    Proxy endpoint to fetch styling data from DDS API
+    This avoids CORS issues by making the request server-side
+    """
+    try:
+        # Make the API request server-side
+        api_url = 'https://dxdtime.ddsolutions.io/api/styling/global/'
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'DDS-FocusPro/1.3'
+        }
+        
+        logging.info(f"🎨 Fetching styling data from: {api_url}")
+        response = requests.get(api_url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            styling_data = response.json()
+            logging.info(f"✅ Styling data received: {styling_data}")
+            
+            return jsonify({
+                'success': True,
+                'data': styling_data,
+                'source': 'dds_api'
+            })
+        else:
+            logging.error(f"❌ API returned status {response.status_code}: {response.text}")
+            return jsonify({
+                'success': False,
+                'error': f'API returned status {response.status_code}',
+                'status_code': response.status_code
+            }), response.status_code
+            
+    except requests.exceptions.Timeout:
+        logging.error("❌ API request timed out")
+        return jsonify({
+            'success': False,
+            'error': 'API request timed out'
+        }), 408
+        
+    except requests.exceptions.ConnectionError:
+        logging.error("❌ Cannot connect to DDS API")
+        return jsonify({
+            'success': False,
+            'error': 'Cannot connect to DDS API'
+        }), 503
+        
+    except Exception as e:
+        logging.error(f"❌ Error fetching styling data: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/config/screenshot-interval', methods=['GET'])
 def get_screenshot_interval():
     """

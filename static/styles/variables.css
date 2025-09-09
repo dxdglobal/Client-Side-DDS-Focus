@@ -4,85 +4,97 @@
    ====================================== */
 
 :root {
-  /* ====== PRIMARY BRAND COLORS ====== */
-  --primary-color: #006039;
-  --primary-light: #00804d;
-  --primary-dark: #004d2e;
-  --primary-darker: #003a22;
+  /* ====== API-DRIVEN BRAND COLORS ====== */
+  /* These will be populated by config-manager.js from DDS API */
+  --primary-color: ;  /* Will be set from API primary_color */
+  --primary-light: ;  /* Generated from primary_color */
+  --primary-dark: ;   /* Generated from primary_color */
+  --primary-darker: ; /* Generated from primary_color */
   
-  /* ====== SECONDARY COLORS ====== */
-  --secondary-color: #f8f9fa;
-  --secondary-light: #ffffff;
-  --secondary-dark: #e9ecef;
+  --secondary-color: ;  /* Will be set from API secondary_color */
+  --secondary-light: ;  /* Generated from secondary_color */
+  --secondary-dark: ;   /* Generated from secondary_color */
   
-  /* ====== ACCENT COLORS ====== */
-  --accent-color: #007bff;
-  --accent-light: #0d6efd;
-  --accent-dark: #0056b3;
+  --background-color: ; /* Will be set from API background_color */
+  --background-light: ; /* Generated from background_color */
+  --background-dark: ;  /* Generated from background_color */
   
-  /* ====== STATE COLORS ====== */
-  --success-color: #28a745;
-  --success-light: #34ce57;
-  --success-dark: #1e7e34;
+  --button-color: ;     /* Will be set from API button_color */
+  --button-light: ;     /* Generated from button_color */
+  --button-dark: ;      /* Generated from button_color */
   
-  --warning-color: #ffc107;
-  --warning-light: #ffcd39;
-  --warning-dark: #e0a800;
+  --text-color: ;       /* Will be set from API text_color */
+  --text-light: ;       /* Generated from text_color */
+  --text-dark: ;        /* Generated from text_color */
   
-  --error-color: #dc3545;
-  --error-light: #e15868;
-  --error-dark: #c82333;
+  /* ====== ACCENT COLORS - Generated from API colors ====== */
+  --accent-color: ;     /* Will use secondary_color from API */
+  --accent-light: ;     /* Generated from accent-color */
+  --accent-dark: ;      /* Generated from accent-color */
   
-  --info-color: #17a2b8;
-  --info-light: #20c997;
-  --info-dark: #138496;
+  /* ====== STATE COLORS - Enhanced from API colors ====== */
+  --success-color: ;    /* Enhanced from secondary_color or default */
+  --success-light: ;    /* Generated from success-color */
+  --success-dark: ;     /* Generated from success-color */
   
-  /* ====== NEUTRAL COLORS ====== */
-  --white: #ffffff;
-  --black: #000000;
-  --gray-50: #f8f9fa;
-  --gray-100: #f1f3f4;
-  --gray-200: #e9ecef;
-  --gray-300: #dee2e6;
-  --gray-400: #ced4da;
-  --gray-500: #adb5bd;
-  --gray-600: #6c757d;
-  --gray-700: #495057;
-  --gray-800: #343a40;
-  --gray-900: #212529;
+  --warning-color: ;    /* Enhanced from button_color or default */
+  --warning-light: ;    /* Generated from warning-color */
+  --warning-dark: ;     /* Generated from warning-color */
   
-  /* ====== INTERACTION COLORS ====== */
-  --hover-color: #00804d;
-  --hover-light: rgba(0, 96, 57, 0.1);
-  --hover-overlay: rgba(0, 96, 57, 0.05);
+  --error-color: ;      /* System default or generated */
+  --error-light: ;      /* Generated from error-color */
+  --error-dark: ;       /* Generated from error-color */
   
-  --active-color: #004d2e;
-  --active-light: rgba(0, 96, 57, 0.15);
+  --info-color: ;       /* Enhanced from secondary_color or default */
+  --info-light: ;       /* Generated from info-color */
+  --info-dark: ;        /* Generated from info-color */
   
-  --focus-color: #0d6efd;
-  --focus-shadow: 0 0 0 0.2rem rgba(0, 96, 57, 0.25);
+  /* ====== NEUTRAL COLORS - Generated from API colors ====== */
+  --white: #ffffff;    /* System essential - pure white */
+  --black: #000000;    /* System essential - pure black */
+  --gray-50: ;         /* Generated from background_color */
+  --gray-100: ;        /* Generated from background_color */
+  --gray-200: ;        /* Generated from background_color */
+  --gray-300: ;        /* Generated from text_color */
+  --gray-400: ;        /* Generated from text_color */
+  --gray-500: ;        /* Generated from text_color */
+  --gray-600: ;        /* Generated from text_color */
+  --gray-700: ;        /* Generated from text_color */
+  --gray-800: ;        /* Generated from text_color */
+  --gray-900: ;        /* Generated from text_color */
   
-  --disabled-color: #6c757d;
-  --disabled-bg: #e9ecef;
-  --disabled-border: #dee2e6;
-  --disabled-text: #adb5bd;
+  /* ====== INTERACTION COLORS - Generated from API colors ====== */
+  --hover-color: ;        /* Generated from primary_color */
+  --hover-light: ;        /* Generated from primary_color */
+  --hover-overlay: ;      /* Generated from primary_color */
   
-  --loading-color: #007bff;
-  --loading-bg: rgba(0, 123, 255, 0.1);
+  --active-color: ;       /* Generated from primary_color */
+  --active-light: ;       /* Generated from primary_color */
   
-  /* ====== BACKGROUND COLORS ====== */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-  --bg-dark: #212529;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
-  --bg-glass: rgba(255, 255, 255, 0.95);
-  --bg-blur: rgba(255, 255, 255, 0.8);
+  --focus-color: ;        /* Enhanced from secondary_color or default */
+  --focus-shadow: ;       /* Generated from primary_color */
   
-  /* ====== GRADIENT BACKGROUNDS ====== */
-  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--primary-darker) 100%);
-  --gradient-secondary: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 50%, var(--white) 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.9) 100%);
+  --disabled-color: ;     /* System default */
+  --disabled-bg: ;        /* System default */
+  --disabled-border: ;    /* System default */
+  --disabled-text: ;      /* System default */
+  
+  --loading-color: ;      /* Enhanced from secondary_color */
+  --loading-bg: ;         /* Generated from loading-color */
+  
+  /* ====== BACKGROUND COLORS - Enhanced from API ====== */
+  --bg-primary: ;         /* Enhanced from background_color or default */
+  --bg-secondary: ;       /* Generated from background_color */
+  --bg-tertiary: ;        /* Generated from background_color */
+  --bg-dark: ;            /* System default or generated from text_color */
+  --bg-overlay: rgba(0, 0, 0, 0.5);    /* System default */
+  --bg-glass: ;           /* Generated from background_color */
+  --bg-blur: ;            /* Generated from background_color */
+  
+  /* ====== GRADIENT BACKGROUNDS - Generated from API colors ====== */
+  --gradient-primary: ;   /* Generated from primary_color and variations */
+  --gradient-secondary: ; /* Generated from secondary_color and background_color */
+  --gradient-glass: ;     /* Generated from background_color */
   
   /* ====== TYPOGRAPHY ====== */
   /* Font Families */
@@ -147,8 +159,8 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  --shadow-primary: 0 0 50px rgba(0, 96, 57, 0.15);
-  --shadow-primary-lg: 20px 0 60px rgba(0, 96, 57, 0.2);
+  --shadow-primary: ;     /* Generated from primary_color */
+  --shadow-primary-lg: ;  /* Generated from primary_color */
   
   /* ====== BORDERS ====== */
   --border-width: 1px;
@@ -216,12 +228,13 @@
 /* ====== DARK MODE VARIABLES ====== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #212529;
-    --bg-secondary: #343a40;
-    --bg-tertiary: #495057;
-    --text-primary: #ffffff;
-    --text-secondary: #adb5bd;
-    --border-color: #495057;
+    /* These will be overridden by API colors anyway */
+    --bg-primary: var(--background-color);
+    --bg-secondary: var(--background-light);
+    --bg-tertiary: var(--background-dark);
+    --text-primary: var(--text-color);
+    --text-secondary: var(--text-light);
+    --border-color: var(--border-color);
   }
 }
 

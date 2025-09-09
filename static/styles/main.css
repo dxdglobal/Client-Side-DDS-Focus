@@ -27,7 +27,7 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   color: var(--gray-900);
-  background-color: var(--bg-primary);
+  background-color: white;
   min-height: 100vh;
 }
 
@@ -299,13 +299,11 @@ a:hover {
   visibility: hidden;
   opacity: 0;
   transition: var(--drawer-transition);
-  backdrop-filter: blur(0px);
 }
 
 .drawer-overlay.active {
   opacity: 1;
   visibility: visible;
-  backdrop-filter: blur(8px);
   background: var(--drawer-backdrop);
 }
 
@@ -319,10 +317,8 @@ a:hover {
   box-shadow: var(--shadow-primary);
   z-index: var(--z-drawer);
   transition: var(--drawer-transition);
-  border-right: var(--border-width-2) var(--border-style) rgba(0, 96, 57, 0.1);
   overflow-y: auto;
   overflow-x: hidden;
-  backdrop-filter: blur(20px);
 }
 
 .drawer.active {
@@ -331,11 +327,10 @@ a:hover {
 }
 
 .drawer-header {
-  background: var(--gradient-primary);
-  color: var(--white);
+  background: var(--secondary);
+  color: var(--text-color);
   padding: var(--spacing-2xl) var(--spacing-lg);
   text-align: center;
-  border-bottom: var(--border-width) var(--border-style) rgba(255, 255, 255, 0.1);
 }
 
 .drawer-content {
@@ -345,10 +340,8 @@ a:hover {
 .drawer-section {
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
-  background: var(--bg-glass);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-  border: var(--border-width) var(--border-style) rgba(255, 255, 255, 0.2);
+  background-color: var(--secondary-color) !important;
 }
 
 .drawer-section h3 {
@@ -362,7 +355,7 @@ a:hover {
 }
 
 .drawer-section p {
-  color: var(--gray-700);
+  color: var(--text-color);
   font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-xs);
   font-weight: var(--font-weight-medium);

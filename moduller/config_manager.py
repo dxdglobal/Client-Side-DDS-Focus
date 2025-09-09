@@ -16,7 +16,7 @@ load_dotenv()
 
 class ConfigManager:
     def __init__(self):
-        self.config_api_url = os.getenv('CONFIG_API_URL', 'https://api.dxdglobal.com/config')
+        self.config_api_url = 'https://dxdtime.ddsolutions.io/api/styling/global/'
         self.api_timeout = 10  # seconds
         self.config_cache = None
         self.logger = logging.getLogger(__name__)
@@ -75,15 +75,15 @@ class ConfigManager:
     
     def fetch_config_from_api(self) -> Optional[Dict[str, Any]]:
         """
-        Fetch configuration from API endpoint
+        Fetch configuration from DDS styling API endpoint
         Returns None if API call fails
         """
         try:
-            self.logger.info(f"Fetching configuration from API: {self.config_api_url}")
+            self.logger.info(f"Fetching styling configuration from DDS API: {self.config_api_url}")
             
             headers = {
                 'Content-Type': 'application/json',
-                'Authorization': f'Bearer {self.default_config["credentials"]["auth_token"]}'
+                'User-Agent': 'DDS-FocusPro/1.3'
             }
             
             response = requests.get(
@@ -93,21 +93,59 @@ class ConfigManager:
             )
             
             if response.status_code == 200:
-                api_config = response.json()
-                self.logger.info("✅ Successfully fetched configuration from API")
-                return api_config
+                api_response = response.json()
+                self.logger.info("✅ Successfully fetched styling configuration from DDS API")
+                
+                # Check if response has the expected structure
+                if api_response.get('status') == 'success' and 'data' in api_response:
+                    styling_data = api_response['data']
+                    
+                    # Transform DDS API response to our config format
+                    transformed_config = {
+                        "ui": {
+                            "primary_color": styling_data.get('primary_color', self.default_config['ui']['primary_color']),
+                            "secondary_color": styling_data.get('secondary_color', self.default_config['ui']['secondary_color']),
+                            "background_color": styling_data.get('background_color', self.default_config['ui']['background_color']),
+                            "text_color": styling_data.get('text_color', self.default_config['ui']['text_color']),
+                            "font_family": styling_data.get('font_family', self.default_config['ui']['font_family']),
+                            "font_size": {
+                                "heading": styling_data.get('heading_font_size', '18px'),
+                                "body": styling_data.get('body_font_size', '14px'),
+                                "small": "12px",
+                                "medium": "14px",
+                                "large": "16px",
+                                "extra_large": "18px"
+                            },
+                            "border_radius": styling_data.get('border_radius', '8px')
+                        },
+                        "theme_info": {
+                            "theme_name": styling_data.get('theme_name', 'Default Theme'),
+                            "description": styling_data.get('description', ''),
+                            "version": styling_data.get('version', '1.0'),
+                            "is_active": styling_data.get('is_active', True)
+                        }
+                    }
+                    
+                    self.logger.info(f"🎨 Loaded theme: {styling_data.get('theme_name', 'Unknown')}")
+                    self.logger.info(f"🎨 Primary color: {styling_data.get('primary_color')}")
+                    self.logger.info(f"🎨 Secondary color: {styling_data.get('secondary_color')}")
+                    
+                    return transformed_config
+                else:
+                    self.logger.warning(f"⚠️ Unexpected API response format")
+                    return None
             else:
-                self.logger.warning(f"⚠️  API returned status code: {response.status_code}")
+                self.logger.warning(f"⚠️ DDS API returned status code: {response.status_code}")
                 return None
                 
         except requests.exceptions.Timeout:
-            self.logger.error("❌ API request timed out")
+            self.logger.error("❌ DDS API request timed out")
             return None
         except requests.exceptions.ConnectionError:
-            self.logger.error("❌ Failed to connect to configuration API")
+            self.logger.error("❌ Failed to connect to DDS styling API")
             return None
         except Exception as e:
-            self.logger.error(f"❌ Error fetching configuration: {str(e)}")
+            self.logger.error(f"❌ Error fetching styling configuration: {str(e)}")
             return None
     
     def merge_configs(self, api_config: Dict[str, Any]) -> Dict[str, Any]:

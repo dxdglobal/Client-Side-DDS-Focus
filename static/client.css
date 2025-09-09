@@ -4,58 +4,53 @@
    ============================================ */
 
 :root {
-  /* 🎨 Primary Brand Colors */
-  --primary-color: #006039;
-  --primary-hover: #004d2e;
-  --primary-active: #003a22;
-  --primary-light: #e8f5f0;
-  --primary-dark: #002f1c;
+  /* 🎨 Primary Brand Colors - POPULATED FROM API */
+  --primary-color: ;
+  --primary-hover: ;
+  --primary-active: ;
+  --primary-light: ;
+  --primary-dark: ;
 
-  /* 🌈 Secondary Colors */
-  --secondary-color: #2c3e50;
-  --secondary-hover: #34495e;
-  --secondary-active: #1a252f;
+  /* 🌈 Secondary Colors - POPULATED FROM API */
+  --secondary-color: ;
+  --secondary-hover: ;
+  --secondary-active: ;
+  --secondary-light: ;
+  --secondary-dark: ;
 
-  /* 🔘 Accent Colors */
-  --accent-color: #3498db;
-  --accent-hover: #2980b9;
-  --accent-active: #1f639a;
+  /* 🎨 Background Colors - POPULATED FROM API */
+  --background-color: ;
+  --background-hover: ;
+  --background-active: ;
+  --background-light: ;
+  --background-dark: ;
 
-  /* ⚠️ Status Colors */
-  --success-color: #27ae60;
-  --success-hover: #229954;
-  --success-light: #d5f4e6;
-  --warning-color: #f39c12;
-  --warning-hover: #e67e22;
-  --warning-light: #fdeaa7;
-  --error-color: #e74c3c;
-  --error-hover: #c0392b;
-  --error-light: #fadbd8;
-  --info-color: #3498db;
-  --info-hover: #2980b9;
-  --info-light: #d6eaf8;
+  /* 🔘 Button Colors - POPULATED FROM API */
+  --button-color: ;
+  --button-hover: ;
+  --button-active: ;
+  --button-light: ;
+  --button-dark: ;
 
-  /* 🎯 Interactive States */
-  --loading-color: #74b9ff;
-  --disabled-color: #bdc3c7;
-  --disabled-bg: #ecf0f1;
-  --disabled-text: #95a5a6;
+  /* 📝 Text Colors - POPULATED FROM API */
+  --text-color: ;
+  --text-hover: ;
+  --text-active: ;
+  --text-light: ;
+  --text-dark: ;
 
-  /* 🌑 Neutral Colors */
+  /* ⚠️ Essential System Colors Only */
   --white: #ffffff;
   --black: #000000;
-  --gray-50: #f8f9fa;
-  --gray-100: #f1f3f4;
-  --gray-200: #e9ecef;
-  --gray-300: #dee2e6;
-  --gray-400: #ced4da;
-  --gray-500: #adb5bd;
-  --gray-600: #6c757d;
-  --gray-700: #495057;
-  --gray-800: #343a40;
-  --gray-900: #212529;
+  --transparent: transparent;
 
-  /* 📝 Typography */
+  /* 🔗 Additional Variables Referenced in CSS */
+  --border-color: ;
+  --warning-color: ;
+  --danger-color: ;
+  --danger-dark: ;
+
+  /* 📝 Typography - Font families (from API) */
   --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   --font-family-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
@@ -142,7 +137,6 @@
 }
 
 body {
-    background-color: var(--gray-50);
     overflow: hidden;
 }
 
@@ -213,7 +207,7 @@ body {
     font-size: 14px;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #3c763d;
+    color: var(--text-color);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -221,14 +215,13 @@ body {
 .form-control {
     /* width: 100%;
     padding: 8px 10px;
-    border: 1px solid #a5d6a7;
+    border: 1px solid var(--secondary-light);
     border-radius: 4px;
     transition: all 0.3s;
     background-color: rgba(255, 255, 255, 0.7); */
     padding: 9px 10px;
-    border: 1px solid #07684140;
-    background-color: #F7F7F7;
-    color: #000;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     border-radius: 6px;
     font-size: 14px;
     font-weight: 300;
@@ -239,7 +232,6 @@ body {
 }
 .form-control:hover{
         border: 1px solid var(--primary-color);
-    background-color: var(--white);
     color: var(--black);
     cursor: pointer;
 }
@@ -248,7 +240,7 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-light);
-    background-color: #fff;
+    background-color: var(--white);
 }
 
 .form-row {
@@ -258,7 +250,7 @@ body {
 }
 
 .form-counter {
-    background-color: #e8f5e9;
+    background-color: var(--secondary-light);
     width: 24px;
     height: 24px;
     border-radius: 50%;
@@ -267,7 +259,7 @@ body {
     align-items: center;
     font-size: 12px;
     font-weight: bold;
-    color: #388e3c;
+    color: var(--secondary-color);
 }
 
 .timer-container {
@@ -312,8 +304,8 @@ body {
     position: absolute;
     width: 32px;
     height: 32px;
-    background-color: #c1e6a4;
-    border: 2px solid #82c91e;
+    background-color: var(--secondary-light);
+    border: 2px solid var(--secondary-color);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -323,7 +315,7 @@ body {
 
 .state-icon:hover {
     transform: scale(1.1);
-    background-color: #a5d6a7;
+    background-color: var(--secondary-dark);
 }
 
 .icon-meeting {
@@ -364,7 +356,6 @@ body {
 }
 
 .timer-value {
-    background-color: #f0f0f0;
     padding: 8px 10px;
     border-radius: 4px;
     font-weight: bold;
@@ -376,7 +367,7 @@ body {
 
 .timer-label {
     font-size: 10px;
-    color: #555;
+    color: var(--text-light);
     margin-top: 4px;
     font-weight: 500;
 }
@@ -414,7 +405,7 @@ body {
 }
 
 .footer {
-    background-color: #4caf50;
+    background-color: var(--primary-color);
     padding: 12px;
     display: flex;
     justify-content: space-between;
@@ -466,7 +457,7 @@ body {
 }
 
 .language-selector option {
-    background-color: #4caf50;
+    background-color: var(--primary-color);
 }
 
 
@@ -511,7 +502,7 @@ body {
 }
 
 .modal-content {
-    background: #ffffff;
+    background: var(--white);
     padding: 15px 20px;
     border-radius: 4px;
     width: 550px;
@@ -524,13 +515,13 @@ body {
 
 .modal-content h2 {
     margin-top: 0;
-    color: #333;
+    color: var(--text-color);
     margin-bottom: 7px;
 }
 
 .modal-content p {
     font-size: 14px;
-    color: #666;
+    color: var(--text-light);
     margin-bottom: 20px;
 }
 
@@ -539,7 +530,7 @@ body {
     padding: 10px;
     resize: none;
     border-radius: 8px;
-    border: 1px solid #0060396e;
+    border: 1px solid var(--primary-light);
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -551,7 +542,7 @@ body {
     position: absolute;
     right: -20px;
     top: -29px;
-    background: #fff;
+    background: var(--white);
     border-radius: 50%;
     border: 0;
     width: 25px;
@@ -591,12 +582,12 @@ body {
 }
 
 .cancel-btn {
-    background-color: #dc3545;
+    background-color: var(--danger-color, #dc3545);
     color: white;
 }
 
 .cancel-btn:hover {
-    background-color: #c82333;
+    background-color: var(--danger-dark, #c82333);
 }
 
 /* Animations */
@@ -613,8 +604,8 @@ body {
 
 
 .loader {
-    border: 8px solid #f3f3f3;
-    border-top: 8px solid #3498db;
+    border: 8px solid var(--background-light);
+    border-top: 8px solid var(--primary-color);
     border-radius: 50%;
     width: 60px;
     height: 60px;
@@ -826,7 +817,7 @@ body {
 }
 
 .state-circle.work {
-    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     transform: scale(1.05);
 }
 
@@ -839,17 +830,17 @@ body {
 }
 
 .state-circle.idle {
-    background: linear-gradient(135deg, #FF9800, #F57C00);
+    background: linear-gradient(135deg, var(--button-color), var(--button-dark));
     animation: pulse 2s ease-in-out infinite;
 }
 
 .state-circle.break {
-    background: linear-gradient(135deg, #2196F3, #1565C0);
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
     animation: wave 3s ease-in-out infinite;
 }
 
 .state-circle.meeting {
-    background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+    background: linear-gradient(135deg, var(--text-color), var(--text-dark));
     animation: glow 2s ease-in-out infinite alternate;
 }
 
@@ -859,7 +850,7 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 10;
     letter-spacing: 2px;
-    color: #fff;
+    color: var(--white);
 }
 
 .timer-display {
@@ -876,13 +867,13 @@ body {
 .timer-value {
     font-size: 36px;
     font-weight: bold;
-    color: #000000cf;
+    color: var(--text-color);
 }
 
 .timer-label {
     font-size: 12px;
     opacity: 0.8;
-    color: #000000cf;
+    color: var(--text-color);
 }
 
 .action-buttons {
@@ -901,12 +892,12 @@ body {
 }
 
 .start-button {
-    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: white;
 }
 
 .reset-button {
-    background-color: orange;
+    background-color: var(--warning-color);
     color: white;
 }
 
@@ -937,22 +928,22 @@ body {
 
 .state-btn.work {
     /* background: linear-gradient(135deg, #4CAF50, #2E7D32); */
-        background: linear-gradient(135deg, #006039b3, #006039);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
     color: white;
 }
 
 .state-btn.idle {
-    background: linear-gradient(135deg, #FF9800, #F57C00);
+    background: linear-gradient(135deg, var(--button-color), var(--button-dark));
     color: white;
 }
 
 .state-btn.break {
-    background: linear-gradient(135deg, #2196F3, #1565C0);
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
     color: white;
 }
 
 .state-btn.meeting {
-    background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+    background: linear-gradient(135deg, var(--text-color), var(--text-dark));
     color: white;
 }
 
@@ -1102,7 +1093,7 @@ body {
 
 
         .nav-container {
-            background: linear-gradient(135deg, #006039b3, #006039);
+            background: var(--secondary-color);
             border-radius: 0px;
             padding: 10px !important;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -1392,4 +1383,16 @@ button:disabled {
 
 .idle-shake {
   animation: shake 0.4s ease;
+}
+
+/* Wave background animation */
+.wave-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background-color: var(--primary-color);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    z-index: 0;
 }

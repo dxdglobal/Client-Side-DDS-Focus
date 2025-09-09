@@ -45,7 +45,7 @@
         }
 
         .language-btn.active {
-            border-color: #006039;
+            border-color: var(--primary-color);
         }
 
         .language-dropdown-content {
@@ -77,7 +77,7 @@
         }
 
         .language-option:hover {
-            background-color: #f1f1f1;
+            background-color: var(--background-light);
         }
 
         .language-option:first-child {
@@ -95,10 +95,10 @@
             display: inline-block;
         }
 
-        .flag-french { background: linear-gradient(to right, #002868 33%, white 33%, white 66%, #ED2939 66%); }
-        .flag-german { background: linear-gradient(to bottom, #000 33%, #DD0000 33%, #DD0000 66%, #FFCE00 66%); }
-        .flag-ukrainian { background: linear-gradient(to bottom, #005BBB 50%, #FFD500 50%); }
-        .flag-english { background: linear-gradient(45deg, #012169 25%, transparent 25%), linear-gradient(-45deg, #012169 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #012169 75%), linear-gradient(-45deg, transparent 75%, #012169 75%); background-size: 4px 4px; background-color: #FFFFFF; }
+        .flag-french { background: linear-gradient(to right, var(--primary-dark) 33%, white 33%, white 66%, var(--danger-color) 66%); }
+        .flag-german { background: linear-gradient(to bottom, var(--black) 33%, var(--danger-color) 33%, var(--danger-color) 66%, var(--warning-color) 66%); }
+        .flag-ukrainian { background: linear-gradient(to bottom, var(--primary-color) 50%, var(--warning-color) 50%); }
+        .flag-english { background: linear-gradient(45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(-45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--primary-dark) 75%), linear-gradient(-45deg, transparent 75%, var(--primary-dark) 75%); background-size: 4px 4px; background-color: var(--white); }
 
         .dropdown-arrow {
             font-size: 10px;
@@ -111,7 +111,7 @@
 
         /* Demo header styles */
         .header {
-            background-color: #006039;
+            background-color: var(--secondary-color);
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -124,7 +124,7 @@
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            background: linear-gradient(135deg, #006039 0%, #004d2e 50%, #003a22 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--primary-darker) 100%);
             color: white;
             border: none;
             width: 50px;
@@ -137,7 +137,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(15px);
+    
             border: 2px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
         }
@@ -158,7 +158,7 @@
         }
 
         .drawer-arrow-btn:hover {
-            background: linear-gradient(135deg, #007a42 0%, #005a35 50%, #004528 100%);
+            background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-active) 50%, var(--primary-darker) 100%);
             box-shadow: 8px 0 30px rgba(0, 96, 57, 0.6);
             transform: translateY(-50%) translateX(8px) scale(1.05);
             border-color: rgba(255, 255, 255, 0.2);
@@ -192,8 +192,8 @@
         }
 
         .user-controls button{
-          background-color: #fff;
-          color: #000;
+          background-color: var(--white);
+          color: var(--black);
         }
 
         #profileImage {
@@ -212,8 +212,8 @@
         #logout {
             margin-left: 10px;
             padding: 4px 10px;
-            background-color: #ffffff;
-            color: #006039;
+            background-color: var(--white);
+            color: var(--primary-color);
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -223,20 +223,20 @@
 
 
         .state-circle.idle {
-  background-color: gray;
+  background-color: var(--text-color);
   transition: background-color 0.3s ease;
 }
 
 .state-circle.work {
-  background-color: green;
+  background-color: var(--success-color);
 }
 
 .state-circle.break {
-  background-color: orange;
+  background-color: var(--warning-color);
 }
 
 #idleModal button:hover {
-  background-color: #2980b9;
+  background-color: var(--button-hover);
   transform: scale(1.05);
 }
 
@@ -252,14 +252,14 @@
   opacity: 0;
   visibility: hidden;
   transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  backdrop-filter: blur(0px);
+  
 }
 
 .drawer-overlay.active {
   background: rgba(0, 0, 0, 0.6);
   opacity: 1;
   visibility: visible;
-  backdrop-filter: blur(8px);
+ 
 }
 
 .drawer {
@@ -268,14 +268,14 @@
   left: -380px;
   width: 380px;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--secondary-color);
   box-shadow: 0 0 50px rgba(0, 96, 57, 0.15);
   z-index: 999;
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   border-right: 2px solid rgba(0, 96, 57, 0.1);
   overflow-y: auto;
   overflow-x: hidden;
-  backdrop-filter: blur(20px);
+
 }
 
 .drawer.active {
@@ -285,8 +285,8 @@
 }
 
 .drawer-header {
-  background: linear-gradient(135deg, #006039 0%, #004d2e 50%, #003a22 100%);
-  color: white;
+  background: var(--primary-color) !important;
+  color: white !important;
   padding: 30px 25px;
   position: relative;
   border-bottom: 3px solid rgba(255, 255, 255, 0.15);
@@ -301,7 +301,6 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   animation: shimmer 3s ease-in-out infinite;
 }
 
@@ -342,7 +341,7 @@
   justify-content: center;
   font-size: 20px;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  backdrop-filter: blur(15px);
+
   z-index: 3;
 }
 
@@ -355,7 +354,7 @@
 
 .drawer-content {
   padding: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--secondary-color);
 }
 
 .drawer-section {
@@ -363,9 +362,9 @@
   animation: slideInRight 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
   transform: translateX(0px);
   margin-bottom: 5px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(10px);
+
   transition: all 0.3s ease;
+  background-color: var(--secondary-color) !important;
 }
 
 .drawer-section:hover {
@@ -381,19 +380,20 @@
 
 .drawer-section-header {
   padding: 20px 25px;
-  background: linear-gradient(90deg, rgba(0, 96, 57, 0.12) 0%, rgba(0, 96, 57, 0.06) 50%, transparent 100%);
+   background: var(--secondary-color);
   font-weight: 700;
-  color: #003d28 !important;
+  color: var(--primary-darker) !important;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  border-left: 5px solid #006039;
+  /* border-left: 5px solid var(--primary-color); */
   margin: 0;
   position: relative;
   overflow: hidden;
   opacity: 1 !important;
   visibility: visible !important;
   text-shadow: 1px 1px 2px rgba(0, 96, 57, 0.2);
+  color: white !important;
 }
 
 .drawer-section-header::after {
@@ -443,7 +443,7 @@
 
 .drawer-item:hover {
   background: rgba(0, 96, 57, 0.08);
-  border-left-color: #006039;
+  border-left-color: var(--primary-color);
   transform: translateX(8px) translateY(-2px);
   padding-left: 30px;
   box-shadow: 0 8px 30px rgba(0, 96, 57, 0.15);
@@ -454,14 +454,14 @@
   width: 22px;
   height: 22px;
   margin-right: 18px;
-  color: #006039;
+  color: var(--primary-color);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   filter: drop-shadow(2px 2px 4px rgba(0, 96, 57, 0.2));
 }
 
 .drawer-item:hover .drawer-item-icon {
   transform: scale(1.2) rotate(10deg);
-  color: #004d2e;
+  color: var(--primary-dark);
   filter: drop-shadow(3px 3px 6px rgba(0, 96, 57, 0.3));
 }
 
@@ -474,7 +474,7 @@
 }
 
 .drawer-item:hover .drawer-item-text {
-  color: #006039;
+  color: var(--primary-color);
   transform: translateX(5px);
 }
 
@@ -483,15 +483,16 @@
   flex-direction: column;
   align-items: flex-start !important;
   padding: 25px !important;
-  background: linear-gradient(135deg, rgba(0, 96, 57, 0.08) 0%, rgba(0, 96, 57, 0.03) 50%, rgba(255, 255, 255, 0.8) 100%);
+   background: var(--secondary-color);
   border-radius: 15px;
   margin: 5px 15px 15px 15px;
   border: 2px solid rgba(0, 96, 57, 0.1);
-  backdrop-filter: blur(15px);
+  
   box-shadow: 0 8px 25px rgba(0, 96, 57, 0.1);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
+  color: white !important
 }
 
 .project-info::before, .task-info::before, .time-info::before {
@@ -517,54 +518,59 @@
   margin-top: 10px;
   position: relative;
   z-index: 1;
+  color: white !important;
 }
 
 .project-name, .task-name {
   font-size: 17px;
   font-weight: 700;
-  color: #003d28 !important;
+  color: var(--primary-darker) !important;
   margin-bottom: 8px;
   line-height: 1.3;
   text-shadow: 1px 1px 2px rgba(0, 96, 57, 0.3);
   opacity: 1 !important;
   visibility: visible !important;
+    color: white !important
 }
 
 .project-client, .task-status {
   font-size: 13px;
-  color: #444 !important;
+  color: var(--text-color) !important;
   margin-bottom: 5px;
   font-weight: 500;
   letter-spacing: 0.3px;
   opacity: 1 !important;
   visibility: visible !important;
+  color: white !important;
 }
 
 .current-time {
   font-size: 20px;
   font-weight: 800;
-  color: #003d28 !important;
+  color: var(--primary-darker) !important;
   font-family: 'Courier New', monospace;
   margin-bottom: 8px;
   text-shadow: 2px 2px 4px rgba(0, 96, 57, 0.2);
   letter-spacing: 1px;
   opacity: 1 !important;
   visibility: visible !important;
+    color: white !important;
 }
 
 .total-time {
   font-size: 12px;
-  color: #444 !important;
+  color: var(--text-color) !important;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
   opacity: 1 !important;
   visibility: visible !important;
+    color: white !important;
 }
 
 .project-info svg, .task-info svg, .time-info svg {
   margin-bottom: 8px;
-  color: #006039 !important;
+  color: #fff !important;
   filter: drop-shadow(2px 2px 4px rgba(0, 96, 57, 0.2));
   transition: all 0.3s ease;
   position: relative;
@@ -615,7 +621,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(15px);
+
   border: 2px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
@@ -687,7 +693,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  background: linear-gradient(135deg, #006039 0%, #004d2e 100%);
+ 
   color: white;
   border: none;
   padding: 12px 15px;
@@ -696,7 +702,6 @@
   z-index: 997;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 15px rgba(0, 96, 57, 0.3);
-  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -708,7 +713,7 @@
 .drawer-trigger:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 96, 57, 0.4);
-  background: linear-gradient(135deg, #007a42 0%, #005a35 100%);
+  
 }
 
 .drawer-trigger-icon {
@@ -959,12 +964,7 @@
       </div>
 
       <div class="drawer-section">
-        <div class="drawer-section-header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-          </svg>
-          Current Task Details
-        </div>
+  
         <div class="drawer-item task-info">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
@@ -977,12 +977,7 @@
       </div>
 
       <div class="drawer-section">
-        <div class="drawer-section-header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
-          </svg>
-          Time Tracking
-        </div>
+    
         <div class="drawer-item time-info">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12.5,7H11V12.5L15.75,15.85L16.5,14.6L12.5,11.75V7Z"/>
@@ -994,20 +989,7 @@
         </div>
       </div>
 
-      <div class="drawer-section">
-        <div class="drawer-section-header">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-          </svg>
-          Quick Actions
-        </div>
-        <div class="drawer-item" onclick="openLogoutModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-          </svg>
-          Logout
-        </div>
-      </div>
+  
     </div>
   </div>
 
@@ -1022,6 +1004,118 @@
       </div>
     </div>
   </div>
+
+  <!-- Configuration Panel Modal -->
+  <div id="configModal" class="modal">
+    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+      <h2>⚙️ Configuration Settings</h2>
+      <div style="text-align: left;">
+        
+        <!-- API Source Info -->
+        <div class="config-section">
+          <h3>📡 Configuration Source</h3>
+          <p id="config-source-info">Loading...</p>
+          <button onclick="refreshConfiguration()" class="modal-btn" style="margin-top: 10px;">
+            🔄 Refresh from API
+          </button>
+        </div>
+
+        <!-- UI Settings -->
+        <div class="config-section">
+          <h3>🎨 UI Settings</h3>
+          <div class="config-row">
+            <label>Primary Color:</label>
+            <input type="color" id="config-primary-color" disabled>
+            <span id="config-primary-color-value">#006039</span>
+          </div>
+          <div class="config-row">
+            <label>Font Size:</label>
+            <select id="config-font-size" disabled>
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+              <option value="extra_large">Extra Large</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Screenshot Settings -->
+        <div class="config-section">
+          <h3>📸 Screenshot Settings</h3>
+          <div class="config-row">
+            <label>Capture Interval:</label>
+            <span id="config-screenshot-interval">30</span> seconds
+          </div>
+          <div class="config-row">
+            <label>Quality:</label>
+            <span id="config-screenshot-quality">85</span>%
+          </div>
+        </div>
+
+        <!-- Features -->
+        <div class="config-section">
+          <h3>✨ Features</h3>
+          <div class="config-row">
+            <label>
+              <input type="checkbox" id="feature-ai-analysis" disabled>
+              AI Analysis
+            </label>
+          </div>
+          <div class="config-row">
+            <label>
+              <input type="checkbox" id="feature-auto-categorization" disabled>
+              Auto Categorization
+            </label>
+          </div>
+          <div class="config-row">
+            <label>
+              <input type="checkbox" id="feature-idle-detection" disabled>
+              Idle Detection
+            </label>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel-btn" onclick="closeConfigModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .config-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .config-section h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+    .config-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 5px 0;
+    }
+    .config-row label {
+      font-weight: 500;
+      flex: 1;
+    }
+    .config-row input, .config-row select {
+      max-width: 150px;
+    }
+    #config-source-info {
+      padding: 10px;
+      background: #e8f5e8;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
 
    <!-- Logout Confirmation Modal -->
 <!-- Idle Timeout Modal -->
@@ -1256,6 +1350,96 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDrawerTimeInfo();
     }, 500);
 });
+
+// Configuration Modal Functions
+function openConfigModal() {
+    document.getElementById('configModal').style.display = 'block';
+    updateConfigDisplay();
+}
+
+function closeConfigModal() {
+    document.getElementById('configModal').style.display = 'none';
+}
+
+function updateConfigDisplay() {
+    if (window.configManager && window.configManager.config) {
+        const config = window.configManager.config;
+        const ui = config.ui || {};
+        const screenshot = config.screenshot || {};
+        const features = config.features || {};
+        const themeInfo = config.theme_info || {};
+
+        // Update source info
+        document.getElementById('config-source-info').innerHTML = `
+            <strong>Theme:</strong> ${themeInfo.theme_name || 'Default'}<br>
+            <strong>Version:</strong> ${themeInfo.version || '1.0'}<br>
+            <strong>Source:</strong> DDS Styling API<br>
+            <strong>Status:</strong> ${themeInfo.is_active ? '✅ Active' : '❌ Inactive'}
+        `;
+
+        // Update UI values
+        document.getElementById('config-primary-color').value = ui.primary_color || '#006039';
+        document.getElementById('config-primary-color-value').textContent = ui.primary_color || '#006039';
+        
+        // Update screenshot settings
+        document.getElementById('config-screenshot-interval').textContent = screenshot.interval_seconds || 30;
+        document.getElementById('config-screenshot-quality').textContent = screenshot.quality || 85;
+
+        // Update feature toggles
+        document.getElementById('feature-ai-analysis').checked = features.ai_analysis || false;
+        document.getElementById('feature-auto-categorization').checked = features.auto_categorization || false;
+        document.getElementById('feature-idle-detection').checked = features.idle_detection || false;
+    }
+}
+
+async function refreshConfiguration() {
+    try {
+        console.log('🔄 Manually refreshing configuration...');
+        const refreshBtn = event.target;
+        refreshBtn.textContent = '🔄 Refreshing...';
+        refreshBtn.disabled = true;
+
+        await window.configManager.fetchConfiguration();
+        window.configManager.applyConfiguration();
+        updateConfigDisplay();
+
+        refreshBtn.textContent = '✅ Refreshed!';
+        setTimeout(() => {
+            refreshBtn.textContent = '🔄 Refresh from API';
+            refreshBtn.disabled = false;
+        }, 2000);
+
+        // Show success notification
+        if (typeof Toastify !== 'undefined') {
+            Toastify({
+                text: "✅ Configuration refreshed successfully!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)"
+            }).showToast();
+        }
+    } catch (error) {
+        console.error('❌ Failed to refresh configuration:', error);
+        const refreshBtn = event.target;
+        refreshBtn.textContent = '❌ Failed';
+        setTimeout(() => {
+            refreshBtn.textContent = '🔄 Refresh from API';
+            refreshBtn.disabled = false;
+        }, 2000);
+
+        // Show error notification
+        if (typeof Toastify !== 'undefined') {
+            Toastify({
+                text: "❌ Failed to refresh configuration",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)"
+            }).showToast();
+        }
+    }
+}
 
 // Close drawer when clicking outside
 document.addEventListener('click', function(event) {
