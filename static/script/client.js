@@ -13,7 +13,7 @@ const translations = {
         loadingTasks: "Loading tasks...",
         idleTitle: "⏸️ You're Idle",
         idleDesc: "You’ve been inactive. Timer is paused.",
-        min: "min",
+        min: "min", 
         today: "Today",
         work: "WORK",
         start: "START",
