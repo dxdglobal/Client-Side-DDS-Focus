@@ -143,13 +143,13 @@ body {
 .container {
     /* max-width: 600px; */
     margin: 0 auto;
-    /* background-color: var(--white);
+    /* background-color: var(--text_color);
     box-shadow: var(--shadow-base); */
 }
 
 .header {
     background-color: var(--gray-800);
-    color: var(--white);
+    color: var(--text_color);
     padding: var(--space-2) var(--space-5);
     display: flex;
     justify-content: space-between;
@@ -186,7 +186,7 @@ body {
 }
 
 .main {
-    /* background-color: #fbfbfb; */
+    background-color: var(--background-color);
     padding: 15px;
     height: auto;
 }
@@ -240,7 +240,7 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-light);
-    background-color: var(--white);
+    background-color: var(--text_color);
 }
 
 .form-row {
@@ -502,7 +502,7 @@ body {
 }
 
 .modal-content {
-    background: var(--white);
+    background-color: var(--background-color);
     padding: 15px 20px;
     border-radius: 4px;
     width: 550px;
@@ -542,7 +542,7 @@ body {
     position: absolute;
     right: -20px;
     top: -29px;
-    background: var(--white);
+    background: var(--text_color);
     border-radius: 50%;
     border: 0;
     width: 25px;
@@ -574,7 +574,7 @@ body {
 
 .submit-btn {
     background-color: var(--primary-color);
-    color: var(--white);
+    color: var(--text_color);
 }
 
 .submit-btn:hover {
@@ -850,7 +850,7 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 10;
     letter-spacing: 2px;
-    color: var(--white);
+    color: var(--text_color);
 }
 
 .timer-display {
@@ -1093,7 +1093,7 @@ body {
 
 
         .nav-container {
-            background: var(--secondary-color);
+            background: var(--footer-color);
             border-radius: 0px;
             padding: 10px !important;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);

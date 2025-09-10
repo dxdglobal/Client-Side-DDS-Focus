@@ -81,12 +81,9 @@
         left: 0;
         right: 0;
         height: 30px;
-        background-color: var(--primary-color, #4285f4) !important; /* 🎨 PRIMARY COLOR FROM API */
         display: flex;
         align-items: center;
         padding: 0 10px;
-        border-bottom: 1px solid var(--primary-dark, #1a73e8) !important; /* 🎨 PRIMARY DARK FROM API */
-        color: var(--white, #ffffff) !important; /* 🎨 WHITE TEXT ON PRIMARY */
     }
   
     .window-title {
@@ -169,7 +166,7 @@
         font-weight: bold;
         text-align: center;
         margin-bottom: 10px;
-        color: var(--white);
+        color: var(--text_color);
     }
   
     .subtitle {
@@ -177,7 +174,7 @@
         text-align: center;
         margin-bottom: 30px;
         opacity: 0.9;
-        color: var(--white);
+        color: var(--text_color);
     }
   
     .login-form {
@@ -195,7 +192,7 @@
         padding: 0 15px;
         font-size: 16px;
         color: var(--text-color);
-        background-color: var(--white);
+        background-color: var(--text_color);
         box-sizing: border-box;
     }
   
@@ -210,7 +207,7 @@
     .save-password {
         display: flex;
         align-items: center;
-        color: var(--white);
+        color: var(--text_color);
     }
   
     .save-password input {
@@ -220,14 +217,14 @@
     }
   
     .forgot-password {
-        color: var(--white);
+        color: var(--text_color);
         text-decoration: none;
     }
   
     .login-button {
         width: 100%;
         height: 45px;
-        background-color: var(--button-color, #ff0000); /* Added fallback red for debugging */
+        background-color: var(--submit_button_bg_color); /* Added fallback red for debugging */
         color: var(--white, white); /* Added fallback white for debugging */
         border: none;
         border-radius: 5px;
@@ -245,7 +242,7 @@
         width: 100%;
         height: 45px;
         background-color: var(--success-color);
-        color: var(--white);
+        color: var(--text_color);
         border: none;
         border-radius: 5px;
         font-size: 16px;
@@ -271,7 +268,7 @@
         padding: 5px 10px;
         border-radius: 5px;
         border: none;
-        background-color: var(--white);
+        background-color: var(--text_color);
         color: var(--text-color);
     }
   

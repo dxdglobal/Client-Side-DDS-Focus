@@ -16,7 +16,7 @@
 
 .app-header {
   background: var(--gradient-primary);
-  color: var(--white);
+  color: var(--text_color);
   padding: var(--spacing-base) var(--spacing-lg);
   box-shadow: var(--shadow-md);
   display: flex;
@@ -43,7 +43,7 @@
   font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--white);
+  color: var(--text_color);
   margin: 0;
 }
 
@@ -59,18 +59,18 @@
   height: 40px;
   border-radius: var(--radius-full);
   object-fit: cover;
-  border: 2px solid var(--white);
+  border: 2px solid var(--text_color);
 }
 
 .user-name {
-  color: var(--white);
+  color: var(--text_color);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-lg);
   margin: 0;
 }
 
 .logout-btn {
-  background-color: var(--white);
+  background-color: var(--text_color);
   color: var(--primary-color);
   border: 2px solid transparent;
   font-size: var(--font-size-sm);
@@ -85,7 +85,7 @@
 
 /* ====== PROJECT & TASK SELECTION ====== */
 .selection-container {
-  background: var(--white);
+  background: var(--text_color);
   border-radius: var(--radius-xl);
   padding: var(--spacing-2xl);
   box-shadow: var(--shadow-lg);
@@ -137,7 +137,7 @@
   border: 2px solid var(--gray-300);
   border-radius: var(--radius-lg);
   transition: var(--transition-base);
-  background-color: var(--white);
+  background-color: var(--text_color);
 }
 
 .form-control-enhanced:focus {
@@ -155,7 +155,7 @@
 }
 
 .status-card {
-  background: var(--white);
+  background: var(--text_color);
   border-radius: var(--radius-xl);
   padding: var(--spacing-2xl);
   text-align: center;
@@ -180,7 +180,7 @@
   justify-content: center;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--white);
+  color: var(--text_color);
   transition: var(--transition-base);
 }
 
@@ -268,7 +268,7 @@
 
 .start-btn {
   background: linear-gradient(135deg, var(--success-color), var(--success-dark));
-  color: var(--white);
+  color: var(--text_color);
   border: none;
 }
 
@@ -280,7 +280,7 @@
 
 .stop-btn {
   background: linear-gradient(135deg, var(--error-color), var(--error-dark));
-  color: var(--white);
+  color: var(--text_color);
   border: none;
 }
 
@@ -309,7 +309,7 @@
   right: var(--spacing-lg);
   z-index: calc(var(--z-drawer) + 1);
   background: var(--gradient-primary);
-  color: var(--white);
+  color: var(--text_color);
   border: none;
   border-radius: var(--radius-lg);
   padding: var(--spacing-md) var(--spacing-lg);
@@ -338,7 +338,7 @@
   z-index: var(--z-tooltip);
   max-width: 350px;
   padding: var(--spacing-lg);
-  background: var(--white);
+  background: var(--text_color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   border: 2px solid var(--gray-200);

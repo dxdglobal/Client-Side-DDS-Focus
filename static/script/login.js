@@ -189,6 +189,143 @@ class LoginStylingManager {
             console.log('📝 Login: Font family applied:', stylingData.font_family);
         }
 
+        // 🎨 NEW: Submit Button Styling (highest priority for login)
+        if (stylingData.submit_button_bg_color) {
+            root.style.setProperty('--submit-button-bg-color', stylingData.submit_button_bg_color, 'important');
+            
+            const submitButtons = document.querySelectorAll('button[type="submit"], .submit-btn, .login-button');
+            submitButtons.forEach(button => {
+                button.style.setProperty('background-color', stylingData.submit_button_bg_color, 'important');
+                button.style.setProperty('border-color', stylingData.submit_button_bg_color, 'important');
+            });
+            console.log('🟢 Login: Submit button background applied:', stylingData.submit_button_bg_color);
+        }
+
+        if (stylingData.submit_button_text_color) {
+            root.style.setProperty('--submit-button-text-color', stylingData.submit_button_text_color, 'important');
+            
+            const submitButtons = document.querySelectorAll('button[type="submit"], .submit-btn, .login-button');
+            submitButtons.forEach(button => {
+                button.style.setProperty('color', stylingData.submit_button_text_color, 'important');
+            });
+            console.log('🔤 Login: Submit button text color applied:', stylingData.submit_button_text_color);
+        }
+
+        // 🎨 NEW: Primary Button Styling
+        if (stylingData.primary_button_bg_color) {
+            root.style.setProperty('--primary-button-bg-color', stylingData.primary_button_bg_color, 'important');
+            
+            const primaryButtons = document.querySelectorAll('.btn-primary, .primary-btn');
+            primaryButtons.forEach(button => {
+                button.style.setProperty('background-color', stylingData.primary_button_bg_color, 'important');
+                button.style.setProperty('border-color', stylingData.primary_button_bg_color, 'important');
+            });
+            console.log('🔵 Login: Primary button background applied:', stylingData.primary_button_bg_color);
+        }
+
+        if (stylingData.primary_button_text_color) {
+            root.style.setProperty('--primary-button-text-color', stylingData.primary_button_text_color, 'important');
+            
+            const primaryButtons = document.querySelectorAll('.btn-primary, .primary-btn');
+            primaryButtons.forEach(button => {
+                button.style.setProperty('color', stylingData.primary_button_text_color, 'important');
+            });
+            console.log('🔤 Login: Primary button text color applied:', stylingData.primary_button_text_color);
+        }
+
+        // 🎨 NEW: Secondary Button Styling
+        if (stylingData.secondary_button_bg_color) {
+            root.style.setProperty('--secondary-button-bg-color', stylingData.secondary_button_bg_color, 'important');
+            
+            const secondaryButtons = document.querySelectorAll('.btn-secondary, .secondary-btn, .guest-button');
+            secondaryButtons.forEach(button => {
+                button.style.setProperty('background-color', stylingData.secondary_button_bg_color, 'important');
+                button.style.setProperty('border-color', stylingData.secondary_button_bg_color, 'important');
+            });
+            console.log('🟤 Login: Secondary button background applied:', stylingData.secondary_button_bg_color);
+        }
+
+        if (stylingData.secondary_button_text_color) {
+            root.style.setProperty('--secondary-button-text-color', stylingData.secondary_button_text_color, 'important');
+            
+            const secondaryButtons = document.querySelectorAll('.btn-secondary, .secondary-btn, .guest-button');
+            secondaryButtons.forEach(button => {
+                button.style.setProperty('color', stylingData.secondary_button_text_color, 'important');
+            });
+            console.log('🔤 Login: Secondary button text color applied:', stylingData.secondary_button_text_color);
+        }
+
+        // 🎨 NEW: Drawer Styling
+        if (stylingData.drawer_background_color) {
+            root.style.setProperty('--drawer-background-color', stylingData.drawer_background_color, 'important');
+            
+            const drawerElements = document.querySelectorAll('.drawer, .sidebar, .nav-drawer');
+            drawerElements.forEach(element => {
+                element.style.setProperty('background-color', stylingData.drawer_background_color, 'important');
+            });
+            console.log('📦 Login: Drawer background color applied:', stylingData.drawer_background_color);
+        }
+
+        if (stylingData.drawer_text_color) {
+            root.style.setProperty('--drawer-text-color', stylingData.drawer_text_color, 'important');
+            
+            const drawerTextElements = document.querySelectorAll('.drawer *, .sidebar *, .nav-drawer *');
+            drawerTextElements.forEach(element => {
+                element.style.setProperty('color', stylingData.drawer_text_color, 'important');
+            });
+            console.log('🔤 Login: Drawer text color applied:', stylingData.drawer_text_color);
+        }
+
+        // 🎨 NEW: Icon Color
+        if (stylingData.icon_color) {
+            root.style.setProperty('--icon-color', stylingData.icon_color, 'important');
+            
+            const iconElements = document.querySelectorAll('.icon, i, .fa, [class*="icon-"]');
+            iconElements.forEach(icon => {
+                icon.style.setProperty('color', stylingData.icon_color, 'important');
+                icon.style.setProperty('fill', stylingData.icon_color, 'important');
+            });
+            console.log('🎯 Login: Icon color applied:', stylingData.icon_color);
+        }
+
+        // 🎨 NEW: Top Color (header/top bar)
+        if (stylingData.top_color) {
+            root.style.setProperty('--top-color', stylingData.top_color, 'important');
+            
+            const topElements = document.querySelectorAll('.top-bar, .header, .navbar, .window-header');
+            topElements.forEach(element => {
+                element.style.setProperty('background-color', stylingData.top_color, 'important');
+            });
+            console.log('⬆️ Login: Top color applied:', stylingData.top_color);
+        }
+
+        // 🎨 NEW: Enhanced Font Settings
+        if (stylingData.heading_font_size) {
+            root.style.setProperty('--heading-font-size', stylingData.heading_font_size, 'important');
+            
+            const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .title, .heading');
+            headings.forEach(heading => {
+                heading.style.setProperty('font-size', stylingData.heading_font_size, 'important');
+            });
+            console.log('📏 Login: Heading font size applied:', stylingData.heading_font_size);
+        }
+
+        if (stylingData.body_font_size) {
+            root.style.setProperty('--body-font-size', stylingData.body_font_size, 'important');
+            document.body.style.setProperty('font-size', stylingData.body_font_size, 'important');
+            console.log('📏 Login: Body font size applied:', stylingData.body_font_size);
+        }
+
+        if (stylingData.border_radius) {
+            root.style.setProperty('--border-radius', stylingData.border_radius, 'important');
+            
+            const roundedElements = document.querySelectorAll('button, .btn, input, .form-control, .card, .modal');
+            roundedElements.forEach(element => {
+                element.style.setProperty('border-radius', stylingData.border_radius, 'important');
+            });
+            console.log('📐 Login: Border radius applied:', stylingData.border_radius);
+        }
+
         // Apply specific login page elements
         this.applyLoginSpecificStyling(stylingData);
     }
@@ -500,6 +637,110 @@ window.testLoginColors = () => {
 
 console.log('✅ Login.js: DDS Styling API integration loaded');
 console.log('🧪 Debug functions: refreshLoginStyling(), getLoginStyling(), testLoginColors()');
+
+// 🎨 NEW: Test function specifically for Postman Test Theme
+window.testPostmanTheme = function() {
+    console.log('📮 Testing Postman Test Theme Colors...');
+    
+    // Postman Test Theme colors as provided by user
+    const postmanTheme = {
+        "theme_name": "Postman Test Theme",
+        "description": "A beautiful theme created via Postman",
+        "header-color": "#8E44AD",
+        "footer-color": "#3498DB",
+        "text_color": "#2C3E50",
+        "background_color": "#ECF0F1",
+        "button_color": "#E67E22",
+        "button-text_color": "#2C3E50",
+        "submit_button_bg_color": "#28a745",
+        "submit_button_text_color": "#ffffff",
+        "primary_button_bg_color": "#007bff",
+        "primary_button_text_color": "#ffffff",
+        "secondary_button_bg_color": "#6c757d",
+        "secondary_button_text_color": "#ffffff",
+        "drawer_background_color": "#f8f9fa",
+        "drawer_text_color": "#212529",
+        "icon_color": "#6c757d",
+        "top_color": "#ffffff",
+        "heading_font_size": "36px",
+        "body_font_size": "18px",
+        "font_family": "Segoe UI, sans-serif",
+        "border_radius": "10px"
+    };
+    
+    console.log('🎨 Applying Postman Test Theme manually...');
+    
+    // Apply the theme
+    loginStyling.currentStyling = postmanTheme;
+    loginStyling.applyLoginStyling(postmanTheme);
+    
+    console.log('📮 Postman Test Theme applied! Check the page styling.');
+    
+    // Log all applied colors
+    console.log('\n🎨 Applied Postman Theme Values:');
+    console.log('===============================');
+    Object.entries(postmanTheme).forEach(([key, value]) => {
+        if (key !== 'theme_name' && key !== 'description') {
+            console.log(`${key}: ${value}`);
+        }
+    });
+    
+    return postmanTheme;
+};
+
+// 🎨 NEW: Function to apply any custom theme
+window.applyCustomLoginTheme = function(themeObject) {
+    console.log('🎨 Applying custom login theme:', themeObject.theme_name || 'Unnamed Theme');
+    
+    loginStyling.currentStyling = themeObject;
+    loginStyling.applyLoginStyling(themeObject);
+    
+    console.log('✅ Custom theme applied successfully!');
+    return themeObject;
+};
+
+// 🎨 NEW: Test function to verify all new color fields
+window.testAllNewColorFields = function() {
+    console.log('🔍 Testing ALL NEW Color Fields Implementation...');
+    
+    const expectedFields = [
+        'submit_button_bg_color', 'submit_button_text_color',
+        'primary_button_bg_color', 'primary_button_text_color',
+        'secondary_button_bg_color', 'secondary_button_text_color',
+        'drawer_background_color', 'drawer_text_color',
+        'icon_color', 'top_color', 'heading_font_size',
+        'body_font_size', 'border_radius'
+    ];
+    
+    const currentStyling = loginStyling.getCurrentStyling();
+    
+    console.log('\n📊 New Color Fields Status:');
+    console.log('===========================');
+    
+    expectedFields.forEach(field => {
+        const hasField = currentStyling && currentStyling[field];
+        const status = hasField ? '✅' : '❌';
+        const value = hasField ? currentStyling[field] : 'NOT SET';
+        console.log(`${status} ${field}: ${value}`);
+    });
+    
+    // Test CSS variables
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    
+    console.log('\n🎨 CSS Variables Status:');
+    console.log('========================');
+    console.log('--submit-button-bg-color:', style.getPropertyValue('--submit-button-bg-color').trim() || 'NOT SET');
+    console.log('--primary-button-bg-color:', style.getPropertyValue('--primary-button-bg-color').trim() || 'NOT SET');
+    console.log('--secondary-button-bg-color:', style.getPropertyValue('--secondary-button-bg-color').trim() || 'NOT SET');
+    console.log('--drawer-background-color:', style.getPropertyValue('--drawer-background-color').trim() || 'NOT SET');
+    console.log('--icon-color:', style.getPropertyValue('--icon-color').trim() || 'NOT SET');
+    console.log('--top-color:', style.getPropertyValue('--top-color').trim() || 'NOT SET');
+    
+    return expectedFields;
+};
+
+console.log('🆕 Theme functions: testPostmanTheme(), applyCustomLoginTheme(themeObject), testAllNewColorFields()');
 
 // 🎨 NEW: Comprehensive login API color testing
 window.testAllLoginAPIColors = async function() {

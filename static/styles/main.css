@@ -100,7 +100,7 @@ a:hover {
 
 /* Button Variants */
 .btn-primary {
-  color: var(--white);
+  color: var(--text_color);
   background-color: var(--primary-color);
   border-color: var(--primary-color);
 }
@@ -120,7 +120,7 @@ a:hover {
 
 .btn-secondary {
   color: var(--primary-color);
-  background-color: var(--white);
+  background-color: var(--text_color);
   border-color: var(--primary-color);
 }
 
@@ -136,7 +136,7 @@ a:hover {
 }
 
 .btn-outline:hover:not(:disabled) {
-  color: var(--white);
+  color: var(--text_color);
   background-color: var(--primary-color);
 }
 
@@ -212,7 +212,7 @@ a:hover {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   color: var(--gray-900);
-  background-color: var(--white);
+  background-color: var(--text_color);
   background-clip: padding-box;
   border: var(--input-border);
   border-radius: var(--input-border-radius);
@@ -221,7 +221,7 @@ a:hover {
 
 .form-control:focus {
   color: var(--gray-900);
-  background-color: var(--white);
+  background-color: var(--text_color);
   border: var(--input-focus-border);
   outline: 0;
   box-shadow: var(--focus-shadow);
@@ -253,7 +253,7 @@ a:hover {
   flex-direction: column;
   min-width: 0;
   word-wrap: break-word;
-  background-color: var(--white);
+  background-color: var(--text_color);
   background-clip: border-box;
   border: var(--card-border);
   border-radius: var(--card-border-radius);
@@ -383,12 +383,12 @@ a:hover {
 .text-success { color: var(--success-color); }
 .text-warning { color: var(--warning-color); }
 .text-error { color: var(--error-color); }
-.text-white { color: var(--white); }
+.text-white { color: var(--text_color); }
 .text-muted { color: var(--gray-500); }
 
 .bg-primary { background-color: var(--primary-color); }
 .bg-secondary { background-color: var(--gray-100); }
-.bg-white { background-color: var(--white); }
+.bg-white { background-color: var(--text_color); }
 .bg-transparent { background-color: transparent; }
 
 /* Display */
