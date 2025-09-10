@@ -133,6 +133,53 @@ class LoginStylingManager {
         if (stylingData.text_color) {
             root.style.setProperty('--text-color', stylingData.text_color, 'important');
             console.log('⚫ Login: Text color applied:', stylingData.text_color);
+            
+            // Apply text color to specific login page elements
+            const textElements = document.querySelectorAll('#rememberMeLabel, .forgot-password, .title, .subtitle');
+            textElements.forEach(element => {
+                element.style.setProperty('color', stylingData.text_color, 'important');
+            });
+            
+            console.log('🔤 Login: Applied text color to labels and text elements');
+        }
+
+        // 🎨 NEW: Apply header color
+        if (stylingData['header-color'] || stylingData.header_color) {
+            const headerColor = stylingData['header-color'] || stylingData.header_color;
+            root.style.setProperty('--header-color', headerColor, 'important');
+            
+            // Apply to header elements in login page
+            const headerElements = document.querySelectorAll('header, .header, .window-header, .login-header');
+            headerElements.forEach(element => {
+                element.style.setProperty('background-color', headerColor, 'important');
+            });
+            console.log('🎯 Login: Header color applied:', headerColor);
+        }
+
+        // 🎨 NEW: Apply footer color
+        if (stylingData['footer-color'] || stylingData.footer_color) {
+            const footerColor = stylingData['footer-color'] || stylingData.footer_color;
+            root.style.setProperty('--footer-color', footerColor, 'important');
+            
+            // Apply to footer elements in login page
+            const footerElements = document.querySelectorAll('footer, .footer, .login-footer');
+            footerElements.forEach(element => {
+                element.style.setProperty('background-color', footerColor, 'important');
+            });
+            console.log('🎯 Login: Footer color applied:', footerColor);
+        }
+
+        // 🎨 NEW: Apply button text color
+        if (stylingData['button-text_color'] || stylingData.button_text_color) {
+            const buttonTextColor = stylingData['button-text_color'] || stylingData.button_text_color;
+            root.style.setProperty('--button-text-color', buttonTextColor, 'important');
+            
+            // Apply to all login buttons
+            const loginButtons = document.querySelectorAll('.login-button, #loginBtn, .guest-button, button[type="submit"]');
+            loginButtons.forEach(button => {
+                button.style.setProperty('color', buttonTextColor, 'important');
+            });
+            console.log('🔤 Login: Button text color applied:', buttonTextColor);
         }
 
         // Apply font settings
@@ -169,13 +216,57 @@ class LoginStylingManager {
     }
 
     applyLoginSpecificStyling(stylingData) {
-        // Header styling
-        if (stylingData.primary_color) {
+        // Header styling - use header_color if available, fallback to primary_color
+        const headerColor = stylingData['header-color'] || stylingData.header_color || stylingData.primary_color;
+        if (headerColor) {
             const header = document.querySelector('.window-header');
             if (header) {
-                header.style.setProperty('background-color', stylingData.primary_color, 'important');
+                header.style.setProperty('background-color', headerColor, 'important');
                 header.style.setProperty('color', stylingData.background_color || '#ffffff', 'important');
             }
+        }
+
+        // Apply text color to specific login elements
+        if (stylingData.text_color) {
+            const textElements = [
+                '#rememberMeLabel',
+                '.forgot-password', 
+                '.title', 
+                '.subtitle',
+                '.version',
+                '.staff-data h3'
+            ];
+            
+            textElements.forEach(selector => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.style.setProperty('color', stylingData.text_color, 'important');
+                }
+            });
+            
+            console.log('🔤 Login: Applied text color to specific elements including Remember Me label');
+        }
+
+        // 🎨 NEW: Apply footer color to footer elements
+        const footerColor = stylingData['footer-color'] || stylingData.footer_color;
+        if (footerColor) {
+            const footerElements = document.querySelectorAll('footer, .footer, .login-footer, .bottom-section');
+            footerElements.forEach(element => {
+                element.style.setProperty('background-color', footerColor, 'important');
+            });
+            console.log('🎯 Login: Applied footer color to footer elements');
+        }
+
+        // 🎨 NEW: Apply button text color with higher specificity
+        const buttonTextColor = stylingData['button-text_color'] || stylingData.button_text_color;
+        if (buttonTextColor) {
+            const allLoginButtons = document.querySelectorAll('.login-button, #loginBtn, .guest-button, button[type="submit"], .btn-primary');
+            allLoginButtons.forEach(button => {
+                button.style.setProperty('color', buttonTextColor, 'important');
+                // Also set text-related properties
+                button.style.setProperty('--button-text-color', buttonTextColor, 'important');
+            });
+            console.log('🔤 Login: Applied button text color with high specificity');
         }
 
         // Form input styling
@@ -347,11 +438,164 @@ window.testLoginColors = () => {
         console.log(`Button ${index + 1}:`, {
             backgroundColor: style.backgroundColor,
             borderColor: style.borderColor,
+            color: style.color,
             element: btn
         });
     });
+
+    // Test Remember Me label color
+    const rememberMeLabel = document.getElementById('rememberMeLabel');
+    if (rememberMeLabel) {
+        const labelStyle = getComputedStyle(rememberMeLabel);
+        console.log('🔤 Remember Me Label:', {
+            color: labelStyle.color,
+            textColor: labelStyle.getPropertyValue('color'),
+            element: rememberMeLabel
+        });
+    }
+
+    // Test other text elements
+    const textElements = ['.title', '.subtitle', '.forgot-password', '.version'];
+    textElements.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            const style = getComputedStyle(element);
+            console.log(`🔤 ${selector}:`, {
+                color: style.color,
+                element: element
+            });
+        }
+    });
+
+    // 🎨 NEW: Test header and footer colors
+    console.log('🎯 Testing Header & Footer Colors:');
+    const root = document.documentElement;
+    const rootStyle = getComputedStyle(root);
+    console.log('--header-color:', rootStyle.getPropertyValue('--header-color').trim());
+    console.log('--footer-color:', rootStyle.getPropertyValue('--footer-color').trim());
+    console.log('--button-text-color:', rootStyle.getPropertyValue('--button-text-color').trim());
+
+    // Test actual header elements
+    const headerElements = document.querySelectorAll('header, .header, .window-header');
+    headerElements.forEach((header, index) => {
+        const headerStyle = getComputedStyle(header);
+        console.log(`🎯 Header ${index + 1}:`, {
+            backgroundColor: headerStyle.backgroundColor,
+            element: header
+        });
+    });
+
+    // Test actual footer elements
+    const footerElements = document.querySelectorAll('footer, .footer');
+    footerElements.forEach((footer, index) => {
+        const footerStyle = getComputedStyle(footer);
+        console.log(`🎯 Footer ${index + 1}:`, {
+            backgroundColor: footerStyle.backgroundColor,
+            element: footer
+        });
+    });
+    
     return loginStyling.refreshStyling();
 };
 
 console.log('✅ Login.js: DDS Styling API integration loaded');
 console.log('🧪 Debug functions: refreshLoginStyling(), getLoginStyling(), testLoginColors()');
+
+// 🎨 NEW: Comprehensive login API color testing
+window.testAllLoginAPIColors = async function() {
+    console.log('🔑 Testing ALL Login API Color Fields...');
+    
+    try {
+        const styling = await loginStyling.loadStylingFromAPI();
+        
+        if (styling) {
+            console.log('🎨 Login API Color Fields Test Results:');
+            console.log('========================================');
+            console.log('✅ Header Color:', styling['header-color'] || 'NOT FOUND');
+            console.log('✅ Footer Color:', styling['footer-color'] || 'NOT FOUND');
+            console.log('✅ Text Color:', styling.text_color || 'NOT FOUND');
+            console.log('✅ Background Color:', styling.background_color || 'NOT FOUND');
+            console.log('✅ Button Color:', styling.button_color || 'NOT FOUND');
+            console.log('✅ Button Text Color:', styling['button-text_color'] || 'NOT FOUND');
+            
+            // Apply fresh styling
+            console.log('\n🔄 Applying fresh login styling...');
+            loginStyling.applyLoginStyling(styling);
+            
+            // Test specific login elements
+            console.log('\n🔍 Testing Login Elements:');
+            
+            // Test Remember Me label
+            const rememberMeLabel = document.getElementById('rememberMeLabel');
+            if (rememberMeLabel) {
+                const labelStyle = getComputedStyle(rememberMeLabel);
+                console.log('🔤 Remember Me Label Color:', labelStyle.color);
+            }
+            
+            // Test login buttons
+            const loginButtons = document.querySelectorAll('.login-button, #loginBtn');
+            console.log(`🔴 Found ${loginButtons.length} login buttons`);
+            loginButtons.forEach((btn, index) => {
+                const btnStyle = getComputedStyle(btn);
+                console.log(`  Button ${index + 1}:`, {
+                    backgroundColor: btnStyle.backgroundColor,
+                    color: btnStyle.color,
+                    borderColor: btnStyle.borderColor
+                });
+            });
+            
+            console.log('✅ Login API Color Fields Test Complete!');
+            return styling;
+        }
+    } catch (error) {
+        console.error('❌ Login API Color Fields Test Error:', error);
+    }
+};
+
+// 🎨 Function to verify login-specific implementation
+window.verifyLoginImplementation = function() {
+    console.log('🔍 Verifying Login Color Implementation...');
+    
+    const loginColorTests = [
+        {
+            name: 'Login Header Elements',
+            selectors: ['header', '.header', '.window-header', '.login-header'],
+            property: 'background-color'
+        },
+        {
+            name: 'Login Footer Elements',
+            selectors: ['footer', '.footer', '.login-footer'],
+            property: 'background-color'
+        },
+        {
+            name: 'Login Button Text',
+            selectors: ['.login-button', '#loginBtn', '.guest-button'],
+            property: 'color'
+        },
+        {
+            name: 'Login Text Elements',
+            selectors: ['#rememberMeLabel', '.title', '.subtitle', '.forgot-password'],
+            property: 'color'
+        }
+    ];
+    
+    loginColorTests.forEach(test => {
+        console.log(`\n🧪 Testing ${test.name}:`);
+        test.selectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            console.log(`  ${selector}: Found ${elements.length} elements`);
+            
+            elements.forEach((element, index) => {
+                if (element) {
+                    const style = getComputedStyle(element);
+                    const value = style.getPropertyValue(test.property);
+                    console.log(`    Element ${index + 1}: ${test.property} = ${value}`);
+                }
+            });
+        });
+    });
+    
+    console.log('\n✅ Login Color Implementation Verification Complete!');
+};
+
+console.log('🆕 New functions: testAllLoginAPIColors(), verifyLoginImplementation()');

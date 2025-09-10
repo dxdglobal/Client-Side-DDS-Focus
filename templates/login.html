@@ -48,7 +48,7 @@
         <div class="checkbox-container">
              <div class="input-group">
   <input type="checkbox" id="rememberMe" />
-  <label for="rememberMe" id="rememberMeLabel" style="color:white;">Remember Me</label>
+  <label for="rememberMe" id="rememberMeLabel">Remember Me</label>
 </div>
           <!-- <label class="save-password">
             <input type="checkbox" id="savePassword" /> 
@@ -65,11 +65,7 @@
 
         <button class="login-button" id="loginBtn" onclick="handleLogin()">LOGIN</button>
         
-        <!-- DEBUG BUTTON - Remove after fixing -->
-        <button type="button" onclick="testAPIDirectly()" style="background: #28a745; color: white; width: 100%; height: 35px; border: none; border-radius: 5px; margin-top: 10px; cursor: pointer;">
-            🧪 Test API Colors (Debug)
-        </button>
-        
+
         <!-- <button class="guest-button" onclick="guestLogin()">Login as Guest</button> -->
       </div>
     </div>
@@ -245,6 +241,13 @@
           
           // Apply to body immediately
           document.body.style.setProperty('color', apiColors.text_color, 'important');
+          
+          // 🔤 Apply text color to Remember Me label specifically
+          const rememberMeLabel = document.getElementById('rememberMeLabel');
+          if (rememberMeLabel) {
+            rememberMeLabel.style.setProperty('color', apiColors.text_color, 'important');
+            console.log('🔤 Applied API text color to Remember Me label:', apiColors.text_color);
+          }
         }
         
         // Additional derived colors

@@ -27,9 +27,9 @@
         }
 
         .language-btn {
-            background-color: var(--white);
-            color: var(--primary-color);
-            border: 2px solid transparent;
+            background-color: white !important;
+            color: white !important;
+            border: 2px solid white !important;
             border-radius: var(--radius-base);
             padding: 5px 10px;
             cursor: pointer;
@@ -38,14 +38,20 @@
             align-items: center;
             gap: 5px;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .language-btn:hover {
-            background-color: #f0f0f0;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .language-btn.active {
-            border-color: var(--primary-color);
+            border-color: white !important;
+            background-color: white !important;
+            color: white !important;
         }
 
         .language-dropdown-content {
@@ -98,7 +104,7 @@
         .flag-french { background: linear-gradient(to right, var(--primary-dark) 33%, white 33%, white 66%, var(--danger-color) 66%); }
         .flag-german { background: linear-gradient(to bottom, var(--black) 33%, var(--danger-color) 33%, var(--danger-color) 66%, var(--warning-color) 66%); }
         .flag-ukrainian { background: linear-gradient(to bottom, var(--primary-color) 50%, var(--warning-color) 50%); }
-        .flag-english { background: linear-gradient(45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(-45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--primary-dark) 75%), linear-gradient(-45deg, transparent 75%, var(--primary-dark) 75%); background-size: 4px 4px; background-color: var(--white); }
+        .flag-english { background: linear-gradient(45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(-45deg, var(--primary-dark) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--primary-dark) 75%), linear-gradient(-45deg, transparent 75%, var(--primary-dark) 75%); background-size: 4px 4px; background-color: var(--text_color); }
 
         .dropdown-arrow {
             font-size: 10px;
@@ -111,7 +117,7 @@
 
         /* Demo header styles */
         .header {
-            background-color: var(--secondary-color);
+            background-color: var(--header-color);
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -212,13 +218,21 @@
         #logout {
             margin-left: 10px;
             padding: 4px 10px;
-            background-color: var(--white);
-            color: var(--primary-color);
-            border: none;
+            background-color: white !important;
+            color: white !important;
+            border: 2px solid white !important;
             border-radius: 4px;
             cursor: pointer;
-            border: solid 2px transparent;
             font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #logout:hover {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
 

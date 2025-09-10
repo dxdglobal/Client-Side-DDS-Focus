@@ -112,6 +112,47 @@ class DynamicStylingManager {
             console.log('⚫ Text color applied:', stylingData.text_color);
         }
 
+        // 🎨 NEW: Apply header color system
+        if (stylingData['header-color'] || stylingData.header_color) {
+            const headerColor = stylingData['header-color'] || stylingData.header_color;
+            root.style.setProperty('--header-color', headerColor, 'important');
+            root.style.setProperty('--header-background', headerColor, 'important');
+            
+            // Apply to header elements
+            const headerElements = document.querySelectorAll('header, .header, .top-header, .window-header, .navbar');
+            headerElements.forEach(element => {
+                element.style.setProperty('background-color', headerColor, 'important');
+            });
+            console.log('🎯 Header color applied:', headerColor);
+        }
+
+        // 🎨 NEW: Apply footer color system
+        if (stylingData['footer-color'] || stylingData.footer_color) {
+            const footerColor = stylingData['footer-color'] || stylingData.footer_color;
+            root.style.setProperty('--footer-color', footerColor, 'important');
+            root.style.setProperty('--footer-background', footerColor, 'important');
+            
+            // Apply to footer elements
+            const footerElements = document.querySelectorAll('footer, .footer, .bottom-footer');
+            footerElements.forEach(element => {
+                element.style.setProperty('background-color', footerColor, 'important');
+            });
+            console.log('🎯 Footer color applied:', footerColor);
+        }
+
+        // 🎨 NEW: Apply button text color system
+        if (stylingData['button-text_color'] || stylingData.button_text_color) {
+            const buttonTextColor = stylingData['button-text_color'] || stylingData.button_text_color;
+            root.style.setProperty('--button-text-color', buttonTextColor, 'important');
+            
+            // Apply to button text (excluding header buttons)
+            const buttonElements = document.querySelectorAll('button:not(#logout):not(.language-btn), .btn:not(#logout):not(.language-btn)');
+            buttonElements.forEach(button => {
+                button.style.setProperty('color', buttonTextColor, 'important');
+            });
+            console.log('🔤 Button text color applied:', buttonTextColor);
+        }
+
         // Apply font settings
         if (stylingData.font_family) {
             root.style.setProperty('--font-family', stylingData.font_family, 'important');
@@ -124,27 +165,56 @@ class DynamicStylingManager {
             root.style.setProperty('--border-radius', stylingData.border_radius, 'important');
             console.log('📐 Border radius applied:', stylingData.border_radius);
         }
+
+        // 🔒 Preserve white header button styling
+        this.preserveHeaderButtonStyling();
+    }
+
+    preserveHeaderButtonStyling() {
+        console.log('🔒 Preserving white header button styling...');
+        
+        // Ensure logout button stays white
+        const logoutBtn = document.getElementById('logout');
+        if (logoutBtn) {
+            logoutBtn.style.setProperty('background-color', 'white', 'important');
+            logoutBtn.style.setProperty('color', 'white', 'important');
+            logoutBtn.style.setProperty('border-color', 'white', 'important');
+        }
+
+        // Ensure language button stays white
+        const languageBtn = document.querySelector('.language-btn');
+        if (languageBtn) {
+            languageBtn.style.setProperty('background-color', 'white', 'important');
+            languageBtn.style.setProperty('color', 'white', 'important');
+            languageBtn.style.setProperty('border-color', 'white', 'important');
+        }
+
+        console.log('✅ Header button white styling preserved');
     }
 
     applyButtonColors(buttonColor) {
-        // Comprehensive button selector list for client page
+        // Comprehensive button selector list for client page (excluding header buttons)
         const buttonSelectors = [
             '#startBtn', '#resetBtn', '#breakBtn',
-            '.login-button', '.btn-primary', '.btn-secondary',
+            '.btn-primary', '.btn-secondary',
             '.modal-btn', '.submit-btn', '#modalSubmitBtn',
-            'button:not(.cancel-btn):not(.close-btn)',
+            'button:not(.cancel-btn):not(.close-btn):not(#logout):not(.language-btn)',
             '.nav-link', '.drawer-arrow-btn'
         ];
 
         buttonSelectors.forEach(selector => {
             const elements = document.querySelectorAll(selector);
             elements.forEach(element => {
+                // Skip header buttons (logout and language)
+                if (element.id === 'logout' || element.classList.contains('language-btn')) {
+                    return;
+                }
                 element.style.setProperty('background-color', buttonColor, 'important');
                 element.style.setProperty('border-color', buttonColor, 'important');
             });
         });
 
-        console.log(`🔴 Applied button color to ${buttonSelectors.length} selector types`);
+        console.log(`🔴 Applied button color to ${buttonSelectors.length} selector types (excluding header buttons)`);
     }
 
     setupDynamicButtonEffects(stylingData) {
@@ -153,9 +223,14 @@ class DynamicStylingManager {
         const hoverColor = this.darkenColor(stylingData.button_color, 15);
         const activeColor = this.darkenColor(stylingData.button_color, 25);
 
-        // Add dynamic hover effects to all buttons
+        // Add dynamic hover effects to all buttons (excluding header buttons)
         const allButtons = document.querySelectorAll('button, .btn, .nav-link');
         allButtons.forEach(button => {
+            // Skip header buttons (logout and language)
+            if (button.id === 'logout' || button.classList.contains('language-btn')) {
+                return;
+            }
+
             // Remove existing listeners
             button.removeEventListener('mouseenter', button._apiHoverIn);
             button.removeEventListener('mouseleave', button._apiHoverOut);
@@ -175,7 +250,7 @@ class DynamicStylingManager {
             button.addEventListener('mouseleave', button._apiHoverOut);
         });
 
-        console.log('✨ Dynamic button effects applied with API colors');
+        console.log('✨ Dynamic button effects applied with API colors (excluding header buttons)');
     }
 
     applyFallbackStyling() {
@@ -1677,13 +1752,50 @@ window.debugClientColors = function() {
     console.log('--button-color:', style.getPropertyValue('--button-color').trim());
     console.log('--text-color:', style.getPropertyValue('--text-color').trim());
     
+    // 🎨 NEW: Debug new color fields
+    console.log('🎯 NEW Color Fields:');
+    console.log('--header-color:', style.getPropertyValue('--header-color').trim());
+    console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
+    console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
+    
     // Check actual button colors
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
         const btnStyle = getComputedStyle(startBtn);
         console.log('🔴 Start Button Background:', btnStyle.backgroundColor);
+        console.log('🔴 Start Button Color (text):', btnStyle.color);
         console.log('🔴 Start Button Border:', btnStyle.borderColor);
     }
+
+    // Check header button colors
+    const logoutBtn = document.getElementById('logout');
+    if (logoutBtn) {
+        const logoutStyle = getComputedStyle(logoutBtn);
+        console.log('🔒 Logout Button Background:', logoutStyle.backgroundColor);
+        console.log('🔒 Logout Button Color:', logoutStyle.color);
+        console.log('🔒 Logout Button Border:', logoutStyle.borderColor);
+    }
+
+    const languageBtn = document.querySelector('.language-btn');
+    if (languageBtn) {
+        const langStyle = getComputedStyle(languageBtn);
+        console.log('🌐 Language Button Background:', langStyle.backgroundColor);
+        console.log('🌐 Language Button Color:', langStyle.color);
+        console.log('🌐 Language Button Border:', langStyle.borderColor);
+    }
+
+    // 🎨 NEW: Check header and footer elements
+    const headerElements = document.querySelectorAll('header, .header, .window-header');
+    headerElements.forEach((header, index) => {
+        const headerStyle = getComputedStyle(header);
+        console.log(`🎯 Header ${index + 1} Background:`, headerStyle.backgroundColor);
+    });
+
+    const footerElements = document.querySelectorAll('footer, .footer');
+    footerElements.forEach((footer, index) => {
+        const footerStyle = getComputedStyle(footer);
+        console.log(`🎯 Footer ${index + 1} Background:`, footerStyle.backgroundColor);
+    });
 };
 
 // 🎨 Enhanced setState function to maintain styling after state changes
@@ -1699,6 +1811,127 @@ setState = function(state) {
 
 console.log('✅ Client.js: DDS Styling API integration completed');
 console.log('🧪 Debug functions available: refreshStyling(), testClientStyling(), debugClientColors()');
+
+// 🎨 NEW: Comprehensive function to test all API color fields
+window.testAllAPIColorFields = async function() {
+    console.log('🧪 Testing ALL API Color Fields...');
+    
+    try {
+        const response = await fetch('https://dxdtime.ddsolutions.io/api/styling/global/');
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.data) {
+            const styling = data.data;
+            
+            console.log('🎨 API Color Fields Test Results:');
+            console.log('=======================================');
+            console.log('✅ Header Color:', styling['header-color'] || 'NOT FOUND');
+            console.log('✅ Footer Color:', styling['footer-color'] || 'NOT FOUND');
+            console.log('✅ Text Color:', styling.text_color || 'NOT FOUND');
+            console.log('✅ Background Color:', styling.background_color || 'NOT FOUND');
+            console.log('✅ Button Color:', styling.button_color || 'NOT FOUND');
+            console.log('✅ Button Text Color:', styling['button-text_color'] || 'NOT FOUND');
+            
+            // Test current CSS variables
+            const root = document.documentElement;
+            const style = getComputedStyle(root);
+            
+            console.log('\n🎨 Current CSS Variables:');
+            console.log('=======================================');
+            console.log('--header-color:', style.getPropertyValue('--header-color').trim());
+            console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
+            console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
+            console.log('--text-color:', style.getPropertyValue('--text-color').trim());
+            console.log('--background-color:', style.getPropertyValue('--background-color').trim());
+            console.log('--button-color:', style.getPropertyValue('--button-color').trim());
+            
+            // Apply fresh styling
+            console.log('\n🔄 Refreshing styling...');
+            await dynamicStyling.applyStylingFromAPI();
+            
+            console.log('✅ API Color Fields Test Complete!');
+            return styling;
+        }
+    } catch (error) {
+        console.error('❌ API Color Fields Test Error:', error);
+    }
+};
+
+console.log('🆕 New function available: testAllAPIColorFields()');
+
+// 🎨 Function to verify specific color field implementation
+window.verifyColorImplementation = function() {
+    console.log('🔍 Verifying Color Field Implementation...');
+    
+    const colorTests = [
+        {
+            name: 'Header Elements',
+            selectors: ['header', '.header', '.window-header', '.navbar'],
+            property: 'background-color',
+            expectedVar: '--header-color'
+        },
+        {
+            name: 'Footer Elements', 
+            selectors: ['footer', '.footer', '.bottom-footer'],
+            property: 'background-color',
+            expectedVar: '--footer-color'
+        },
+        {
+            name: 'Button Text',
+            selectors: ['button:not(#logout):not(.language-btn)', '.btn:not(#logout):not(.language-btn)'],
+            property: 'color',
+            expectedVar: '--button-text-color'
+        }
+    ];
+    
+    colorTests.forEach(test => {
+        console.log(`\n🧪 Testing ${test.name}:`);
+        test.selectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            console.log(`  ${selector}: Found ${elements.length} elements`);
+            
+            elements.forEach((element, index) => {
+                const style = getComputedStyle(element);
+                const value = style.getPropertyValue(test.property);
+                console.log(`    Element ${index + 1}: ${test.property} = ${value}`);
+            });
+        });
+    });
+    
+    console.log('\n✅ Color Implementation Verification Complete!');
+};
+
+console.log('🆕 New function available: verifyColorImplementation()');
+
+// 🔒 Additional function to force white header buttons
+window.forceWhiteHeaderButtons = function() {
+    console.log('🔒 Forcing white header button styling...');
+    
+    const logoutBtn = document.getElementById('logout');
+    if (logoutBtn) {
+        logoutBtn.style.setProperty('background-color', 'white', 'important');
+        logoutBtn.style.setProperty('color', 'white', 'important');
+        logoutBtn.style.setProperty('border-color', 'white', 'important');
+        console.log('✅ Logout button forced to white');
+    }
+
+    const languageBtn = document.querySelector('.language-btn');
+    if (languageBtn) {
+        languageBtn.style.setProperty('background-color', 'white', 'important');
+        languageBtn.style.setProperty('color', 'white', 'important');
+        languageBtn.style.setProperty('border-color', 'white', 'important');
+        console.log('✅ Language button forced to white');
+    }
+
+    // Also call the preserve method
+    if (typeof dynamicStyling !== 'undefined' && dynamicStyling.preserveHeaderButtonStyling) {
+        dynamicStyling.preserveHeaderButtonStyling();
+    }
+
+    console.log('🔒 White header button styling complete');
+};
+
+console.log('🔒 Additional function: forceWhiteHeaderButtons()');
 
 
 

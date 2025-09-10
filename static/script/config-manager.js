@@ -62,7 +62,7 @@ class ConfigManager {
             if (apiResponse.status === 'success' && apiResponse.data) {
                 const stylingData = apiResponse.data;
                 
-                    // Transform DDS API response to our config format, focusing on all colors
+                    // Transform DDS API response to our config format, focusing on all colors including header, footer, button-text
                     const transformedConfig = {
                         ui: {
                             primary_color: stylingData.primary_color || this.defaultConfig.ui.primary_color,
@@ -70,6 +70,10 @@ class ConfigManager {
                             background_color: stylingData.background_color || this.defaultConfig.ui.background_color,
                             button_color: stylingData.button_color || this.defaultConfig.ui.button_color,
                             text_color: stylingData.text_color || this.defaultConfig.ui.text_color,
+                            // 🎨 NEW: Additional specific color fields
+                            header_color: stylingData['header-color'] || stylingData.header_color || '#ffffff',
+                            footer_color: stylingData['footer-color'] || stylingData.footer_color || '#ffffff',
+                            button_text_color: stylingData['button-text_color'] || stylingData.button_text_color || '#ffffff',
                             font_family: stylingData.font_family || this.defaultConfig.ui.font_family,
                             font_size: {
                                 heading: stylingData.heading_font_size || '18px',
@@ -97,7 +101,10 @@ class ConfigManager {
                     console.log(`🎨 Secondary Color: ${stylingData.secondary_color}`);
                     console.log(`🎨 Background Color: ${stylingData.background_color}`);
                     console.log(`🎨 Button Color: ${stylingData.button_color}`);
-                    console.log(`🎨 Text Color: ${stylingData.text_color}`);                return transformedConfig;
+                    console.log(`🎨 Text Color: ${stylingData.text_color}`);
+                    console.log(`🎨 Header Color: ${stylingData['header-color'] || stylingData.header_color}`);
+                    console.log(`🎨 Footer Color: ${stylingData['footer-color'] || stylingData.footer_color}`);
+                    console.log(`🎨 Button Text Color: ${stylingData['button-text_color'] || stylingData.button_text_color}`);                return transformedConfig;
             } else {
                 throw new Error('Invalid DDS API response format');
             }
@@ -331,6 +338,32 @@ class ConfigManager {
             console.log(`🎨 Text color set to: ${ui.text_color}`);
         }
 
+        // 🎨 NEW: Apply header color and variations
+        if (ui.header_color) {
+            root.style.setProperty('--header-color', ui.header_color);
+            root.style.setProperty('--header-background', ui.header_color);
+            root.style.setProperty('--header-hover', this.darkenColor(ui.header_color, 10));
+            root.style.setProperty('--header-active', this.darkenColor(ui.header_color, 20));
+            console.log(`🎨 Header color set to: ${ui.header_color}`);
+        }
+
+        // 🎨 NEW: Apply footer color and variations
+        if (ui.footer_color) {
+            root.style.setProperty('--footer-color', ui.footer_color);
+            root.style.setProperty('--footer-background', ui.footer_color);
+            root.style.setProperty('--footer-hover', this.darkenColor(ui.footer_color, 10));
+            root.style.setProperty('--footer-active', this.darkenColor(ui.footer_color, 20));
+            console.log(`🎨 Footer color set to: ${ui.footer_color}`);
+        }
+
+        // 🎨 NEW: Apply button text color
+        if (ui.button_text_color) {
+            root.style.setProperty('--button-text-color', ui.button_text_color);
+            root.style.setProperty('--button-text-hover', this.lightenColor(ui.button_text_color, 10));
+            root.style.setProperty('--button-text-active', this.darkenColor(ui.button_text_color, 10));
+            console.log(`🎨 Button text color set to: ${ui.button_text_color}`);
+        }
+
         // Set derived colors based on API colors
         if (ui.primary_color) {
             root.style.setProperty('--border-color', this.lightenColor(ui.primary_color, 60));
@@ -541,6 +574,33 @@ class ConfigManager {
 
             // Update body text color
             document.body.style.color = ui.text_color;
+        }
+
+        // 🎨 NEW: Apply header color to header elements
+        if (ui.header_color) {
+            const headerElements = document.querySelectorAll('header, .header, .top-header, .window-header, .navbar');
+            headerElements.forEach(element => {
+                element.style.backgroundColor = ui.header_color;
+            });
+            console.log('🎨 Applied header color to header elements');
+        }
+
+        // 🎨 NEW: Apply footer color to footer elements
+        if (ui.footer_color) {
+            const footerElements = document.querySelectorAll('footer, .footer, .bottom-footer');
+            footerElements.forEach(element => {
+                element.style.backgroundColor = ui.footer_color;
+            });
+            console.log('🎨 Applied footer color to footer elements');
+        }
+
+        // 🎨 NEW: Apply button text color to button text
+        if (ui.button_text_color) {
+            const buttonElements = document.querySelectorAll('button, .btn, .modal-btn, .submit-btn');
+            buttonElements.forEach(button => {
+                button.style.color = ui.button_text_color;
+            });
+            console.log('🎨 Applied button text color to all buttons');
         }
 
         console.log('✅ Colors applied to specific elements');
