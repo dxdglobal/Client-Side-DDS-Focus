@@ -112,6 +112,12 @@ class DynamicStylingManager {
             console.log('⚫ Text color applied:', stylingData.text_color);
         }
 
+        // Apply icon color system
+        if (stylingData.icon_color) {
+            root.style.setProperty('--icon-color', stylingData.icon_color, 'important');
+            console.log('🔹 Icon color applied:', stylingData.icon_color);
+        }
+
         // 🎨 NEW: Apply header color system
         if (stylingData['header-color'] || stylingData.header_color) {
             const headerColor = stylingData['header-color'] || stylingData.header_color;
@@ -1932,6 +1938,38 @@ window.forceWhiteHeaderButtons = function() {
 };
 
 console.log('🔒 Additional function: forceWhiteHeaderButtons()');
+
+// 🛡️ Protection against JavaScript-applied black backgrounds on navigation
+function preventNavigationBlackBackgrounds() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        // Override any inline styles that set black backgrounds
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const style = link.getAttribute('style');
+                    if (style && (style.includes('rgb(0, 0, 0)') || style.includes('background-color: black') || style.includes('background: black'))) {
+                        // Remove the black background and keep other styles
+                        const cleanStyle = style
+                            .replace(/background-color:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
+                            .replace(/background-color:\s*black\s*!important;?/gi, '')
+                            .replace(/background:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
+                            .replace(/background:\s*black\s*!important;?/gi, '');
+                        
+                        link.setAttribute('style', cleanStyle);
+                        console.log('🛡️ Prevented black background on navigation link');
+                    }
+                }
+            });
+        });
+        
+        observer.observe(link, { attributes: true, attributeFilter: ['style'] });
+    });
+}
+
+// Initialize protection when DOM is ready
+document.addEventListener('DOMContentLoaded', preventNavigationBlackBackgrounds);
 
 
 

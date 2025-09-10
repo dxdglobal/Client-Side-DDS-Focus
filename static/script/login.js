@@ -359,7 +359,7 @@ class LoginStylingManager {
             const header = document.querySelector('.window-header');
             if (header) {
                 header.style.setProperty('background-color', headerColor, 'important');
-                header.style.setProperty('color', stylingData.background_color || '#ffffff', 'important');
+                header.style.setProperty('color', stylingData.background_color || 'inherit', 'important');
             }
         }
 
@@ -431,7 +431,7 @@ class LoginStylingManager {
             const langSelector = document.getElementById('languageSelector');
             if (langSelector) {
                 langSelector.style.setProperty('border-color', stylingData.secondary_color, 'important');
-                langSelector.style.setProperty('background-color', stylingData.background_color || '#ffffff', 'important');
+                langSelector.style.setProperty('background-color', stylingData.background_color, 'important');
             }
         }
     }
@@ -484,14 +484,8 @@ class LoginStylingManager {
     }
 
     applyMinimalStyling() {
-        console.log('🔄 Login.js: Applying minimal fallback styling...');
-        const root = document.documentElement;
-        
-        // Minimal fallback colors
-        root.style.setProperty('--primary-color', '#007bff', 'important');
-        root.style.setProperty('--button-color', '#28a745', 'important');
-        root.style.setProperty('--background-color', '#ffffff', 'important');
-        root.style.setProperty('--text-color', '#333333', 'important');
+        console.log('🔄 Login.js: Minimal styling - using API-only colors (no fallbacks)');
+        // API-only color system - no hardcoded fallbacks
     }
 
     // Utility functions
@@ -525,7 +519,8 @@ class LoginStylingManager {
             const b = parseInt(result[3], 16);
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
-        return `rgba(255, 255, 255, ${alpha})`;
+        // Return transparent for invalid hex values (API-only system)
+        return `rgba(0, 0, 0, 0)`;
     }
 
     // Public methods for debugging
@@ -638,55 +633,7 @@ window.testLoginColors = () => {
 console.log('✅ Login.js: DDS Styling API integration loaded');
 console.log('🧪 Debug functions: refreshLoginStyling(), getLoginStyling(), testLoginColors()');
 
-// 🎨 NEW: Test function specifically for Postman Test Theme
-window.testPostmanTheme = function() {
-    console.log('📮 Testing Postman Test Theme Colors...');
-    
-    // Postman Test Theme colors as provided by user
-    const postmanTheme = {
-        "theme_name": "Postman Test Theme",
-        "description": "A beautiful theme created via Postman",
-        "header-color": "#8E44AD",
-        "footer-color": "#3498DB",
-        "text_color": "#2C3E50",
-        "background_color": "#ECF0F1",
-        "button_color": "#E67E22",
-        "button-text_color": "#2C3E50",
-        "submit_button_bg_color": "#28a745",
-        "submit_button_text_color": "#ffffff",
-        "primary_button_bg_color": "#007bff",
-        "primary_button_text_color": "#ffffff",
-        "secondary_button_bg_color": "#6c757d",
-        "secondary_button_text_color": "#ffffff",
-        "drawer_background_color": "#f8f9fa",
-        "drawer_text_color": "#212529",
-        "icon_color": "#6c757d",
-        "top_color": "#ffffff",
-        "heading_font_size": "36px",
-        "body_font_size": "18px",
-        "font_family": "Segoe UI, sans-serif",
-        "border_radius": "10px"
-    };
-    
-    console.log('🎨 Applying Postman Test Theme manually...');
-    
-    // Apply the theme
-    loginStyling.currentStyling = postmanTheme;
-    loginStyling.applyLoginStyling(postmanTheme);
-    
-    console.log('📮 Postman Test Theme applied! Check the page styling.');
-    
-    // Log all applied colors
-    console.log('\n🎨 Applied Postman Theme Values:');
-    console.log('===============================');
-    Object.entries(postmanTheme).forEach(([key, value]) => {
-        if (key !== 'theme_name' && key !== 'description') {
-            console.log(`${key}: ${value}`);
-        }
-    });
-    
-    return postmanTheme;
-};
+// � Production-ready: API-only color system initialized
 
 // 🎨 NEW: Function to apply any custom theme
 window.applyCustomLoginTheme = function(themeObject) {

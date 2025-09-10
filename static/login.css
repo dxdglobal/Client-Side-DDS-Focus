@@ -1,285 +1,252 @@
 /* ============================================
-   🎨 DDS LOGIN - DESIGN SYSTEM VARIABLES
+   🎨 DDS LOGIN - API-ONLY COLOR SYSTEM
    ============================================ */
 
 :root {
-  /* 🎨 Primary Brand Colors - POPULATED FROM API */
-  --primary-color: ; /* Will be set from API primary_color */
-  --primary-hover: ; /* Generated from primary_color */
-  --primary-active: ; /* Generated from primary_color */
-  --primary-light: ; /* Generated from primary_color */
-  --primary-dark: ; /* Generated from primary_color */
-
-  /* 🌈 Secondary Colors - POPULATED FROM API */
-  --secondary-color: ; /* Will be set from API secondary_color */
-  --secondary-hover: ; /* Generated from secondary_color */
-  --secondary-active: ; /* Generated from secondary_color */
-  --secondary-light: ; /* Generated from secondary_color */
-  --secondary-dark: ; /* Generated from secondary_color */
-
-  /* 🎨 Background Colors - POPULATED FROM API */
-  --background-color: ; /* Will be set from API background_color */
-  --background-hover: ; /* Generated from background_color */
-  --background-active: ; /* Generated from background_color */
-  --background-light: ; /* Generated from background_color */
-  --background-dark: ; /* Generated from background_color */
-
-  /* 🔘 Button Colors - POPULATED FROM API */
-  --button-color: ; /* Will be set from API button_color */
-  --button-hover: ; /* Generated from button_color */
-  --button-active: ; /* Generated from button_color */
-  --button-light: ; /* Generated from button_color */
-  --button-dark: ; /* Generated from button_color */
-
-  /* 📝 Text Colors - POPULATED FROM API */
-  --text-color: ; /* Will be set from API text_color */
-  --text-hover: ; /* Generated from text_color */
-  --text-active: ; /* Generated from text_color */
-  --text-light: ; /* Generated from text_color */
-  --text-dark: ; /* Generated from text_color */
-
-  /* ⚠️ NO HARDCODED COLORS - EVERYTHING FROM API */
-  /* System colors removed - will be set via API */
-  --white: ; /* Will be derived from API colors */
-  --black: ; /* Will be derived from API colors */
-  --transparent: transparent; /* Only exception - truly transparent */
-
-  /* 🔗 Additional Variables Referenced in CSS */
-  --border-color: ; /* Generated from API colors */
-  --warning-color: ; /* Enhanced from button_color */
-  --success-color: ; /* Enhanced from secondary_color */
+  /* 🔥 ALL COLORS POPULATED EXCLUSIVELY FROM API */
+  /* NO HARDCODED COLORS - EVERYTHING DYNAMIC */
+  
+  /* Core API Color Variables */
+  --header-color: ;
+  --footer-color: ;
+  --text-color: ;
+  --background-color: ;
+  --button-color: ;
+  --button-text-color: ;
+  
+  /* Enhanced API Color Variables */
+  --submit-button-bg-color: ;
+  --submit-button-text-color: ;
+  --primary-button-bg-color: ;
+  --primary-button-text-color: ;
+  --secondary-button-bg-color: ;
+  --secondary-button-text-color: ;
+  --drawer-background-color: ;
+  --drawer-text-color: ;
+  --icon-color: ;
+  --top-color: ;
+  
+  /* Typography from API */
+  --heading-font-size: ;
+  --body-font-size: ;
+  --font-family: ;
+  --border-radius: ;
+  
+  /* Only system values allowed */
+  --transparent: transparent;
 }
 
 /* ============================================
-   🎨 LOGIN STYLES
+   🎨 LOGIN STYLES - API COLORS ONLY
    ============================================ */
     
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background-color: var(--background-color);
-        color: var(--text-color);
-        height: 100vh;
-        overflow: hidden;
-    }
-  
-    .container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-  
-    .window-header {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        padding: 0 10px;
-    }
-  
-    .window-title {
-        display: flex;
-        align-items: center;
-        font-size: 12px;
-        color: var(--text-color);
-    }
-  
-    .window-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 5px;
-        background-color: var(--secondary-color);
-    }
-  
-    .window-controls {
-        position: absolute;
-        top: 0;
-        right: 0;
-        display: flex;
-        height: 30px;
-    }
-  
-    .window-button {
-        width: 45px;
-        height: 30px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-    }
-  
-    .minimize {
-        font-size: 14px;
-    }
-  
-    .maximize {
-        font-size: 12px;
-    }
-  
-    .close {
-        font-size: 16px;
-    }
-  
-    .wave-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 30%;
-        background-color: var(--primary-color);
-        border-radius: 0 0 50% 50% / 0 0 100% 100%;
-        z-index: 0;
-    }
-  
-    .logo {
-        margin-top: 60px;
-        z-index: 10;
-        text-align: center;
-    }
-  
-    .logo img {
-        width: 200px;
-        filter: brightness(0) invert(1); /* Makes logo white to contrast with colored background */
-    }
-  
-    .content {
-        margin-top: 30px;
-        width: 100%;
-        max-width: 400px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 5;
-    }
-  
-    .title {
-        font-size: 24px;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 10px;
-        color: var(--text_color);
-    }
-  
-    .subtitle {
-        font-size: 16px;
-        text-align: center;
-        margin-bottom: 30px;
-        opacity: 0.9;
-        color: var(--text_color);
-    }
-  
-    .login-form {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-  
-    .input-field {
-        width: 100%;
-        height: 45px;
-        border-radius: 5px;
-        border: none;
-        padding: 0 15px;
-        font-size: 16px;
-        color: var(--text-color);
-        background-color: var(--text_color);
-        box-sizing: border-box;
-    }
-  
-    .checkbox-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        margin: 5px 0 20px;
-    }
-  
-    .save-password {
-        display: flex;
-        align-items: center;
-        color: var(--text_color);
-    }
-  
-    .save-password input {
-        margin-right: 5px;
-        width: 16px;
-        height: 16px;
-    }
-  
-    .forgot-password {
-        color: var(--text_color);
-        text-decoration: none;
-    }
-  
-    .login-button {
-        width: 100%;
-        height: 45px;
-        background-color: var(--submit_button_bg_color); /* Added fallback red for debugging */
-        color: var(--white, white); /* Added fallback white for debugging */
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family, Arial, sans-serif);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: var(--body-font-size, 16px);
+    height: 100vh;
+    overflow: hidden;
+}
 
-    .login-button:hover {
-        background-color: var(--button-hover);
-    }
-  
-    .guest-button {
-        width: 100%;
-        height: 45px;
-        background-color: var(--success-color);
-        color: var(--text_color);
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: background-color 0.3s ease;
-    }
+.container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
 
-    .guest-button:hover {
-        background-color: var(--secondary-hover);
-    }
-  
-    .language-selector {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        display: flex;
-        align-items: center;
-    }
-  
-    .language-selector select {
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: none;
-        background-color: var(--text_color);
-        color: var(--text-color);
-    }
-  
-    .version {
-        position: absolute;
-        bottom: 20px;
-        right: 50%;
-        transform: translateX(50%);
-        font-size: 12px;
-        opacity: 0.7;
-        color: var(--primary-color, #4285f4) !important; /* 🎨 PRIMARY COLOR FROM API */
-        font-weight: 600; /* Make it more visible */
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Better contrast */
-    }
+.window-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background-color: var(--header-color);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.window-title {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+.window-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    background-color: var(--icon-color);
+}
+
+.window-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    height: 30px;
+}
+
+.window-button {
+    width: 45px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color: var(--button-color);
+    color: var(--button-text-color);
+}
+
+.wave-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background-color: var(--top-color);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    z-index: 0;
+}
+
+.logo {
+    margin-top: 60px;
+    z-index: 10;
+    text-align: center;
+}
+
+.logo img {
+    width: 200px;
+    /* Remove hardcoded filter - logo color now controlled by API */
+}
+
+.content {
+    margin-top: 30px;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+}
+
+.title {
+    font-size: var(--submit_button_text_color, 24px);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.subtitle {
+    font-size: var(--body-font-size, 16px);
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-color);
+}
+
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-field {
+    width: 100%;
+    height: 45px;
+    border-radius: var(--border-radius, 5px);
+    border: none;
+    padding: 0 15px;
+    font-size: var(--body-font-size, 16px);
+    color: var(--text-color);
+    background-color: var(--drawer-background-color);
+    box-sizing: border-box;
+}
+
+.checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 5px 0 20px;
+}
+
+.save-password {
+    display: flex;
+    align-items: center;
+    color: var(--text-color);
+}
+
+.save-password input {
+    margin-right: 5px;
+    width: 16px;
+    height: 16px;
+}
+
+.forgot-password {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.login-button {
+    width: 100%;
+    height: 45px;
+    background-color: var(--submit_button_bg_color);
+    color: var(--submit-button-text-color);
+    border: none;
+    border-radius: var(--border-radius, 5px);
+    font-size: var(--body-font-size, 16px);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.guest-button {
+    width: 100%;
+    height: 45px;
+    background-color: var(--secondary-button-bg-color);
+    color: var(--secondary-button-text-color);
+    border: none;
+    border-radius: var(--border-radius, 5px);
+    font-size: var(--body-font-size, 16px);
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.language-selector {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.language-selector select {
+    padding: 5px 10px;
+    border-radius: var(--border-radius, 5px);
+    border: none;
+    background-color: var(--drawer-background-color);
+    color: var(--drawer-text-color);
+}
+
+.version {
+    position: absolute;
+    bottom: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 12px;
+    color: var(--text-color);
+    font-weight: 600;
+}

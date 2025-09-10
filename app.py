@@ -1289,7 +1289,7 @@ def upload_all_screenshots_to_s3():
 
 
 #  New endpoint to store session START
-@app.route('/start_task_session', methods=['POST'])
+@app.route('/start_task_session', methods=['POST']) 
 def start_task_session():
     import pymysql
     data = request.get_json()

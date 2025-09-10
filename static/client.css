@@ -1,85 +1,66 @@
 
 /* ============================================
-   🎨 DDS FOCUS PRO - DESIGN SYSTEM VARIABLES
+   🎨 DDS FOCUS PRO - API-ONLY COLOR SYSTEM
    ============================================ */
 
 :root {
-  /* 🎨 Primary Brand Colors - POPULATED FROM API */
-  --primary-color: ;
-  --primary-hover: ;
-  --primary-active: ;
-  --primary-light: ;
-  --primary-dark: ;
-
-  /* 🌈 Secondary Colors - POPULATED FROM API */
-  --secondary-color: ;
-  --secondary-hover: ;
-  --secondary-active: ;
-  --secondary-light: ;
-  --secondary-dark: ;
-
-  /* 🎨 Background Colors - POPULATED FROM API */
-  --background-color: ;
-  --background-hover: ;
-  --background-active: ;
-  --background-light: ;
-  --background-dark: ;
-
-  /* 🔘 Button Colors - POPULATED FROM API */
-  --button-color: ;
-  --button-hover: ;
-  --button-active: ;
-  --button-light: ;
-  --button-dark: ;
-
-  /* 📝 Text Colors - POPULATED FROM API */
+  /* 🔥 ALL COLORS POPULATED EXCLUSIVELY FROM API */
+  /* NO HARDCODED COLORS - EVERYTHING DYNAMIC */
+  
+  /* Core API Color Variables */
+  --header-color: ;
+  --footer-color: ;
   --text-color: ;
-  --text-hover: ;
-  --text-active: ;
-  --text-light: ;
-  --text-dark: ;
-
-  /* ⚠️ Essential System Colors Only */
-  --white: #ffffff;
-  --black: #000000;
+  --background-color: ;
+  --button-color: ;
+  --button-text-color: ;
+  
+  /* Enhanced API Color Variables */
+  --submit-button-bg-color: ;
+  --submit-button-text-color: ;
+  --primary-button-bg-color: ;
+  --primary-button-text-color: ;
+  --secondary-button-bg-color: ;
+  --secondary-button-text-color: ;
+  --drawer-background-color: ;
+  --drawer-text-color: ;
+  --icon-color: ;
+  --top-color: ;
+  
+  /* Typography from API */
+  --heading-font-size: ;
+  --body-font-size: ;
+  --font-family: ;
+  --border-radius: ;
+  
+  /* Only system values allowed */
   --transparent: transparent;
 
-  /* 🔗 Additional Variables Referenced in CSS */
-  --border-color: ;
-  --warning-color: ;
-  --danger-color: ;
-  --danger-dark: ;
+  /* 📝 Typography - Font families (controlled by API --font-family) */
+  /* These will be overridden by API values */
+  
+  /* 📏 Font Sizes (controlled by API --heading-font-size, --body-font-size) */
+  /* These will be overridden by API values */
+  
+  /* 📐 Font Weights (using system defaults only) */
+  /* 📏 Line Heights (using system defaults only) */
+  /* � Spacing Scale (using system defaults only) */
+  /* 🔘 Border Radius (controlled by API --border-radius) */
+  /* 🌊 Shadows (using system defaults only) */
+}
 
-  /* 📝 Typography - Font families (from API) */
-  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  --font-family-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+/* ============================================
+   🎨 SYSTEM DEFAULTS (NON-COLOR VALUES ONLY)
+   ============================================ */
 
-  /* 📏 Font Sizes */
-  --font-size-xs: 0.75rem;     /* 12px */
-  --font-size-sm: 0.875rem;    /* 14px */
-  --font-size-base: 1rem;      /* 16px */
-  --font-size-lg: 1.125rem;    /* 18px */
-  --font-size-xl: 1.25rem;     /* 20px */
-  --font-size-2xl: 1.5rem;     /* 24px */
-  --font-size-3xl: 1.875rem;   /* 30px */
-  --font-size-4xl: 2.25rem;    /* 36px */
-  --font-size-5xl: 3rem;       /* 48px */
-
-  /* 📐 Font Weights */
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-
-  /* 📏 Line Heights */
+/* These values are system defaults and don't conflict with API colors */
+.system-defaults {
+  /* Line Heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
 
-  /* 🔲 Spacing Scale */
+  /* Spacing Scale */
   --space-1: 0.25rem;   /* 4px */
   --space-2: 0.5rem;    /* 8px */
   --space-3: 0.75rem;   /* 12px */
@@ -92,16 +73,7 @@
   --space-16: 4rem;     /* 64px */
   --space-20: 5rem;     /* 80px */
 
-  /* 🔘 Border Radius */
-  --radius-sm: 0.25rem;    /* 4px */
-  --radius-base: 0.375rem; /* 6px */
-  --radius-md: 0.5rem;     /* 8px */
-  --radius-lg: 0.75rem;    /* 12px */
-  --radius-xl: 1rem;       /* 16px */
-  --radius-2xl: 1.5rem;    /* 24px */
-  --radius-full: 9999px;
-
-  /* 🌊 Shadows */
+  /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -1205,9 +1177,34 @@ body {
 
         /* Active state animation */
         .nav-item.active .nav-link {
-            background: rgba(255, 255, 255, 0.2);
+            background: transparent !important;
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Ensure active nav-link stays transparent on hover */
+        .nav-item.active .nav-link:hover {
+            background: transparent !important;
+        }
+        
+        /* Comprehensive override to prevent any black backgrounds on navigation */
+        .nav-item .nav-link,
+        .nav-item.active .nav-link,
+        .nav-item .nav-link:hover,
+        .nav-item.active .nav-link:hover,
+        .nav-item .nav-link::before,
+        .nav-item .nav-link::after {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+        
+        /* Ultra-specific override to prevent JavaScript-applied black backgrounds */
+        .nav-item .nav-link[style*="background-color: rgb(0, 0, 0)"],
+        .nav-item .nav-link[style*="background-color: black"],
+        .nav-item .nav-link[style*="background: rgb(0, 0, 0)"],
+        .nav-item .nav-link[style*="background: black"] {
+            background-color: transparent !important;
+            background: transparent !important;
         }
 
         .nav-item.active .nav-icon {

@@ -9,11 +9,7 @@ class ConfigManager {
         this.ddsApiUrl = 'https://dxdtime.ddsolutions.io/api/styling/global/';
         this.defaultConfig = {
             ui: {
-                primary_color: "#8E44AD",
-                secondary_color: "#3498DB",
-                background_color: "#ECF0F1",
-                button_color: "#E67E22",
-                text_color: "#2C3E50",
+                // API-only color system - no defaults
                 font_size: {
                     small: "12px",
                     medium: "14px",
@@ -71,9 +67,9 @@ class ConfigManager {
                             button_color: stylingData.button_color || this.defaultConfig.ui.button_color,
                             text_color: stylingData.text_color || this.defaultConfig.ui.text_color,
                             // 🎨 NEW: Additional specific color fields
-                            header_color: stylingData['header-color'] || stylingData.header_color || '#ffffff',
-                            footer_color: stylingData['footer-color'] || stylingData.footer_color || '#ffffff',
-                            button_text_color: stylingData['button-text_color'] || stylingData.button_text_color || '#ffffff',
+                            header_color: stylingData['header-color'] || stylingData.header_color,
+                            footer_color: stylingData['footer-color'] || stylingData.footer_color,
+                            button_text_color: stylingData['button-text_color'] || stylingData.button_text_color,
                             font_family: stylingData.font_family || this.defaultConfig.ui.font_family,
                             font_size: {
                                 heading: stylingData.heading_font_size || '18px',
