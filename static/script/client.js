@@ -4,6 +4,216 @@ let isResetInProgress = false;
 let idleTriggerTime = 0;
 let idleTimeout = 5;  // modal stays 5 seconds before sending auto-note
 
+// 🎨 DDS Styling API Integration for Client Page
+class DynamicStylingManager {
+    constructor() {
+        this.apiUrl = 'https://dxdtime.ddsolutions.io/api/styling/global/';
+        this.proxyUrl = '/api/styling/proxy';
+        this.retryAttempts = 3;
+        this.retryDelay = 2000;
+    }
+
+    async applyStylingFromAPI() {
+        console.log('🎨 Client.js: Loading dynamic styling from DDS API...');
+        
+        for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+            try {
+                // Try proxy first to avoid CORS issues
+                const response = await fetch(this.proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Proxy failed: ${response.status}`);
+                }
+
+                const proxyData = await response.json();
+                if (!proxyData.success) {
+                    throw new Error(`Proxy error: ${proxyData.error}`);
+                }
+
+                const apiData = proxyData.data;
+                let stylingData = null;
+
+                // Handle different API response structures
+                if (apiData.status === 'success' && apiData.data) {
+                    stylingData = apiData.data;
+                } else if (apiData.button_color !== undefined) {
+                    stylingData = apiData;
+                } else {
+                    throw new Error('Invalid API response structure');
+                }
+
+                console.log('✅ Client.js: API styling data retrieved:', stylingData);
+                this.applyAllColors(stylingData);
+                this.setupDynamicButtonEffects(stylingData);
+                return stylingData;
+
+            } catch (error) {
+                console.warn(`⚠️ Client.js: Styling API attempt ${attempt}/${this.retryAttempts} failed:`, error);
+                
+                if (attempt < this.retryAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+                } else {
+                    console.error('❌ Client.js: All styling API attempts failed, using fallback');
+                    this.applyFallbackStyling();
+                }
+            }
+        }
+    }
+
+    applyAllColors(stylingData) {
+        const root = document.documentElement;
+        console.log('🎨 Client.js: Applying all API colors...');
+
+        // Apply primary color system
+        if (stylingData.primary_color) {
+            root.style.setProperty('--primary-color', stylingData.primary_color, 'important');
+            root.style.setProperty('--primary-hover', this.darkenColor(stylingData.primary_color, 10), 'important');
+            root.style.setProperty('--primary-active', this.darkenColor(stylingData.primary_color, 20), 'important');
+            console.log('🔵 Primary color applied:', stylingData.primary_color);
+        }
+
+        // Apply secondary color system
+        if (stylingData.secondary_color) {
+            root.style.setProperty('--secondary-color', stylingData.secondary_color, 'important');
+            root.style.setProperty('--secondary-hover', this.darkenColor(stylingData.secondary_color, 10), 'important');
+            root.style.setProperty('--success-color', stylingData.secondary_color, 'important');
+            console.log('🟢 Secondary color applied:', stylingData.secondary_color);
+        }
+
+        // Apply background color system
+        if (stylingData.background_color) {
+            root.style.setProperty('--background-color', stylingData.background_color, 'important');
+            root.style.setProperty('--bg-primary', stylingData.background_color, 'important');
+            document.body.style.setProperty('background-color', stylingData.background_color, 'important');
+            console.log('⚪ Background color applied:', stylingData.background_color);
+        }
+
+        // Apply button color system (MAIN FOCUS)
+        if (stylingData.button_color) {
+            root.style.setProperty('--button-color', stylingData.button_color, 'important');
+            root.style.setProperty('--button-hover', this.darkenColor(stylingData.button_color, 10), 'important');
+            root.style.setProperty('--button-active', this.darkenColor(stylingData.button_color, 20), 'important');
+            
+            // Apply to all button elements immediately
+            this.applyButtonColors(stylingData.button_color);
+            console.log('🔴 Button color applied:', stylingData.button_color);
+        }
+
+        // Apply text color system
+        if (stylingData.text_color) {
+            root.style.setProperty('--text-color', stylingData.text_color, 'important');
+            root.style.setProperty('--text-primary', stylingData.text_color, 'important');
+            document.body.style.setProperty('color', stylingData.text_color, 'important');
+            console.log('⚫ Text color applied:', stylingData.text_color);
+        }
+
+        // Apply font settings
+        if (stylingData.font_family) {
+            root.style.setProperty('--font-family', stylingData.font_family, 'important');
+            document.body.style.setProperty('font-family', stylingData.font_family, 'important');
+            console.log('📝 Font family applied:', stylingData.font_family);
+        }
+
+        // Apply border radius
+        if (stylingData.border_radius) {
+            root.style.setProperty('--border-radius', stylingData.border_radius, 'important');
+            console.log('📐 Border radius applied:', stylingData.border_radius);
+        }
+    }
+
+    applyButtonColors(buttonColor) {
+        // Comprehensive button selector list for client page
+        const buttonSelectors = [
+            '#startBtn', '#resetBtn', '#breakBtn',
+            '.login-button', '.btn-primary', '.btn-secondary',
+            '.modal-btn', '.submit-btn', '#modalSubmitBtn',
+            'button:not(.cancel-btn):not(.close-btn)',
+            '.nav-link', '.drawer-arrow-btn'
+        ];
+
+        buttonSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                element.style.setProperty('background-color', buttonColor, 'important');
+                element.style.setProperty('border-color', buttonColor, 'important');
+            });
+        });
+
+        console.log(`🔴 Applied button color to ${buttonSelectors.length} selector types`);
+    }
+
+    setupDynamicButtonEffects(stylingData) {
+        if (!stylingData.button_color) return;
+
+        const hoverColor = this.darkenColor(stylingData.button_color, 15);
+        const activeColor = this.darkenColor(stylingData.button_color, 25);
+
+        // Add dynamic hover effects to all buttons
+        const allButtons = document.querySelectorAll('button, .btn, .nav-link');
+        allButtons.forEach(button => {
+            // Remove existing listeners
+            button.removeEventListener('mouseenter', button._apiHoverIn);
+            button.removeEventListener('mouseleave', button._apiHoverOut);
+            
+            // Add new API-based hover effects
+            button._apiHoverIn = () => {
+                button.style.setProperty('background-color', hoverColor, 'important');
+                button.style.setProperty('transform', 'translateY(-2px)', 'important');
+            };
+            
+            button._apiHoverOut = () => {
+                button.style.setProperty('background-color', stylingData.button_color, 'important');
+                button.style.setProperty('transform', 'translateY(0)', 'important');
+            };
+            
+            button.addEventListener('mouseenter', button._apiHoverIn);
+            button.addEventListener('mouseleave', button._apiHoverOut);
+        });
+
+        console.log('✨ Dynamic button effects applied with API colors');
+    }
+
+    applyFallbackStyling() {
+        console.log('🔄 Client.js: Applying minimal fallback styling...');
+        const root = document.documentElement;
+        
+        // Only set essential variables if API completely fails
+        root.style.setProperty('--primary-color', '#007bff', 'important');
+        root.style.setProperty('--button-color', '#28a745', 'important');
+        root.style.setProperty('--background-color', '#ffffff', 'important');
+        root.style.setProperty('--text-color', '#333333', 'important');
+    }
+
+    darkenColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) - amt;
+        const G = (num >> 8 & 0x00FF) - amt;
+        const B = (num & 0x0000FF) - amt;
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+
+    lightenColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+}
+
+// Initialize dynamic styling manager
+const dynamicStyling = new DynamicStylingManager();
 
 const translations = {
     en: {
@@ -167,6 +377,10 @@ function showToast(message, type = 'success') {
             let selectedProjectName = '', selectedTaskName = '', user = null;
 
 window.onload = function () {
+    // 🎨 Initialize Dynamic Styling from DDS API
+    console.log('🚀 Client.js: Initializing dynamic styling...');
+    dynamicStyling.applyStylingFromAPI();
+    
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     applyClientLanguage(lang);
     const todayDateField = document.getElementById('todayDate');
@@ -190,6 +404,13 @@ window.onload = function () {
         fetchAIProjects(user);
         saveUserProjectsToCache(user);
     }
+
+    // 🎨 Re-apply styling after DOM setup
+    setTimeout(() => {
+        console.log('🔄 Client.js: Re-applying styling after DOM setup...');
+        dynamicStyling.applyStylingFromAPI();
+    }, 1000);
+};
 
 
 
@@ -247,11 +468,6 @@ setInterval(() => {
         .catch(console.error);
 }, 10000);
 
-
-
-
-    };
-    
 async function handleAutoIdleSubmit() {
     stopScreenRecording();  // ✅ Yeh yahan hona chahiye, function ke andar nahi
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
@@ -349,6 +565,11 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
         // ✅ Automatically update stateCircle to WORK
         setState('work');
+        
+        // 🎨 Re-apply button styling after state change
+        setTimeout(() => {
+            dynamicStyling.applyStylingFromAPI();
+        }, 500);
     }
 });
 
@@ -1416,6 +1637,68 @@ function cancelIdleCountdown() {
     setState('work');                          // 🔄 Change UI back to "work"
     showToast("⏱️ Countdown canceled. Back to work!", "success");
 }
+
+// 🎨 DDS Styling API Integration - Periodic Refresh & Debug Functions
+// Refresh styling every 5 minutes to ensure consistency
+setInterval(() => {
+    console.log('🔄 Client.js: Periodic styling refresh...');
+    dynamicStyling.applyStylingFromAPI();
+}, 5 * 60 * 1000);
+
+// 🧪 Debug functions for testing API styling in browser console
+window.refreshStyling = function() {
+    console.log('🧪 Manual styling refresh triggered...');
+    return dynamicStyling.applyStylingFromAPI();
+};
+
+window.testClientStyling = function() {
+    console.log('🧪 Testing client styling integration...');
+    console.log('📊 Current dynamic styling manager:', dynamicStyling);
+    
+    // Test button selectors
+    const buttonSelectors = ['#startBtn', '#resetBtn', '.modal-btn', 'button'];
+    buttonSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        console.log(`🔍 Found ${elements.length} elements for selector: ${selector}`);
+    });
+    
+    // Refresh styling
+    return dynamicStyling.applyStylingFromAPI();
+};
+
+window.debugClientColors = function() {
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    
+    console.log('🎨 Current Client.js CSS Variables:');
+    console.log('--primary-color:', style.getPropertyValue('--primary-color').trim());
+    console.log('--secondary-color:', style.getPropertyValue('--secondary-color').trim());
+    console.log('--background-color:', style.getPropertyValue('--background-color').trim());
+    console.log('--button-color:', style.getPropertyValue('--button-color').trim());
+    console.log('--text-color:', style.getPropertyValue('--text-color').trim());
+    
+    // Check actual button colors
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        const btnStyle = getComputedStyle(startBtn);
+        console.log('🔴 Start Button Background:', btnStyle.backgroundColor);
+        console.log('🔴 Start Button Border:', btnStyle.borderColor);
+    }
+};
+
+// 🎨 Enhanced setState function to maintain styling after state changes
+const originalSetState = setState;
+setState = function(state) {
+    originalSetState(state);
+    
+    // Re-apply styling after state change
+    setTimeout(() => {
+        dynamicStyling.applyStylingFromAPI();
+    }, 100);
+};
+
+console.log('✅ Client.js: DDS Styling API integration completed');
+console.log('🧪 Debug functions available: refreshStyling(), testClientStyling(), debugClientColors()');
 
 
 
