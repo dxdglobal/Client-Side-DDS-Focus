@@ -11,6 +11,11 @@ import threading
 import psutil
 from collections import defaultdict
 
+# Logger setup
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 try:
     import win32gui
     import win32process
@@ -18,6 +23,9 @@ except ImportError:
     print("⚠️ Please install pywin32: pip install pywin32")
     win32gui = None
     win32process = None
+
+# Global tracker instance
+window_tracker = None
 
 class ActiveWindowTracker:
     def __init__(self):
@@ -173,6 +181,57 @@ class ActiveWindowTracker:
         
         self.session_data[self.current_window]['sessions'].append(session_entry)
     
+    def get_activity_export_data(self):
+        """
+        Get activity data in S3-ready format for export
+        Returns dict with complete session data and summary - FOCUS TIME ONLY
+        """
+        logger.info("📊 [get_activity_export_data] Preparing activity data for S3 export")
+        
+        activities = []
+        total_duration = 0
+        
+        # Convert session_data to exportable format (focus time only)
+        for window_key, data in self.session_data.items():
+            if data['total_time'] > 0:  # Only include windows that had focus time
+                
+                # Create activity record for each session
+                for session in data['sessions']:
+                    duration = session['duration']
+                    total_duration += duration
+                    
+                    activity_record = {
+                        'window_title': data['window_title'],
+                        'process_name': data['process_name'],
+                        'browser_url': data['browser_info'].get('domain'),
+                        'domain': data['browser_info'].get('domain'),
+                        'tab_title': data['browser_info'].get('tab_title'),
+                        'start_time': session['start_time'],
+                        'end_time': session['end_time'],
+                        'duration_seconds': duration,
+                        'duration_formatted': self._format_duration(duration)
+                    }
+                    activities.append(activity_record)
+        
+        # Get session summary data
+        summary = self.get_session_summary()
+        
+        export_data = {
+            'export_timestamp': datetime.now().isoformat(),
+            'session_duration_seconds': total_duration,
+            'session_duration_formatted': self._format_duration(total_duration),
+            'total_applications': len([w for w in self.session_data.values() if w['total_time'] > 0]),
+            'focus_time_tracking': True,  # Indicates this tracks only focus time
+            'summary_by_application': summary,
+            'detailed_activities': activities,
+            'tracking_started': self.tracking_start_time.isoformat() if self.tracking_start_time else None,
+            'tracking_status': 'active' if self.tracking else 'stopped'
+        }
+        
+        logger.info("📦 Activity export data prepared: %d focus sessions, %.1f minutes total focus time", 
+                   len(activities), total_duration/60)
+        return export_data
+
     def get_session_summary(self):
         """Get summary of current tracking session"""
         # Log current window time before generating summary
@@ -291,20 +350,63 @@ def get_tracker():
 
 def start_active_window_tracking():
     """Start active window tracking"""
-    tracker = get_tracker()
-    tracker.start_tracking()
-    return tracker
+    global window_tracker
+    window_tracker = get_tracker()
+    window_tracker.start_tracking()
+    return window_tracker
 
 def stop_active_window_tracking():
     """Stop active window tracking"""
-    tracker = get_tracker()
-    tracker.stop_tracking()
-    return tracker
+    global window_tracker
+    if window_tracker:
+        window_tracker.stop_tracking()
+    return window_tracker
+
+def upload_current_activity_to_s3(email, task_name="General_Activity"):
+    """
+    Upload current activity tracking data to S3
+    
+    Args:
+        email: User email for S3 path structure
+        task_name: Task name for filename (default: "General_Activity")
+        
+    Returns:
+        str: S3 URL if successful, None if failed
+    """
+    global window_tracker
+    
+    if window_tracker is None:
+        logger.warning("⚠️  Activity tracker not initialized")
+        return None
+    
+    try:
+        # Get activity data for export
+        activity_data = window_tracker.get_activity_export_data()
+        
+        # Import here to avoid circular imports
+        from .s3_uploader import upload_activity_data_direct
+        
+        # Upload to S3 with task name
+        s3_url = upload_activity_data_direct(activity_data, email, task_name)
+        
+        if s3_url:
+            logger.info("✅ Activity data uploaded to S3: %s", s3_url)
+        else:
+            logger.error("❌ Failed to upload activity data to S3")
+            
+        return s3_url
+        
+    except Exception as e:
+        logger.error("❌ Error uploading activity data: %s", e)
+        return None
+
 
 def get_current_activity_summary():
     """Get current activity summary"""
-    tracker = get_tracker()
-    return tracker.get_session_summary()
+    global window_tracker
+    if window_tracker is None:
+        window_tracker = get_tracker()
+    return window_tracker.get_session_summary()
 
 def get_detailed_activity_report():
     """Get detailed activity report"""

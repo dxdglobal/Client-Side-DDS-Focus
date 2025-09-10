@@ -9,6 +9,84 @@ from .config_manager import config_manager
 
 logger = logging.getLogger(__name__)
 
+def upload_activity_data_direct(activity_data, email, task_name, file_extension="json"):
+    """
+    Upload activity tracking data directly to S3 following screenshot pattern
+    Structure: logs/{date}/{email}/activity_{task_name}_{timestamp}.json (one file per session)
+    
+    Args:
+        activity_data: Dictionary containing activity tracking data
+        email: User email
+        task_name: Task name for filename
+        file_extension: File extension (default: "json")
+    
+    Returns:
+        str: S3 URL if successful, None if failed
+    """
+    logger.info("📤 [upload_activity_data_direct] started")
+
+    # Get S3 credentials from configuration manager (same as screenshots)
+    s3_config = config_manager.get_s3_credentials()
+    access_key = s3_config.get("access_key")
+    secret_key = s3_config.get("secret_key")
+    bucket = s3_config.get("bucket_name", "ddsfocustime")
+    region = s3_config.get("region", "us-east-1")
+
+    logger.info("🔐 Using S3 config from configuration manager")
+    logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
+    logger.info("🌍 AWS_REGION: %s", region)
+
+    # Check if credentials are missing
+    if not all([access_key, secret_key, bucket, region]):
+        logger.error("❌ One or more AWS environment variables are missing.")
+        return None
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
+    safe_email = email.replace("@", "_at_")
+    safe_task_name = task_name.replace(" ", "_").replace("/", "_")
+    filename = f"activity_{safe_task_name}_{timestamp}.{file_extension}"
+    
+    # Structure: users_logs/{date}/{email}/activity_{task_name}_{timestamp}.json (consistent with other logs)
+    s3_key = f"users_logs/{date_folder}/{safe_email}/{filename}"
+
+    logger.info("👤 Email: %s", email)
+    logger.info("📋 Task: %s", task_name)
+    logger.info("📊 Activity Data: %d applications tracked", len(activity_data.get('applications', [])))
+    logger.info("☁️ S3 key: %s", s3_key)
+
+    try:
+        # Convert activity data to JSON
+        if isinstance(activity_data, dict) or isinstance(activity_data, list):
+            activity_content = json.dumps(activity_data, indent=2, ensure_ascii=False)
+        else:
+            activity_content = str(activity_data)
+        
+        activity_bytes = activity_content.encode('utf-8')
+
+        session = boto3.Session(
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region
+        )
+        s3 = session.client('s3')
+        
+        # Upload activity data directly to S3
+        s3.put_object(
+            Bucket=bucket,
+            Key=s3_key,
+            Body=activity_bytes,
+            ContentType='application/json'
+        )
+
+        url = f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
+        logger.info("✅ Activity data upload successful: %s", url)
+        return url
+    except Exception as e:
+        logger.error("❌ Activity data upload failed: %s", e)
+        return None
+
+
 def upload_logs_direct(log_data, email, task_name, log_type="session_log", file_extension="json"):
     """
     Upload logs directly to S3 following the same pattern as screenshots

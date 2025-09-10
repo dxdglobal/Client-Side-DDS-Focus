@@ -15,6 +15,7 @@ except Exception as e:
 from flask_mail import Mail, Message
 from moduller.tracker import save_raw_program_log, logs_file, collect_program_usage, get_program_history_and_save, upload_program_data_to_s3
 # from moduller.tracker import auto_log_every_minute, start_logging, stop_logging, upload_logs_on_app_close  # Disabled old tracker
+from moduller.active_window_tracker import start_active_window_tracking, stop_active_window_tracking, upload_current_activity_to_s3
 
 from flask import Flask, render_template, request, jsonify
 import requests 
@@ -1392,6 +1393,15 @@ def start_task_session():
         # ✅ Start automatic logging when timer starts
         # start_logging()  # Disabled old tracker
         print("✅ Automatic logging started with timer")
+        
+        # 🎯 Start activity window tracking when timer starts
+        try:
+            start_active_window_tracking()
+            print(f"🔍 Started activity window tracking for {email}")
+        except Exception as e:
+            print(f"❌ Error starting activity tracking: {e}")
+            import traceback
+            traceback.print_exc()
 
         return jsonify({"status": "success", "message": "Start session inserted into DB"})
 
@@ -1508,6 +1518,22 @@ def end_task_session():
             print("⚠️ User program tracking not available")
         except Exception as e:
             print(f"❌ Error stopping program tracking: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # 🎯 Stop activity window tracking and upload to S3 when timer ends
+        try:
+            stop_active_window_tracking()
+            print(f"🔍 Stopped activity window tracking for {email}")
+            
+            # Upload activity data to S3 with task name
+            activity_s3_url = upload_current_activity_to_s3(email, task_name)
+            if activity_s3_url:
+                print(f"📊 Activity data uploaded to S3: {activity_s3_url}")
+            else:
+                print(f"⚠️ Failed to upload activity data to S3")
+        except Exception as e:
+            print(f"❌ Error stopping/uploading activity tracking: {e}")
             import traceback
             traceback.print_exc()
         
