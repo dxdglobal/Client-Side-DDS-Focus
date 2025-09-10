@@ -14,7 +14,7 @@ except Exception as e:
 
 from flask_mail import Mail, Message
 from moduller.tracker import save_raw_program_log, logs_file, collect_program_usage, get_program_history_and_save, upload_program_data_to_s3
-from moduller.tracker import auto_log_every_minute, start_logging, stop_logging, upload_logs_on_app_close
+# from moduller.tracker import auto_log_every_minute, start_logging, stop_logging, upload_logs_on_app_close  # Disabled old tracker
 
 from flask import Flask, render_template, request, jsonify
 import requests 
@@ -95,10 +95,10 @@ PERFEX_API_URL = "https://crm.deluxebilisim.com/api/timesheets"
 AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 
 # Database configuration from environment variables
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST", "92.113.22.65")
+DB_USER = os.getenv("DB_USER", "u906714182_sqlrrefdvdv")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "3@6*t:lU")
+DB_NAME = os.getenv("DB_NAME", "u906714182_sqlrrefdvdv")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
 
 
@@ -1297,8 +1297,8 @@ def start_task_session():
     task_id = data.get('task_id')
     start_time = data.get('start_time')  # should be ISO 8601 string
 
-    # ✅ Get actual task name from database
-    task_name = "Unknown Task"
+    # ✅ Get actual task name from database - with proper fallback
+    task_name = f"Task_{task_id}"  # Default fallback before trying database
     try:
         connection = pymysql.connect(
             host=DB_HOST,
@@ -1319,13 +1319,11 @@ def start_task_session():
                 task_name = result['name']
                 print(f"✅ Found task name: {task_name} for task_id: {task_id}")
             else:
-                print(f"⚠️ Task not found for task_id: {task_id}")
-                task_name = f"Task_{task_id}"  # Fallback to task_id format
+                print(f"⚠️ Task not found for task_id: {task_id}, using fallback: {task_name}")
         
         connection.close()
     except Exception as e:
-        print(f"❌ Error fetching task name: {e}")
-        task_name = f"Task_{task_id}"  # Fallback to task_id format
+        print(f"❌ Error fetching task name: {e}, using fallback: {task_name}")
 
     # ✅ DEBUG: Create session file so background logger starts
     session_data = {
@@ -1338,14 +1336,26 @@ def start_task_session():
     with open("data/current_session.json", "w", encoding="utf-8") as f:
         json.dump(session_data, f, indent=2)
 
-    print("✅ current_session.json created:", session_data)
-    # ✅ Save session tracking folder & dummy log
-    from moduller.tracker import save_raw_program_log
-    save_raw_program_log(email=email, task_name=task_name, program_data=[{
-        "program": "SessionStart",
-        "start": datetime.now().isoformat(),
-        "note": "Auto-generated on task start"
-    }])
+    print("✅ current_session.json created:", session_data)    
+    # ✅ Start program tracking for this user (like starting screenshot capture)
+    try:
+        from moduller.user_program_tracker import start_user_program_tracking
+        start_user_program_tracking(email, task_name)
+        print(f"🔍 Started program tracking for {email} - {task_name}")
+    except ImportError:
+        print("⚠️ User program tracking not available")
+    except Exception as e:
+        print(f"❌ Error starting program tracking: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # ✅ Save session tracking folder & dummy log (disabled old tracker system)
+    # from moduller.tracker import save_raw_program_log
+    # save_raw_program_log(email=email, task_name=task_name, program_data=[{
+    #     "program": "SessionStart",
+    #     "start": datetime.now().isoformat(),
+    #     "note": "Auto-generated on task start"
+    # }])
 
 
 
@@ -1380,7 +1390,7 @@ def start_task_session():
         )
         
         # ✅ Start automatic logging when timer starts
-        start_logging()
+        # start_logging()  # Disabled old tracker
         print("✅ Automatic logging started with timer")
 
         return jsonify({"status": "success", "message": "Start session inserted into DB"})
@@ -1462,9 +1472,103 @@ def end_task_session():
             cursor.execute(update_query, (end_time, note, task_id, staff_id))
             connection.commit()
 
-        # ✅ Stop automatic logging when timer ends
-        stop_logging()
+        # ✅ Stop automatic logging when timer ends (disabled old tracker)
+        # stop_logging()
         print("✅ Automatic logging stopped with timer")
+        
+        # ✅ Stop program tracking for this user
+        try:
+            # Get task name first - try database, fallback to task_id format
+            task_name = f"Task_{task_id}"  # Default fallback
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT name FROM tbltasks WHERE id = %s", (task_id,))
+                    result = cursor.fetchone()
+                    if result:
+                        task_name = result['name']
+                        print(f"✅ Found task name: {task_name} for task_id: {task_id}")
+                    else:
+                        print(f"⚠️ Task not found for task_id: {task_id}, using fallback: {task_name}")
+            except Exception as db_e:
+                print(f"⚠️ Could not get task name from DB: {db_e}, using fallback: {task_name}")
+            
+            from moduller.user_program_tracker import stop_user_program_tracking
+            final_report = stop_user_program_tracking(email, task_name)
+            if final_report:
+                print(f"🔍 Stopped program tracking for {email} - {task_name}")
+                print(f"📊 Session tracked {final_report['programs_tracked']} programs")
+                # Also log the S3 URL for verification
+                session_start = final_report.get('session_start', '')
+                session_end = final_report.get('session_end', '')
+                if session_start and session_end:
+                    print(f"📊 Session logged: {session_start} to {session_end}")
+            else:
+                print(f"⚠️ No final report returned for {email} - {task_name}")
+        except ImportError:
+            print("⚠️ User program tracking not available")
+        except Exception as e:
+            print(f"❌ Error stopping program tracking: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # ✅ Upload comprehensive session logs to S3 when task finishes (same pattern as screenshots)
+        try:
+            from moduller.s3_uploader import upload_logs_direct
+            import json
+            import os
+            
+            # Collect comprehensive session data
+            session_report = {
+                "session_info": {
+                    "email": email,
+                    "task_id": task_id,
+                    "staff_id": staff_id,
+                    "task_name": task_name,
+                    "end_time": end_time,
+                    "note": note,
+                    "completed_at": datetime.now().isoformat()
+                },
+                "program_tracking": final_report if 'final_report' in locals() else None,
+                "session_logs": []
+            }
+            
+            # Try to collect session logs from local files if they exist
+            try:
+                if os.path.exists("session_logs.json"):
+                    with open("session_logs.json", "r", encoding="utf-8") as f:
+                        all_session_logs = json.load(f)
+                        # Filter logs for this user and today
+                        today = datetime.now().date().isoformat()
+                        user_logs = [log for log in all_session_logs 
+                                   if log.get("email") == email and 
+                                   log.get("startTime", "").startswith(today)]
+                        session_report["session_logs"] = user_logs
+                        print(f"📋 Found {len(user_logs)} session logs for {email}")
+            except Exception as log_e:
+                print(f"⚠️ Could not read session logs: {log_e}")
+            
+            # Try to collect task-specific data file
+            try:
+                data_filename = os.path.join("data", f"{email.replace('@', '_at_').replace('.', '_')}.json")
+                if os.path.exists(data_filename):
+                    with open(data_filename, "r", encoding="utf-8") as f:
+                        task_data = json.load(f)
+                        session_report["task_details"] = task_data
+                        print(f"📋 Found task details file for {email}")
+            except Exception as task_e:
+                print(f"⚠️ Could not read task data: {task_e}")
+            
+            # Upload comprehensive session report to S3 (same pattern as screenshots)
+            s3_url = upload_logs_direct(session_report, email, task_name, "session_complete")
+            if s3_url:
+                print(f"📤 Session logs uploaded to S3: {s3_url}")
+            else:
+                print("❌ Failed to upload session logs to S3")
+                
+        except Exception as upload_e:
+            print(f"❌ Error uploading session logs: {upload_e}")
+            import traceback
+            traceback.print_exc()
         
         # ✅ Clean up session file when timer stops
         try:
@@ -1476,7 +1580,7 @@ def end_task_session():
         except Exception as session_error:
             print(f"⚠️ Could not clean up session file: {session_error}")
 
-        return jsonify({"status": "success", "message": "End task updated!"})
+        return jsonify({"status": "success", "message": "End task updated and logs uploaded!"})
     except Exception as e:
         print("❌ DB error (end):", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -1665,19 +1769,19 @@ def signal_handler(sig, frame):
     """
     print(f"\n🛑 Received signal {sig}. Uploading logs and shutting down gracefully...")
     
-    # Stop logging first
-    try:
-        from moduller.tracker import stop_logging
-        stop_logging()
-    except Exception as e:
-        print(f"❌ Error stopping logging: {e}")
+    # Stop logging first (disabled old tracker)
+    # try:
+    #     from moduller.tracker import stop_logging
+    #     stop_logging()
+    # except Exception as e:
+    #     print(f"❌ Error stopping logging: {e}")
     
-    # Upload any remaining logs
-    try:
-        from moduller.tracker import upload_logs_on_app_close
-        upload_logs_on_app_close()
-    except Exception as e:
-        print(f"❌ Error uploading logs on shutdown: {e}")
+    # Upload any remaining logs (disabled old tracker system)
+    # try:
+    #     from moduller.tracker import upload_logs_on_app_close
+    #     upload_logs_on_app_close()
+    # except Exception as e:
+    #     print(f"❌ Error uploading logs on shutdown: {e}")
     
     print("✅ Graceful shutdown complete.")
     exit(0)
@@ -1687,11 +1791,11 @@ signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
 signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
 
 # Register exit handler
-atexit.register(lambda: upload_logs_on_app_close())
+# atexit.register(lambda: upload_logs_on_app_close())  # Disabled old tracker system
 
 if __name__ == "__main__":
     # Arka planda loglama başlat
-    threading.Thread(target=auto_log_every_minute, daemon=True).start()
+    # threading.Thread(target=auto_log_every_minute, daemon=True).start()  # Disabled old tracker
     
     try:
         app.run(debug=True, port=5000)
@@ -1730,5 +1834,483 @@ def upload_all_tracker_logs_endpoint():
             "status": "error",
             "message": f"Error uploading tracker logs: {str(e)}"
         }), 500
+
+
+@app.route('/generate_daily_logs_report', methods=['POST'])
+def generate_daily_logs_report():
+    """
+    Generate and upload daily logs report for a specific employee
+    """
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        target_date = data.get('date')  # Optional, defaults to today
+        
+        if not email:
+            return jsonify({
+                "status": "error",
+                "message": "Email is required"
+            }), 400
+        
+        from moduller.daily_logs_reporter import generate_daily_report_for_employee
+        
+        result = generate_daily_report_for_employee(email, target_date)
+        
+        if result["status"] == "success":
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error generating daily logs report: {str(e)}"
+        }), 500
+
+
+@app.route('/generate_all_daily_logs_reports', methods=['POST'])
+def generate_all_daily_logs_reports():
+    """
+    Generate and upload daily logs reports for all employees
+    """
+    try:
+        data = request.get_json() or {}
+        target_date = data.get('date')  # Optional, defaults to today
+        
+        from moduller.daily_logs_reporter import generate_daily_reports_for_all_employees
+        
+        results = generate_daily_reports_for_all_employees(target_date)
+        
+        successful_uploads = [r for r in results if r.get("status") == "success"]
+        failed_uploads = [r for r in results if r.get("status") != "success"]
+        
+        return jsonify({
+            "status": "success",
+            "message": f"Processed {len(results)} employees",
+            "successful_uploads": len(successful_uploads),
+            "failed_uploads": len(failed_uploads),
+            "results": results,
+            "target_date": target_date or "today"
+        })
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error generating all daily logs reports: {str(e)}"
+        }), 500
+
+
+@app.route('/daily_logs_manager')
+def daily_logs_manager():
+    """Serve the daily logs manager interface"""
+    return render_template('daily_logs_manager.html')
+
+
+@app.route('/upload_activity_log', methods=['POST'])
+def upload_activity_log():
+    """Upload activity log following the same pattern as screenshots"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        task_name = data.get('task_name', 'general')
+        activity_data = data.get('activity_data')
+        
+        if not email or not activity_data:
+            return jsonify({"status": "error", "message": "Email and activity_data are required"}), 400
+            
+        # Use the same S3 upload pattern as screenshots
+        from moduller.s3_uploader import upload_activity_log_to_s3
+        result_url = upload_activity_log_to_s3(email, activity_data, task_name)
+        
+        if result_url:
+            return jsonify({
+                "status": "success", 
+                "message": "Activity log uploaded", 
+                "s3_url": result_url
+            })
+        else:
+            return jsonify({"status": "error", "message": "Failed to upload activity log"}), 500
+            
+    except Exception as e:
+        logging.error(f"❌ Error uploading activity log: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/create_daily_log_file', methods=['POST'])
+def create_daily_log_file():
+    """Create initial daily log file when user logs in"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        staff_id = data.get('staff_id') 
+        action = data.get('action', 'login')
+        timestamp = data.get('timestamp')
+        date = data.get('date')
+        
+        if not email:
+            return jsonify({"status": "error", "message": "Email is required"}), 400
+            
+        # Create initial daily log structure
+        daily_log = {
+            "date": date,
+            "email": email,
+            "staff_id": staff_id,
+            "created_at": timestamp,
+            "activities": [
+                {
+                    "timestamp": timestamp,
+                    "action": action,
+                    "details": f"User {email} logged into the system"
+                }
+            ]
+        }
+        
+        # Upload initial log file to S3
+        from moduller.s3_uploader import upload_daily_log_file_to_s3
+        upload_result = upload_daily_log_file_to_s3(email, date, daily_log, "login")
+        
+        if upload_result:
+            return jsonify({
+                "status": "success", 
+                "message": "Daily log file created", 
+                "s3_url": upload_result
+            })
+        else:
+            return jsonify({"status": "error", "message": "Failed to create daily log file"}), 500
+            
+    except Exception as e:
+        logging.error(f"❌ Error creating daily log file: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/capture_activity_log', methods=['POST'])
+def capture_activity_log():
+    """Append activity logs to the existing daily log file"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        staff_id = data.get('staff_id') 
+        task_id = data.get('task_id')
+        project_name = data.get('project_name')
+        task_name = data.get('task_name')
+        timestamp = data.get('timestamp')
+        activity_type = data.get('activity_type')
+        timer_seconds = data.get('timer_seconds')
+        
+        if not email:
+            return jsonify({"status": "error", "message": "Email is required"}), 400
+            
+        # Create activity entry
+        activity_entry = {
+            "timestamp": timestamp,
+            "action": activity_type,
+            "task_id": task_id,
+            "project_name": project_name,
+            "task_name": task_name,
+            "timer_seconds": timer_seconds,
+            "details": f"User working on {project_name} - {task_name}"
+        }
+        
+        # Append to existing daily log file
+        from moduller.s3_uploader import append_to_daily_log_file
+        result = append_to_daily_log_file(email, activity_entry)
+        
+        if result:
+            return jsonify({
+                "status": "success", 
+                "message": "Activity logged", 
+                "s3_url": result
+            })
+        else:
+            return jsonify({"status": "error", "message": "Failed to log activity"}), 500
+            
+    except Exception as e:
+        logging.error(f"❌ Error capturing activity log: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/get_employee_logs_summary', methods=['POST'])
+def get_employee_logs_summary():
+    """
+    Get employee logs summary for the last N days
+    """
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        days_back = data.get('days_back', 7)  # Default to 7 days
+        
+        if not email:
+            return jsonify({
+                "status": "error",
+                "message": "Email is required"
+            }), 400
+        
+        from moduller.daily_logs_reporter import get_employee_weekly_summary
+        
+        summary = get_employee_weekly_summary(email, days_back)
+        
+        if summary:
+            return jsonify({
+                "status": "success",
+                "summary": summary
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"No data found for employee: {email}"
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error getting employee logs summary: {str(e)}"
+        }), 500
+
+
+@app.route('/get_active_windows_summary', methods=['GET'])
+def get_active_windows_summary():
+    """Get current active windows summary"""
+    try:
+        from moduller.active_window_tracker import get_current_activity_summary
+        summary = get_current_activity_summary()
+        return jsonify({
+            "status": "success",
+            "data": summary
+        })
+    except ImportError:
+        return jsonify({
+            "status": "error",
+            "message": "Active window tracking not available"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@app.route('/start_window_tracking', methods=['POST'])
+def start_window_tracking():
+    """Start active window tracking"""
+    try:
+        from moduller.active_window_tracker import start_active_window_tracking
+        start_active_window_tracking()
+        return jsonify({
+            "status": "success",
+            "message": "Active window tracking started"
+        })
+    except ImportError:
+        return jsonify({
+            "status": "error",
+            "message": "Active window tracking not available (install pywin32)"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@app.route('/stop_window_tracking', methods=['POST'])
+def stop_window_tracking():
+    """Stop active window tracking"""
+    try:
+        from moduller.active_window_tracker import stop_active_window_tracking
+        stop_active_window_tracking()
+        return jsonify({
+            "status": "success",
+            "message": "Active window tracking stopped"
+        })
+    except ImportError:
+        return jsonify({
+            "status": "error",
+            "message": "Active window tracking not available"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@app.route('/get_user_program_data', methods=['POST'])
+def get_user_program_data():
+    """Get current program tracking data for a user"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        task_name = data.get('task_name', 'general')
+        
+        if not email:
+            return jsonify({
+                "status": "error",
+                "message": "Email is required"
+            }), 400
+        
+        from moduller.user_program_tracker import get_user_program_data
+        program_data = get_user_program_data(email, task_name)
+        
+        if program_data:
+            return jsonify({
+                "status": "success",
+                "data": program_data
+            })
+        else:
+            return jsonify({
+                "status": "info",
+                "message": "No tracking data found for this user"
+            })
+            
+    except ImportError:
+        return jsonify({
+            "status": "error",
+            "message": "User program tracking not available"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@app.route('/submit_task_report', methods=['POST'])
+def submit_task_report():
+    """
+    Submit comprehensive task report when user clicks 'Submit Report'
+    This uploads all logs and session data to S3
+    """
+    try:
+        import pymysql
+        data = request.get_json()
+        email = data.get('email')
+        task_id = data.get('task_id')
+        staff_id = data.get('staff_id')
+        report_note = data.get('report_note', '')
+        
+        if not email:
+            return jsonify({"status": "error", "message": "Email is required"}), 400
+        
+        # Get task name from database
+        task_name = f"Task_{task_id}"  # Default fallback
+        try:
+            connection = pymysql.connect(
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME,
+                port=DB_PORT,
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor
+            )
+            
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT name FROM tbltasks WHERE id = %s", (task_id,))
+                result = cursor.fetchone()
+                if result:
+                    task_name = result['name']
+                    print(f"✅ Found task name: {task_name} for task_id: {task_id}")
+            
+            connection.close()
+        except Exception as db_e:
+            print(f"⚠️ Could not get task name from DB: {db_e}, using fallback: {task_name}")
+        
+        from moduller.s3_uploader import upload_daily_logs_report
+        import json
+        import os
+        
+        # Collect comprehensive report data
+        report_data = {
+            "report_info": {
+                "email": email,
+                "task_id": task_id,
+                "staff_id": staff_id,
+                "task_name": task_name,
+                "report_note": report_note,
+                "submitted_at": datetime.now().isoformat(),
+                "report_type": "manual_submit"
+            },
+            "session_logs": [],
+            "task_details": {},
+            "program_tracking": {}
+        }
+        
+        # Try to collect session logs
+        try:
+            if os.path.exists("session_logs.json"):
+                with open("session_logs.json", "r", encoding="utf-8") as f:
+                    all_session_logs = json.load(f)
+                    # Filter logs for this user and today
+                    today = datetime.now().date().isoformat()
+                    user_logs = [log for log in all_session_logs 
+                               if log.get("email") == email and 
+                               log.get("startTime", "").startswith(today)]
+                    report_data["session_logs"] = user_logs
+                    print(f"📋 Found {len(user_logs)} session logs for {email}")
+        except Exception as log_e:
+            print(f"⚠️ Could not read session logs: {log_e}")
+        
+        # Try to collect task-specific data file
+        try:
+            data_filename = os.path.join("data", f"{email.replace('@', '_at_').replace('.', '_')}.json")
+            if os.path.exists(data_filename):
+                with open(data_filename, "r", encoding="utf-8") as f:
+                    task_data = json.load(f)
+                    report_data["task_details"] = task_data
+                    print(f"📋 Found task details file for {email}")
+        except Exception as task_e:
+            print(f"⚠️ Could not read task data: {task_e}")
+        
+        # Try to get current program tracking data if available
+        try:
+            from moduller.user_program_tracker import get_user_program_data
+            program_data = get_user_program_data(email, task_name)
+            if program_data:
+                report_data["program_tracking"] = program_data
+                print(f"📊 Found program tracking data for {email}")
+        except Exception as prog_e:
+            print(f"⚠️ Could not get program tracking data: {prog_e}")
+        
+        # Upload comprehensive report to S3 (same pattern as screenshots)
+        from moduller.s3_uploader import upload_logs_direct
+        s3_url = upload_logs_direct(report_data, email, task_name, "task_report")
+        
+        if s3_url:
+            print(f"📤 Task report uploaded to S3: {s3_url}")
+            return jsonify({
+                "status": "success", 
+                "message": "Task report submitted successfully", 
+                "s3_url": s3_url,
+                "report_summary": {
+                    "session_logs_count": len(report_data["session_logs"]),
+                    "has_task_details": bool(report_data["task_details"]),
+                    "has_program_tracking": bool(report_data["program_tracking"])
+                }
+            })
+        else:
+            return jsonify({
+                "status": "error", 
+                "message": "Failed to upload task report to S3"
+            }), 500
+            
+    except Exception as e:
+        print(f"❌ Error submitting task report: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "status": "error", 
+            "message": f"Error submitting task report: {str(e)}"
+        }), 500
+
+
+if __name__ == '__main__':
+    try:
+        # Start active window tracking when app starts
+        from moduller.active_window_tracker import start_active_window_tracking
+        start_active_window_tracking()
+        print("🔍 Active window tracking started")
+    except ImportError:
+        print("⚠️ Active window tracking not available (install pywin32)")
+    
+    app.run(debug=True)
 
 

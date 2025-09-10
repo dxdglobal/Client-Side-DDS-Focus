@@ -11,6 +11,14 @@ from collections import defaultdict
 import time
 import requests
 
+try:
+    from .active_window_tracker import get_tracker as get_window_tracker, start_active_window_tracking, get_current_activity_summary
+except ImportError:
+    # Fallback if active_window_tracker is not available
+    get_window_tracker = None
+    start_active_window_tracking = None
+    get_current_activity_summary = None
+
 logger = logging.getLogger(__name__)
 
 def sanitize(text):
@@ -333,9 +341,10 @@ def logs_file(local_path, email, task_name):
 
     filename = Path(local_path).name
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
     safe_email = email.replace("@", "_at_")
     safe_task = task_name.replace(" ", "_").replace("/", "_")
-    s3_key = f"logs/{safe_email}/{safe_task}/{timestamp}_{filename}"
+    s3_key = f"logs/{date_folder}/{safe_email}/{safe_task}/{timestamp}_{filename}"
 
     logger.info("📁 Local file: %s", local_path)
     logger.info("👤 Email: %s", email)

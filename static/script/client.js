@@ -302,6 +302,7 @@ document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
 
         resetTimer();
         stopScreenRecording();
+        stopDailyLogsCapture(); // ✅ Stop daily logs capture
         showToast('✅ Auto-saved due to idle', 'success');
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
@@ -340,6 +341,9 @@ document.getElementById('startBtn').addEventListener('click', function () {
                 task: selectedTaskName
             })
         }).catch(console.error);
+
+        // ✅ Start automatic daily logs capture
+        startDailyLogsCapture();
 
         startTimer();
 
@@ -489,6 +493,58 @@ function stopScreenRecording() {
         // .then(data => console.log("🛑 Recording stopped:", data))
         .catch(console.error);
         
+}
+
+// ✅ Daily logs capture functions
+let dailyLogsInterval;
+
+function startDailyLogsCapture() {
+    console.log("📋 Starting automatic daily logs capture...");
+    
+    // Capture initial log when work starts
+    captureCurrentActivityLog();
+    
+    // Set interval to capture logs every 60 seconds (1 minute)
+    dailyLogsInterval = setInterval(() => {
+        captureCurrentActivityLog();
+    }, 60000); // 60 seconds
+}
+
+function stopDailyLogsCapture() {
+    if (dailyLogsInterval) {
+        console.log("🛑 Stopping daily logs capture...");
+        clearInterval(dailyLogsInterval);
+        dailyLogsInterval = null;
+    }
+}
+
+function captureCurrentActivityLog() {
+    if (!user || !currentTaskId) return;
+    
+    const currentTime = new Date().toISOString();
+    const logData = {
+        email: user.email,
+        staff_id: user.staffid,
+        task_id: currentTaskId,
+        project_name: selectedProjectName,
+        task_name: selectedTaskName,
+        timestamp: currentTime,
+        activity_type: isTimerRunning ? 'working' : 'idle',
+        timer_seconds: totalSeconds
+    };
+    
+    fetch('/capture_activity_log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log("📋 Activity log captured successfully");
+        }
+    })
+    .catch(err => console.error("❌ Failed to capture activity log:", err));
 }
 
 function fetchAIProjects(user) {
@@ -941,6 +997,7 @@ window.addEventListener("load", () => {
         console.log("🛑 App loaded: Auto-stopping timer");
         resetTimer();
         stopScreenRecording();
+        stopDailyLogsCapture(); // ✅ Stop daily logs capture
     }
 });
 
@@ -969,6 +1026,7 @@ window.addEventListener("beforeunload", async (event) => {
 
         resetTimer();
         stopScreenRecording();
+        stopDailyLogsCapture(); // ✅ Stop daily logs capture
     }
 });
 

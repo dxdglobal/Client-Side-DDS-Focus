@@ -635,6 +635,9 @@ function changeLanguage() {
           localStorage.setItem("rememberMe", "false");
           }
 
+        // ✅ Create daily log file automatically upon login
+        await createDailyLogFile(user.email, user.staffid);
+
         // Redirect to client.html after successful login
         window.location.href = 'client';  // Fixed redirection to client.html
       } else {
@@ -684,6 +687,35 @@ function changeLanguage() {
       localStorage.setItem("rememberMe", "false");
     }
     };
+
+  // ✅ Function to create daily log file upon login
+  async function createDailyLogFile(email, staffId) {
+    try {
+      const loginData = {
+        email: email,
+        staff_id: staffId,
+        action: 'login',
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+      };
+
+      const response = await fetch('/create_daily_log_file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData)
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        console.log('✅ Daily log file created:', result.s3_url);
+      } else {
+        console.error('❌ Failed to create daily log file:', result.message);
+      }
+    } catch (error) {
+      console.error('❌ Error creating daily log file:', error);
+    }
+  }
+
   </script>
 
 </body>
