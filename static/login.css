@@ -201,7 +201,7 @@ body {
 .login-button {
     width: 100%;
     height: 45px;
-    background-color: var(--submit_button_bg_color);
+    background-color: var(--submit-button-bg-color);
     color: var(--submit-button-text-color);
     border: none;
     border-radius: var(--border-radius, 5px);
@@ -209,6 +209,17 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: var(--submit-button-bg-color) !important;
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.login-button:active {
+    background-color: var(--submit-button-bg-color) !important;
+    transform: translateY(0);
 }
 
 .guest-button {
@@ -223,6 +234,17 @@ body {
     cursor: pointer;
     margin-top: 10px;
     transition: all 0.3s ease;
+}
+
+.guest-button:hover {
+    background-color: var(--secondary-button-bg-color) !important;
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.guest-button:active {
+    background-color: var(--secondary-button-bg-color) !important;
+    transform: translateY(0);
 }
 
 .language-selector {
@@ -249,4 +271,109 @@ body {
     font-size: 12px;
     color: var(--text-color);
     font-weight: 600;
+}
+
+/* ============================================
+   🛡️ PROTECTION AGAINST BLACK BACKGROUNDS
+   ============================================ */
+
+/* Prevent any JavaScript-applied black backgrounds on buttons */
+.login-button,
+.guest-button,
+.window-button,
+button,
+.btn {
+    background-color: var(--submit-button-bg-color) !important;
+}
+
+.login-button:hover,
+.login-button:focus,
+.login-button:active {
+    background-color: var(--submit-button-bg-color) !important;
+}
+
+.guest-button:hover,
+.guest-button:focus,
+.guest-button:active {
+    background-color: var(--secondary-button-bg-color) !important;
+}
+
+/* Override any inline styles that might set black backgrounds */
+button[style*="background-color: rgb(0, 0, 0)"],
+button[style*="background-color: black"],
+button[style*="background: rgb(0, 0, 0)"],
+button[style*="background: black"],
+.login-button[style*="background-color: rgb(0, 0, 0)"],
+.login-button[style*="background-color: black"],
+.guest-button[style*="background-color: rgb(0, 0, 0)"],
+.guest-button[style*="background-color: black"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
+}
+
+/* ⚡ ULTRA-AGGRESSIVE BLACK BACKGROUND PROTECTION ⚡ */
+/* Target all possible button selectors with black backgrounds */
+*[style*="background-color: rgb(0, 0, 0)"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
+}
+
+*[style*="background-color: black"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
+}
+
+*[style*="background: rgb(0, 0, 0)"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
+}
+
+/* Specific override for the exact style you mentioned */
+*[style*="color: rgb(44, 62, 80)"][style*="background-color: rgb(0, 0, 0)"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
+}
+
+/* Force override using higher specificity */
+body .login-button,
+body .guest-button,
+body button {
+    background-color: var(--submit-button-bg-color) !important;
+}
+
+/* Correct color mapping for login button */
+.login-button {
+    color: var(--submit-button-text-color) !important;
+}
+
+/* Correct color mapping for guest button */
+.guest-button {
+    color: var(--secondary-button-text-color) !important;
+}
+
+/* Ensure API colors override any other styles */
+.login-button,
+.login-button:hover,
+.login-button:focus,
+.login-button:active {
+    color: var(--submit-button-text-color) !important;
+    background-color: var(--submit-button-bg-color) !important;
+}
+
+.guest-button,
+.guest-button:hover,
+.guest-button:focus,
+.guest-button:active {
+    color: var(--secondary-button-text-color) !important;
+    background-color: var(--secondary-button-bg-color) !important;
+}
+
+/* Target buttons specifically, not all elements */
+button[style*="background-color: rgb(0, 0, 0)"],
+input[type="button"][style*="background-color: rgb(0, 0, 0)"],
+input[type="submit"][style*="background-color: rgb(0, 0, 0)"],
+.btn[style*="background-color: rgb(0, 0, 0)"],
+.button[style*="background-color: rgb(0, 0, 0)"] {
+    background-color: var(--submit-button-bg-color) !important;
+    background: var(--submit-button-bg-color) !important;
 }

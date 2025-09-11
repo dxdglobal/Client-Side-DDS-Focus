@@ -787,3 +787,101 @@ window.verifyLoginImplementation = function() {
 };
 
 console.log('🆕 New functions: testAllLoginAPIColors(), verifyLoginImplementation()');
+
+// 🛡️ PROTECTION AGAINST BLACK BACKGROUNDS
+function preventBlackBackgrounds() {
+    console.log('🛡️ Initializing black background protection...');
+    
+    // Function to clean black backgrounds from an element
+    function cleanBlackBackground(element) {
+        const style = element.getAttribute('style');
+        if (style && (style.includes('rgb(0, 0, 0)') || style.includes('background-color: black') || style.includes('background: black'))) {
+            // Remove black background while preserving other styles
+            const cleanStyle = style
+                .replace(/background-color:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
+                .replace(/background-color:\s*black\s*!important;?/gi, '')
+                .replace(/background:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
+                .replace(/background:\s*black\s*!important;?/gi, '');
+            
+            element.setAttribute('style', cleanStyle);
+            
+            // Apply the correct API background color
+            if (element.classList.contains('login-button') || element.classList.contains('guest-button')) {
+                const currentStyling = loginStyling.getCurrentStyling();
+                if (currentStyling) {
+                    const bgColor = element.classList.contains('guest-button') 
+                        ? currentStyling.secondary_button_bg_color 
+                        : currentStyling.submit_button_bg_color;
+                    
+                    if (bgColor) {
+                        element.style.setProperty('background-color', bgColor, 'important');
+                    }
+                }
+            }
+            
+            console.log('🛡️ Cleaned black background from element:', element);
+            return true;
+        }
+        return false;
+    }
+    
+    // Monitor all buttons for style changes
+    const buttons = document.querySelectorAll('button, .login-button, .guest-button, input[type="button"], input[type="submit"]');
+    
+    buttons.forEach(button => {
+        // Clean any existing black backgrounds
+        cleanBlackBackground(button);
+        
+        // Set up observer for future changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    cleanBlackBackground(button);
+                }
+            });
+        });
+        
+        observer.observe(button, { attributes: true, attributeFilter: ['style'] });
+    });
+    
+    // Also monitor for dynamically added buttons
+    const documentObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) { // Element node
+                    const newButtons = node.matches && node.matches('button, .login-button, .guest-button') 
+                        ? [node] 
+                        : node.querySelectorAll ? node.querySelectorAll('button, .login-button, .guest-button, input[type="button"], input[type="submit"]') 
+                        : [];
+                    
+                    Array.from(newButtons).forEach(button => {
+                        cleanBlackBackground(button);
+                        
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                                    cleanBlackBackground(button);
+                                }
+                            });
+                        });
+                        
+                        observer.observe(button, { attributes: true, attributeFilter: ['style'] });
+                    });
+                }
+            });
+        });
+    });
+    
+    documentObserver.observe(document.body, { childList: true, subtree: true });
+    
+    console.log('🛡️ Black background protection active for', buttons.length, 'buttons');
+}
+
+// Initialize protection when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', preventBlackBackgrounds);
+} else {
+    preventBlackBackgrounds();
+}
+
+console.log('🛡️ Black background protection system loaded');
