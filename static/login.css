@@ -3,37 +3,100 @@
    ============================================ */
 
 :root {
-  /* 🔥 ALL COLORS POPULATED EXCLUSIVELY FROM API */
-  /* NO HARDCODED COLORS - EVERYTHING DYNAMIC */
+  /* 🔥 ALL COLORS POPULATED EXCLUSIVELY FROM DDS STYLING API */
+  /* API Endpoint: https://dxdtime.ddsolutions.io/api/styling/global/ */
   
-  /* Core API Color Variables */
-  --header-color: ;
-  --footer-color: ;
-  --text-color: ;
+  /* Primary API Color Variables - POPULATED BY API */
+  --primary-color: ;
+  --secondary-color: ;
   --background-color: ;
   --button-color: ;
+  --text-color: ;
+  --header-color: ;
+  --footer-color: ;
   --button-text-color: ;
   
-  /* Enhanced API Color Variables */
+  /* Button Colors from API - POPULATED BY API */
   --submit-button-bg-color: ;
   --submit-button-text-color: ;
   --primary-button-bg-color: ;
   --primary-button-text-color: ;
   --secondary-button-bg-color: ;
   --secondary-button-text-color: ;
+  
+  /* Layout Colors from API - POPULATED BY API */
   --drawer-background-color: ;
   --drawer-text-color: ;
   --icon-color: ;
   --top-color: ;
   
-  /* Typography from API */
+  /* Primary Color Variants - POPULATED BY API */
+  --primary-dark: ;
+  --primary-darker: ;
+  --primary-light: ;
+  --primary-hover: ;
+  --primary-active: ;
+  
+  /* Secondary Color Variants - POPULATED BY API */
+  --secondary-dark: ;
+  --secondary-light: ;
+  
+  /* State Colors - POPULATED BY API */
+  --success-color: ;
+  --warning-color: ;
+  --danger-color: ;
+  --danger-dark: ;
+  --info-color: ;
+  
+  /* Text Colors - POPULATED BY API */
+  --text-light: ;
+  --text-dark: ;
+  
+  /* Background Colors - POPULATED BY API */
+  --background-light: ;
+  --background-dark: ;
+  --border-color: ;
+  
+  /* Button State Colors - POPULATED BY API */
+  --button-hover: ;
+  --button-dark: ;
+  --button-light: ;
+  
+  /* Modal Colors - POPULATED BY API */
+  --modal-background: ;
+  --modal-overlay: ;
+  --modal-border: ;
+  
+  /* Input Colors - POPULATED BY API */
+  --input-background: ;
+  --input-border: ;
+  --input-focus: ;
+  --input-text: ;
+  
+  /* Standard Colors - POPULATED BY API */
+  --white: ;
+  --black: ;
+  
+  /* Gray Scale Palette - POPULATED BY API */
+  --gray-100: ;
+  --gray-200: ;
+  --gray-300: ;
+  --gray-400: ;
+  --gray-500: ;
+  --gray-600: ;
+  --gray-700: ;
+  --gray-800: ;
+  --gray-900: ;
+  
+  /* Typography from API - POPULATED BY API */
   --heading-font-size: ;
   --body-font-size: ;
   --font-family: ;
   --border-radius: ;
   
-  /* Only system values allowed */
+  /* System values and calculated transparencies */
   --transparent: transparent;
+  --input-focus-overlay: rgba(128, 189, 255, 0.25);
 }
 
 /* ============================================
@@ -113,7 +176,7 @@ body {
     left: 0;
     width: 100%;
     height: 30%;
-    background-color: var(--top-color);
+    background-color: var(--login-header-bg);
     border-radius: 0 0 50% 50% / 0 0 100% 100%;
     z-index: 0;
 }
@@ -165,12 +228,19 @@ body {
     width: 100%;
     height: 45px;
     border-radius: var(--border-radius, 5px);
-    border: none;
+    border: 2px solid var(--input-border);
     padding: 0 15px;
     font-size: var(--body-font-size, 16px);
-    color: var(--text-color);
-    background-color: var(--drawer-background-color);
+    color: var(--input-text);
+    background-color: var(--input-background);
     box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px var(--input-focus-overlay);
 }
 
 .checkbox-container {
