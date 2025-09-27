@@ -6,7 +6,7 @@
 class ConfigManager {
     constructor() {
         this.config = null;
-        this.ddsApiUrl = 'https://dxdtime.ddsolutions.io/api/styling/global/';
+        this.ddsApiUrl = '/api/styling/proxy'; // Use Flask proxy - external API disabled
         this.defaultConfig = {
             ui: {
                 // API-only color system - no defaults
@@ -19,7 +19,7 @@ class ConfigManager {
                 font_family: "Segoe UI, sans-serif"
             },
             screenshot: {
-                interval_seconds: 30,
+                interval_seconds: 60,
                 quality: 85,
                 format: "JPEG"
             },
@@ -803,7 +803,7 @@ window.testButtonColorAPI = async function() {
     console.log('🧪 Testing Button Color API...');
     
     try {
-        const response = await fetch('https://dxdtime.ddsolutions.io/api/styling/global/', {
+        const response = await fetch('/api/styling/proxy', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

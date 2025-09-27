@@ -5,7 +5,7 @@
 
 class LoginStylingManager {
     constructor() {
-        this.apiUrl = 'https://dxdtime.ddsolutions.io/api/styling/global/';
+        // Only use proxy - external API disabled to prevent hanging
         this.proxyUrl = '/api/styling/proxy';
         this.retryAttempts = 3;
         this.retryDelay = 1500;
@@ -114,9 +114,6 @@ class LoginStylingManager {
 
         if (stylingData.background_color) {
             root.style.setProperty('--background-color', stylingData.background_color, 'important');
-            // Apply to body with slight transparency for login page
-            const bgWithAlpha = this.hexToRgba(stylingData.background_color, 0.95);
-            document.body.style.setProperty('background-color', bgWithAlpha, 'important');
             console.log('⚪ Login: Background color applied:', stylingData.background_color);
         }
 
@@ -135,7 +132,7 @@ class LoginStylingManager {
             console.log('⚫ Login: Text color applied:', stylingData.text_color);
             
             // Apply text color to specific login page elements
-            const textElements = document.querySelectorAll('#rememberMeLabel, .forgot-password, .title, .subtitle');
+            const textElements = document.querySelectorAll('.title, .subtitle');
             textElements.forEach(element => {
                 element.style.setProperty('color', stylingData.text_color, 'important');
             });
@@ -321,9 +318,21 @@ class LoginStylingManager {
             
             const roundedElements = document.querySelectorAll('button, .btn, input, .form-control, .card, .modal');
             roundedElements.forEach(element => {
-                element.style.setProperty('border-radius', stylingData.border_radius, 'important');
+                // Always use 5px for buttons regardless of API value
+                if (element.matches('button, .btn')) {
+                    element.style.setProperty('border-radius', '5px', 'important');
+                } else {
+                    element.style.setProperty('border-radius', stylingData.border_radius, 'important');
+                }
             });
-            console.log('📐 Login: Border radius applied:', stylingData.border_radius);
+            console.log('📐 Login: Border radius applied (buttons fixed to 5px):', stylingData.border_radius);
+        } else {
+            // Set default 5px border radius for buttons even if no API value
+            const buttonElements = document.querySelectorAll('button, .btn');
+            buttonElements.forEach(element => {
+                element.style.setProperty('border-radius', '5px', 'important');
+            });
+            console.log('📐 Login: Default 5px border radius applied to buttons');
         }
 
         // Apply specific login page elements
@@ -366,12 +375,7 @@ class LoginStylingManager {
         // Apply text color to specific login elements
         if (stylingData.text_color) {
             const textElements = [
-                '#rememberMeLabel',
-                '.forgot-password', 
-                '.title', 
-                '.subtitle',
-                '.version',
-                '.staff-data h3'
+              
             ];
             
             textElements.forEach(selector => {
@@ -587,7 +591,7 @@ window.testLoginColors = () => {
     }
 
     // Test other text elements
-    const textElements = ['.title', '.subtitle', '.forgot-password', '.version'];
+    const textElements = ['.title', '.subtitle', '.version'];
     textElements.forEach(selector => {
         const element = document.querySelector(selector);
         if (element) {
@@ -762,7 +766,7 @@ window.verifyLoginImplementation = function() {
         },
         {
             name: 'Login Text Elements',
-            selectors: ['#rememberMeLabel', '.title', '.subtitle', '.forgot-password'],
+            selectors: ['#rememberMeLabel', '.title', '.subtitle'],
             property: 'color'
         }
     ];

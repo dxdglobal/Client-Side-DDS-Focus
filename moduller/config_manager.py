@@ -16,7 +16,8 @@ load_dotenv()
 
 class ConfigManager:
     def __init__(self):
-        self.config_api_url = 'https://dxdtime.ddsolutions.io/api/styling/global/'
+        # External API disabled to prevent hanging
+        self.config_api_url = None  # Removed: 'https://dxdtime.ddsolutions.io/api/styling/global/'
         self.api_timeout = 10  # seconds
         self.config_cache = None
         self.logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class ConfigManager:
                 "auth_token": os.getenv('AUTH_TOKEN', '')
             },
             "screenshot": {
-                "interval_seconds": int(os.getenv('SCREENSHOT_INTERVAL', 30)),
+                "interval_seconds": int(os.getenv('SCREENSHOT_INTERVAL', 60)),
                 "quality": 85,
                 "format": "JPEG",
                 "auto_upload": True,
@@ -230,7 +231,7 @@ class ConfigManager:
     def get_screenshot_interval(self) -> int:
         """Get screenshot capture interval in seconds"""
         screenshot_config = self.get_screenshot_config()
-        return screenshot_config.get('interval_seconds', 30)
+        return screenshot_config.get('interval_seconds', 60)
     
     def update_config_cache(self, new_config: Dict[str, Any]):
         """Update the cached configuration"""
@@ -247,7 +248,7 @@ class ConfigManager:
         safe_config = {
             "ui": config.get('ui', {}),
             "screenshot": {
-                "interval_seconds": config.get('screenshot', {}).get('interval_seconds', 30),
+                "interval_seconds": config.get('screenshot', {}).get('interval_seconds', 60),
                 "quality": config.get('screenshot', {}).get('quality', 85),
                 "format": config.get('screenshot', {}).get('format', 'JPEG')
             },

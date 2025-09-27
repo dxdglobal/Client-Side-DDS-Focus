@@ -7,7 +7,7 @@ let idleTimeout = 5;  // modal stays 5 seconds before sending auto-note
 // 🎨 DDS Styling API Integration for Client Page
 class DynamicStylingManager {
     constructor() {
-        this.apiUrl = 'https://dxdtime.ddsolutions.io/api/styling/global/';
+        // Only use proxy - external API disabled to prevent hanging
         this.proxyUrl = '/api/styling/proxy';
         this.retryAttempts = 3;
         this.retryDelay = 2000;
@@ -66,197 +66,38 @@ class DynamicStylingManager {
     }
 
     applyAllColors(stylingData) {
-        const root = document.documentElement;
-        console.log('🎨 Client.js: Applying all API colors...');
-
-        // Apply primary color system
-        if (stylingData.primary_color) {
-            root.style.setProperty('--primary-color', stylingData.primary_color, 'important');
-            root.style.setProperty('--primary-hover', this.darkenColor(stylingData.primary_color, 10), 'important');
-            root.style.setProperty('--primary-active', this.darkenColor(stylingData.primary_color, 20), 'important');
-            console.log('🔵 Primary color applied:', stylingData.primary_color);
-        }
-
-        // Apply secondary color system
-        if (stylingData.secondary_color) {
-            root.style.setProperty('--secondary-color', stylingData.secondary_color, 'important');
-            root.style.setProperty('--secondary-hover', this.darkenColor(stylingData.secondary_color, 10), 'important');
-            root.style.setProperty('--success-color', stylingData.secondary_color, 'important');
-            console.log('🟢 Secondary color applied:', stylingData.secondary_color);
-        }
-
-        // Apply background color system
-        if (stylingData.background_color) {
-            root.style.setProperty('--background-color', stylingData.background_color, 'important');
-            root.style.setProperty('--bg-primary', stylingData.background_color, 'important');
-            document.body.style.setProperty('background-color', stylingData.background_color, 'important');
-            console.log('⚪ Background color applied:', stylingData.background_color);
-        }
-
-        // Apply button color system (MAIN FOCUS)
-        if (stylingData.button_color) {
-            root.style.setProperty('--button-color', stylingData.button_color, 'important');
-            root.style.setProperty('--button-hover', this.darkenColor(stylingData.button_color, 10), 'important');
-            root.style.setProperty('--button-active', this.darkenColor(stylingData.button_color, 20), 'important');
-            
-            // Apply to all button elements immediately
-            this.applyButtonColors(stylingData.button_color);
-            console.log('🔴 Button color applied:', stylingData.button_color);
-        }
-
-        // Apply text color system
-        if (stylingData.text_color) {
-            root.style.setProperty('--text-color', stylingData.text_color, 'important');
-            root.style.setProperty('--text-primary', stylingData.text_color, 'important');
-            document.body.style.setProperty('color', stylingData.text_color, 'important');
-            console.log('⚫ Text color applied:', stylingData.text_color);
-        }
-
-        // Apply icon color system
-        if (stylingData.icon_color) {
-            root.style.setProperty('--icon-color', stylingData.icon_color, 'important');
-            console.log('🔹 Icon color applied:', stylingData.icon_color);
-        }
-
-        // 🎨 NEW: Apply header color system
-        if (stylingData['header-color'] || stylingData.header_color) {
-            const headerColor = stylingData['header-color'] || stylingData.header_color;
-            root.style.setProperty('--header-color', headerColor, 'important');
-            root.style.setProperty('--header-background', headerColor, 'important');
-            
-            // Apply to header elements
-            const headerElements = document.querySelectorAll('header, .header, .top-header, .window-header, .navbar');
-            headerElements.forEach(element => {
-                element.style.setProperty('background-color', headerColor, 'important');
-            });
-            console.log('🎯 Header color applied:', headerColor);
-        }
-
-        // 🎨 NEW: Apply footer color system
-        if (stylingData['footer-color'] || stylingData.footer_color) {
-            const footerColor = stylingData['footer-color'] || stylingData.footer_color;
-            root.style.setProperty('--footer-color', footerColor, 'important');
-            root.style.setProperty('--footer-background', footerColor, 'important');
-            
-            // Apply to footer elements
-            const footerElements = document.querySelectorAll('footer, .footer, .bottom-footer');
-            footerElements.forEach(element => {
-                element.style.setProperty('background-color', footerColor, 'important');
-            });
-            console.log('🎯 Footer color applied:', footerColor);
-        }
-
-        // 🎨 NEW: Apply button text color system
-        if (stylingData['button-text_color'] || stylingData.button_text_color) {
-            const buttonTextColor = stylingData['button-text_color'] || stylingData.button_text_color;
-            root.style.setProperty('--button-text-color', buttonTextColor, 'important');
-            
-            // Apply to button text (excluding header buttons)
-            const buttonElements = document.querySelectorAll('button:not(#logout):not(.language-btn), .btn:not(#logout):not(.language-btn)');
-            buttonElements.forEach(button => {
-                button.style.setProperty('color', buttonTextColor, 'important');
-            });
-            console.log('🔤 Button text color applied:', buttonTextColor);
-        }
-
-        // Apply font settings
-        if (stylingData.font_family) {
-            root.style.setProperty('--font-family', stylingData.font_family, 'important');
-            document.body.style.setProperty('font-family', stylingData.font_family, 'important');
-            console.log('📝 Font family applied:', stylingData.font_family);
-        }
-
-        // Apply border radius
-        if (stylingData.border_radius) {
-            root.style.setProperty('--border-radius', stylingData.border_radius, 'important');
-            console.log('📐 Border radius applied:', stylingData.border_radius);
-        }
-
-        // 🔒 Preserve white header button styling
-        this.preserveHeaderButtonStyling();
-    }
-
-    preserveHeaderButtonStyling() {
-        console.log('🔒 Preserving white header button styling...');
+        console.log('🎨 applyAllColors disabled - using CSS-only styling');
         
-        // Ensure logout button stays white
-        const logoutBtn = document.getElementById('logout');
-        if (logoutBtn) {
-            logoutBtn.style.setProperty('background-color', 'white', 'important');
-            logoutBtn.style.setProperty('color', 'white', 'important');
-            logoutBtn.style.setProperty('border-color', 'white', 'important');
-        }
-
-        // Ensure language button stays white
-        const languageBtn = document.querySelector('.language-btn');
-        if (languageBtn) {
-            languageBtn.style.setProperty('background-color', 'white', 'important');
-            languageBtn.style.setProperty('color', 'white', 'important');
-            languageBtn.style.setProperty('border-color', 'white', 'important');
-        }
-
-        console.log('✅ Header button white styling preserved');
+        // Always ensure buttons have 5px border radius (only functionality preserved)
+        const allButtons = document.querySelectorAll('button, .btn, input[type="button"], input[type="submit"]');
+        allButtons.forEach(button => {
+            // Skip drawer arrow button from styling
+            if (button.id !== 'drawerArrowBtn' && !button.classList.contains('drawer-arrow-btn')) {
+                button.style.setProperty('border-radius', '5px', 'important');
+            }
+        });
+        console.log('📐 Fixed 5px border radius applied to all buttons (excluding drawer arrow)');
     }
 
     applyButtonColors(buttonColor) {
-        // Comprehensive button selector list for client page (excluding header buttons)
-        const buttonSelectors = [
-            '#startBtn', '#resetBtn', '#breakBtn',
-            '.btn-primary', '.btn-secondary',
-            '.modal-btn', '.submit-btn', '#modalSubmitBtn',
-            'button:not(.cancel-btn):not(.close-btn):not(#logout):not(.language-btn)',
-            '.nav-link', '.drawer-arrow-btn'
-        ];
+        console.log('🔴 Button color application disabled - using CSS-only styling');
+    }
 
-        buttonSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(element => {
-                // Skip header buttons (logout and language)
-                if (element.id === 'logout' || element.classList.contains('language-btn')) {
-                    return;
-                }
-                element.style.setProperty('background-color', buttonColor, 'important');
-                element.style.setProperty('border-color', buttonColor, 'important');
-            });
-        });
-
-        console.log(`🔴 Applied button color to ${buttonSelectors.length} selector types (excluding header buttons)`);
+    // Function to protect drawer arrow button from color overrides
+    protectDrawerArrowButton() {
+        const drawerArrowBtn = document.getElementById('drawerArrowBtn');
+        if (drawerArrowBtn) {
+            // Remove any inline color styles
+            drawerArrowBtn.style.backgroundColor = '';
+            drawerArrowBtn.style.borderColor = '';
+            drawerArrowBtn.style.background = '';
+            drawerArrowBtn.style.border = '';
+            console.log('🛡️ Drawer arrow button protected from color overrides');
+        }
     }
 
     setupDynamicButtonEffects(stylingData) {
-        if (!stylingData.button_color) return;
-
-        const hoverColor = this.darkenColor(stylingData.button_color, 15);
-        const activeColor = this.darkenColor(stylingData.button_color, 25);
-
-        // Add dynamic hover effects to all buttons (excluding header buttons)
-        const allButtons = document.querySelectorAll('button, .btn, .nav-link');
-        allButtons.forEach(button => {
-            // Skip header buttons (logout and language)
-            if (button.id === 'logout' || button.classList.contains('language-btn')) {
-                return;
-            }
-
-            // Remove existing listeners
-            button.removeEventListener('mouseenter', button._apiHoverIn);
-            button.removeEventListener('mouseleave', button._apiHoverOut);
-            
-            // Add new API-based hover effects
-            button._apiHoverIn = () => {
-                button.style.setProperty('background-color', hoverColor, 'important');
-                button.style.setProperty('transform', 'translateY(-2px)', 'important');
-            };
-            
-            button._apiHoverOut = () => {
-                button.style.setProperty('background-color', stylingData.button_color, 'important');
-                button.style.setProperty('transform', 'translateY(0)', 'important');
-            };
-            
-            button.addEventListener('mouseenter', button._apiHoverIn);
-            button.addEventListener('mouseleave', button._apiHoverOut);
-        });
-
-        console.log('✨ Dynamic button effects applied with API colors (excluding header buttons)');
+        console.log('✨ Dynamic button effects disabled - using CSS-only styling');
     }
 
     applyFallbackStyling() {
@@ -1550,6 +1391,12 @@ function addAdvancedHoverEffects() {
     const navLinks = document.querySelectorAll('.nav-link');
 
     navLinks.forEach(link => {
+        // Skip animation for the feedback link
+        const navText = link.querySelector('.nav-text');
+        if (navText && navText.id === 'navFeedback') {
+            return; // Skip this link
+        }
+
         link.addEventListener('mouseenter', () => {
             link.style.transform = 'translateY(-5px) scale(1.02)';
         });
@@ -1579,6 +1426,127 @@ document.addEventListener('DOMContentLoaded', () => {
     handleNavigation();
     // createParticles();
     addAdvancedHoverEffects();
+    
+    // Reset any transforms on the feedback link
+    const feedbackLink = document.querySelector('.nav-link:has(#navFeedback)') || 
+                        document.getElementById('navFeedback')?.closest('.nav-link');
+    if (feedbackLink) {
+        feedbackLink.style.transform = 'none';
+        feedbackLink.style.transition = 'none';
+    }
+
+    // Reset drawer arrow button colors and styles
+    const drawerArrowBtn = document.getElementById('drawerArrowBtn');
+    if (drawerArrowBtn) {
+        // Remove any inline styles that might override CSS
+        drawerArrowBtn.style.backgroundColor = '';
+        drawerArrowBtn.style.borderColor = '';
+        drawerArrowBtn.style.borderRadius = '';
+        console.log('🔄 Drawer arrow button colors reset to CSS defaults');
+    }
+
+    // Reset drawer content elements background colors
+    const drawerElements = [
+        document.querySelector('.drawer'),
+        document.querySelector('.drawer-header'),
+        document.querySelector('.drawer-content'),
+        ...document.querySelectorAll('.drawer-section'),
+        ...document.querySelectorAll('.drawer-section-header'),
+        ...document.querySelectorAll('.drawer-item'),
+        ...document.querySelectorAll('.project-details'),
+        ...document.querySelectorAll('.task-details'),
+        ...document.querySelectorAll('.time-details')
+    ];
+
+    drawerElements.forEach(element => {
+        if (element) {
+            element.style.backgroundColor = '';
+            element.style.background = '';
+            element.style.color = '';
+        }
+    });
+    console.log('🔄 Drawer content background colors reset to CSS defaults');
+
+    // Protect drawer arrow button from future color changes
+    if (window.dynamicStylingManager) {
+        window.dynamicStylingManager.protectDrawerArrowButton();
+    }
+
+    // Set up protection against style changes to drawer elements
+    if (drawerArrowBtn) {
+        // Create a mutation observer to watch for style changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const target = mutation.target;
+                    
+                    // Protect drawer arrow button
+                    if (target.id === 'drawerArrowBtn') {
+                        if (target.style.backgroundColor && target.style.backgroundColor !== '') {
+                            target.style.backgroundColor = '';
+                        }
+                        if (target.style.borderColor && target.style.borderColor !== '') {
+                            target.style.borderColor = '';
+                        }
+                        console.log('🛡️ Prevented color override on drawer arrow button');
+                    }
+                    
+                    // Protect drawer content elements
+                    if (target.classList.contains('drawer') ||
+                        target.classList.contains('drawer-header') || 
+                        target.classList.contains('drawer-content') ||
+                        target.classList.contains('drawer-section') ||
+                        target.classList.contains('drawer-section-header') ||
+                        target.classList.contains('drawer-item') ||
+                        target.classList.contains('project-details') ||
+                        target.classList.contains('task-details') ||
+                        target.classList.contains('time-details')) {
+                        
+                        if (target.style.backgroundColor && target.style.backgroundColor !== '') {
+                            target.style.backgroundColor = '';
+                        }
+                        if (target.style.background && target.style.background !== '') {
+                            target.style.background = '';
+                        }
+                        if (target.style.color && target.style.color !== '') {
+                            target.style.color = '';
+                        }
+                        console.log('🛡️ Prevented color override on drawer element:', target.className);
+                    }
+                }
+            });
+        });
+        
+        // Watch drawer arrow button
+        observer.observe(drawerArrowBtn, { 
+            attributes: true, 
+            attributeFilter: ['style'] 
+        });
+        
+        // Watch all drawer content elements
+        const allDrawerElements = [
+            document.querySelector('.drawer'),
+            document.querySelector('.drawer-header'),
+            document.querySelector('.drawer-content'),
+            ...document.querySelectorAll('.drawer-section'),
+            ...document.querySelectorAll('.drawer-section-header'),
+            ...document.querySelectorAll('.drawer-item'),
+            ...document.querySelectorAll('.project-details'),
+            ...document.querySelectorAll('.task-details'),
+            ...document.querySelectorAll('.time-details')
+        ];
+        
+        allDrawerElements.forEach(element => {
+            if (element) {
+                observer.observe(element, { 
+                    attributes: true, 
+                    attributeFilter: ['style'] 
+                });
+            }
+        });
+        
+        console.log('🛡️ Protection set up for all drawer elements');
+    }
 
     // Add a subtle entrance animation to the container
     const container = document.querySelector('.nav-container');
@@ -1605,17 +1573,58 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// === MODAL ANIMATION UTILITIES ===
+function openModalWithAnimation(modalId, callback) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.style.display = "flex";
+    // Trigger animation after display is set
+    setTimeout(() => {
+      modal.classList.remove('hide');
+      modal.classList.add('show');
+      if (callback) callback();
+    }, 10);
+}
 
+function closeModalWithAnimation(modalId, callback) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    
+    // Hide modal after animation completes
+    setTimeout(() => {
+      modal.style.display = "none";
+      modal.classList.remove('hide');
+      if (callback) callback();
+    }, 300);
+}
 
 
 // For Review Modal js  
 // === REVIEW MODAL CONTROL ===
 function openReviewModal() {
-    document.getElementById("reviewModal").style.display = "flex";
+    const modal = document.getElementById("reviewModal");
+    modal.style.display = "flex";
+    // Trigger animation after display is set
+    setTimeout(() => {
+      modal.classList.remove('hide');
+      modal.classList.add('show');
+    }, 10);
 }
 
 function closeReviewModal() {
-    document.getElementById("reviewModal").style.display = "none";
+    const modal = document.getElementById("reviewModal");
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    
+    // Hide modal after animation completes
+    setTimeout(() => {
+      modal.style.display = "none";
+      modal.classList.remove('hide');
+    }, 300);
 }
 
 function submitUserReview() {
@@ -1688,13 +1697,27 @@ function openLogoutModal() {
     return;
   }
 
-  // ✅ Open modal if timer is NOT running
-  document.getElementById("logoutModal").style.display = "flex";
+  // ✅ Open modal with smooth animation
+  const modal = document.getElementById("logoutModal");
+  modal.style.display = "flex";
+  // Trigger animation after display is set
+  setTimeout(() => {
+    modal.classList.remove('hide');
+    modal.classList.add('show');
+  }, 10);
 }
 
 
 function closeLogoutModal() {
-    document.getElementById("logoutModal").style.display = "none";
+    const modal = document.getElementById("logoutModal");
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    
+    // Hide modal after animation completes
+    setTimeout(() => {
+      modal.style.display = "none";
+      modal.classList.remove('hide');
+    }, 300);
 }
 
 function confirmLogout() {
@@ -1823,7 +1846,7 @@ window.testAllAPIColorFields = async function() {
     console.log('🧪 Testing ALL API Color Fields...');
     
     try {
-        const response = await fetch('https://dxdtime.ddsolutions.io/api/styling/global/');
+        const response = await fetch('/api/styling/proxy');
         const data = await response.json();
         
         if (data.status === 'success' && data.data) {

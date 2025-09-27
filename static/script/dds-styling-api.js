@@ -1,12 +1,11 @@
 /**
  * 🎨 DDS STYLING API INTEGRATION
- * Dynamically fetches and applies styling from the DDS API
- * API Endpoint: https://dxdtime.ddsolutions.io/api/styling/global/
+ * Using Flask proxy endpoint to prevent hanging (external API disabled)
  */
 
 class DDSStylingAPI {
     constructor() {
-        this.apiEndpoint = 'https://dxdtime.ddsolutions.io/api/styling/global/';
+        this.apiEndpoint = '/api/styling/proxy'; // Use Flask proxy - external API disabled
         this.fallbackColors = {
             // Primary colors (matching API structure)
             'primary-color': '#fff',

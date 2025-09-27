@@ -4,7 +4,7 @@
 
 :root {
   /* 🔥 ALL COLORS POPULATED EXCLUSIVELY FROM DDS STYLING API */
-  /* API Endpoint: https://dxdtime.ddsolutions.io/api/styling/global/ */
+  /* DDS Styling - Using Flask proxy (external API disabled to prevent hanging) */
   
   /* Primary API Color Variables - POPULATED BY API */
   --primary-color: ;
@@ -109,7 +109,7 @@
   --heading-font-size: ;
   --body-font-size: ;
   --font-family: ;
-  --border-radius: ;
+  --border-radius: 5px;
   
   /* System values and calculated transparencies */
   --transparent: transparent;
@@ -146,7 +146,6 @@ body {
   font-family: var(--font-family);
   font-size: var(--body-font-size);
   color: var(--text-color);
-  background-color: var(--background-color);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -162,7 +161,7 @@ body {
    ============================================ */
 
 .header {
-  background-color: var(--header-color);
+  background-color: var(--nav-background);
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
@@ -191,7 +190,7 @@ body {
 }
 
 #displayUserName {
-  color: var(--text-color);
+  color: #fff;
   font-weight: bold;
   font-size: 18px;
 }
@@ -275,11 +274,11 @@ body {
 }
 
 .language-option:hover {
-  background-color: var(--drawer-background-color);
+  background-color: #006039;
 }
 
 .language-option.selected {
-  background-color: var(--drawer-background-color);
+  background-color: #006039;
   font-weight: bold;
 }
 
@@ -326,7 +325,7 @@ body {
    ============================================ */
 
 .main {
-  background-color: var(--background-color);
+  background-color: #fff;
   padding: 15px;
   height: auto;
 }
@@ -354,7 +353,7 @@ body {
 
 .form-control {
   padding: 9px 10px;
-  border: 1px solid var(--drawer-background-color);
+  border: 1px solid #006039;
   color: var(--text-color);
   background-color: var(--background-color);
   border-radius: var(--border-radius);
@@ -420,7 +419,6 @@ body {
 
 .state-circle.idle {
   background: linear-gradient(135deg, var(--state-idle), var(--gray-600));
-  animation: pulse 2s ease-in-out infinite;
 }
 
 .state-circle.break {
@@ -494,7 +492,7 @@ body {
 
 .start-button {
   background-color: var(--submit-button-bg-color);
-  color: var(--submit-button-text-color);
+  color: var(#0060);
 }
 
 .reset-button {
@@ -512,24 +510,27 @@ button:disabled {
    ============================================ */
 
 .drawer-arrow-btn {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, var(--submit-button-bg-color), var(--primary-button-bg-color));
-  color: var(--submit-button-text-color);
-  border: none;
-  width: 50px;
-  height: 90px;
-  border-radius: 0 30px 30px 0;
-  cursor: pointer;
-  z-index: 1001;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #003366 !important;
+    background-color: #003366 !important;
+    border: none !important;
+    border-color: transparent !important;
+    color: var(--submit-button-text-color);
+    width: 30px;
+    height: 60px;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.5s 
+cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .drawer-arrow-btn::before {
@@ -556,10 +557,10 @@ button:disabled {
 }
 
 .arrow-icon {
-  font-size: 22px;
+  font-size: 18px;
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   text-shadow: 2px 2px 4px var(--black-overlay-03);
-  color: var(--icon-color);
+  color: #fff;
 }
 
 .drawer-arrow-btn.active .arrow-icon {
@@ -580,7 +581,7 @@ button:disabled {
 }
 
 .drawer-overlay.active {
-  background: var(--black-overlay-06);
+  background: var();
   opacity: 1;
   visibility: visible;
 }
@@ -591,7 +592,8 @@ button:disabled {
   left: -380px;
   width: 380px;
   height: 100vh;
-  background: var(--drawer-background-color);
+  background: #003366 !important;
+  color: #fff !important;
   box-shadow: var(--shadow-lg);
   z-index: var(--z-drawer);
   transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
@@ -604,8 +606,8 @@ button:disabled {
 }
 
 .drawer-header {
-  background: var(--submit-button-bg-color);
-  color: var(--submit-button-text-color);
+  background: #003366 !important;
+  color: var(--submit-button-text-color) !important;
   padding: 30px 25px;
   position: relative;
   overflow: hidden;
@@ -629,13 +631,13 @@ button:disabled {
 
 .drawer-content {
   padding: 0;
-  background: var(--drawer-background-color);
+  background: #003366 !important;
 }
 
 .drawer-section {
   margin-bottom: 5px;
   transition: var(--transition-base);
-  background-color: var(--drawer-background-color);
+  background-color: #003366 !important;
 }
 
 .drawer-item {
@@ -644,7 +646,8 @@ button:disabled {
   padding: 18px 25px;
   cursor: pointer;
   transition: var(--transition-base);
-  background: var(--white-overlay-08);
+  background: #fff !important;
+  color: #000 !important;
   margin: 2px 5px;
   border-radius: 12px;
 }
@@ -672,7 +675,7 @@ button:disabled {
 
 .project-info, .task-info, .time-info {
   padding: 25px;
-  background: var(--drawer-background-color);
+  background: #f9f9f9;
   border-radius: 15px;
   margin: 5px 15px 15px 15px;
   box-shadow: var(--shadow-base);
@@ -681,7 +684,7 @@ button:disabled {
 
 .project-details, .task-details, .time-details {
   width: 100%;
-  color: var(--drawer-text-color);
+  color: var(#f9f9f9);
 }
 
 .project-name, .task-name {
@@ -802,6 +805,97 @@ button:disabled {
   background: transparent !important;
 }
 
+/* Remove onclick animation from feedback link */
+.nav-link:has(#navFeedback) {
+  transform: none !important;
+  transition: none !important;
+}
+
+.nav-link:has(#navFeedback):hover {
+  transform: none !important;
+}
+
+/* Alternative selector for better browser compatibility */
+#navFeedback {
+  pointer-events: auto;
+}
+
+#navFeedback:parent(.nav-link) {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Prevent all color overrides on drawer elements */
+.drawer,
+.drawer-header,
+.drawer-content,
+.drawer-section,
+.drawer-section-header,
+.drawer-item,
+.drawer-item *,
+.project-details,
+.project-details *,
+.task-details,
+.task-details *,
+.time-details,
+.time-details * {
+  background: unset !important;
+  background-color: unset !important;
+  color: unset !important;
+}
+.drawer-section-header{
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.drawer-item.project-info, .drawer-item.task-info, .drawer-item.time-info{
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+.drawer-item.project-info svg{
+  width: 30px;
+  height: auto;
+}
+.drawer-item.task-info svg{
+    width: 30px;
+  height: auto;
+}
+.drawer-item.time-info svg{
+    width: 30px;
+  height: auto;
+}
+
+/* Restore specific drawer element styles */
+.drawer {
+  background: #003366 !important;
+  color: #fff !important;
+}
+
+.drawer-header {
+  background: #003366 !important;
+  color: var(--submit-button-text-color) !important;
+  border-bottom: 1px solid var(--white-overlay-04);
+  margin-bottom: 20px;
+}
+
+.drawer-content {
+  background: #003366 !important;
+}
+
+.drawer-section {
+  background-color: #003366 !important;
+}
+
+.drawer-item {
+  background: #fff !important;
+  color: #000 !important;
+}
+
 /* ============================================
    🎨 MODAL STYLES
    ============================================ */
@@ -818,6 +912,21 @@ button:disabled {
   background: var(--black-overlay-06);
   justify-content: center;
   align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.show,
+.modal-review.show {
+  opacity: 1;
+  visibility: visible;
+  animation: modalFadeIn 0.3s ease forwards;
+}
+
+.modal.hide,
+.modal-review.hide {
+  animation: modalFadeOut 0.3s ease forwards;
 }
 
 .modal-content {
@@ -829,6 +938,19 @@ button:disabled {
   box-shadow: var(--shadow-lg);
   text-align: center;
   position: relative;
+  transform: scale(0.7) translateY(-50px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal.show .modal-content,
+.modal-review.show .modal-content {
+  transform: scale(1) translateY(0);
+  animation: modalSlideIn 0.3s ease forwards;
+}
+
+.modal.hide .modal-content,
+.modal-review.hide .modal-content {
+  animation: modalSlideOut 0.3s ease forwards;
 }
 
 .modal-content h2 {
@@ -848,7 +970,7 @@ button:disabled {
   padding: 10px;
   resize: none;
   border-radius: var(--border-radius);
-  border: 1px solid var(--drawer-background-color);
+  border: 1px solid #006039;
   font-size: 14px;
   margin-bottom: 20px;
   background-color: var(--background-color);
@@ -953,12 +1075,53 @@ button:disabled {
   75% { transform: translateX(-5px); }
 }
 
-.idle-shake {
-  animation: shake 0.4s ease;
+/* Modal animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
-.floating {
-  animation: pulse 3s ease-in-out infinite;
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7) translateY(-50px);
+  }
+}
+
+.idle-shake {
+  animation: shake 0.4s ease;
 }
 
 /* Loading animations */
@@ -1004,7 +1167,7 @@ button:disabled {
 .config-section {
   margin-bottom: 20px;
   padding: 15px;
-  border: 1px solid var(--drawer-background-color);
+  border: 1px solid #006039;
   border-radius: var(--border-radius);
   background: var(--background-color);
 }
@@ -1033,14 +1196,14 @@ button:disabled {
   max-width: 150px;
   background-color: var(--background-color);
   color: var(--text-color);
-  border: 1px solid var(--drawer-background-color);
+  border: 1px solid #006039;
   border-radius: var(--border-radius);
   padding: 5px;
 }
 
 #config-source-info {
   padding: 10px;
-  background: var(--drawer-background-color);
+  background: #006039;
   border-radius: var(--border-radius);
   font-family: monospace;
   font-size: 12px;

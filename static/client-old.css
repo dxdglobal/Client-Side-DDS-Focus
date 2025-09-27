@@ -475,7 +475,7 @@ body {
    ============================================ */
 
 .main {
-  background-color: var(--background-color);
+  background-color:#fff;
   padding: 15px;
   height: auto;
 }
@@ -659,7 +659,6 @@ button:disabled {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
 }
 
 .nav-menu {

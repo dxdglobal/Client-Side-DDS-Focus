@@ -16,16 +16,7 @@
 <body onload="checkDatabase()">
 
   <div class="container">
-    <div class="window-header">
-      <!-- <div class="window-title">
-        <span>FocusRO</span>
-      </div> -->
-      <div class="window-controls">
-        <div class="window-button minimize">−</div>
-        <div class="window-button maximize">□</div>
-        <div class="window-button close">×</div>
-      </div>
-    </div>
+
 
     <div class="wave-bg"></div>
 
@@ -189,9 +180,6 @@
           root.style.setProperty('--background-active', darkenColor(apiColors.background_color, 10), 'important');
           root.style.setProperty('--background-light', lightenColor(apiColors.background_color, 20), 'important');
           root.style.setProperty('--background-dark', darkenColor(apiColors.background_color, 15), 'important');
-          
-          // Apply to body immediately
-          document.body.style.setProperty('background-color', apiColors.background_color, 'important');
         }
         
         // 🔴 BUTTON COLORS - MAIN FOCUS!
@@ -241,13 +229,6 @@
           
           // Apply to body immediately
           document.body.style.setProperty('color', apiColors.text_color, 'important');
-          
-          // 🔤 Apply text color to Remember Me label specifically
-          const rememberMeLabel = document.getElementById('rememberMeLabel');
-          if (rememberMeLabel) {
-            rememberMeLabel.style.setProperty('color', apiColors.text_color, 'important');
-            console.log('🔤 Applied API text color to Remember Me label:', apiColors.text_color);
-          }
         }
         
         // Additional derived colors
@@ -358,7 +339,7 @@
       console.log('🧪 Manual API Test Starting...');
       
       try {
-        const response = await fetch('https://dxdtime.ddsolutions.io/api/styling/global/');
+        const response = await fetch('/api/styling/proxy');
         console.log('📡 API Response Status:', response.status);
         console.log('📡 API Response OK:', response.ok);
         
@@ -510,7 +491,7 @@
         loginButton: "LOGIN",
         guestButton: "Login as Guest",
         staffData: "Staff Data:",
-        version: "DeluxeTime v1.3.0"
+        version: "DeluxeTime v1.4.0"
       },
       tr: {
         title: "İş Emri Takip Yazılımı",
@@ -523,7 +504,7 @@
         loginButton: "GİRİŞ",
         guestButton: "Misafir Olarak Giriş Yap",
         staffData: "Personel Verileri:",
-        version: "DeluxeTime v1.3.0"
+        version: "DeluxeTime v1.4.0"
       }
     };
 

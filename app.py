@@ -420,6 +420,10 @@ def start_screen_recording(folder_path, email, task_name):
         global recording_active
 
         print(f" Starting screenshot capture - uploading directly to S3")
+        # Get screenshot interval from configuration
+        screenshot_interval = config_manager.get_screenshot_interval()
+        print(f"🔧 Screenshot interval: {screenshot_interval} seconds")
+        
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
 
@@ -448,7 +452,7 @@ def start_screen_recording(folder_path, email, task_name):
                     else:
                         logging.error(f"❌ Failed to upload screenshot to S3")
 
-                    time.sleep(30)  # every 30 seconds
+                    time.sleep(screenshot_interval)  # Use configurable interval
                 except Exception as e:
                     logging.error(f"❌ Screenshot error: {e}")
                     break
@@ -557,56 +561,38 @@ def refresh_configuration():
 @app.route('/api/styling/proxy', methods=['GET'])
 def get_styling_proxy():
     """
-    Proxy endpoint to fetch styling data from DDS API
-    This avoids CORS issues by making the request server-side
+    Return default styling configuration (External API disabled to prevent hanging)
     """
     try:
-        # Make the API request server-side
-        api_url = 'https://dxdtime.ddsolutions.io/api/styling/global/'
-        headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'DDS-FocusPro/1.3'
+        logging.info("🎨 Returning default styling configuration (External API disabled)")
+        
+        # Return safe default styling to prevent app hanging
+        default_styling = {
+            'status': 'success',
+            'data': {
+                'button_color': '#28a745',
+                'background_color': '#006039', 
+                'text_color': '#ffffff',
+                'primary_color': '#006039',
+                'secondary_color': '#28a745',
+                'header_color': '#004d2e',
+                'footer_color': '#004d2e',
+                'button_text_color': '#ffffff',
+                'accent_color': '#218838'
+            }
         }
         
-        logging.info(f"🎨 Fetching styling data from: {api_url}")
-        response = requests.get(api_url, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            styling_data = response.json()
-            logging.info(f"✅ Styling data received: {styling_data}")
-            
-            return jsonify({
-                'success': True,
-                'data': styling_data,
-                'source': 'dds_api'
-            })
-        else:
-            logging.error(f"❌ API returned status {response.status_code}: {response.text}")
-            return jsonify({
-                'success': False,
-                'error': f'API returned status {response.status_code}',
-                'status_code': response.status_code
-            }), response.status_code
-            
-    except requests.exceptions.Timeout:
-        logging.error("❌ API request timed out")
         return jsonify({
-            'success': False,
-            'error': 'API request timed out'
-        }), 408
-        
-    except requests.exceptions.ConnectionError:
-        logging.error("❌ Cannot connect to DDS API")
-        return jsonify({
-            'success': False,
-            'error': 'Cannot connect to DDS API'
-        }), 503
-        
+            'success': True,
+            'data': default_styling,
+            'source': 'default_config'
+        })
+            
     except Exception as e:
-        logging.error(f"❌ Error fetching styling data: {str(e)}")
+        logging.error(f"❌ Error in styling proxy: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': f'Styling proxy error: {str(e)}'
         }), 500
 
 @app.route('/api/config/screenshot-interval', methods=['GET'])
