@@ -6,6 +6,9 @@ import os
 import io
 import json
 from .config_manager import config_manager
+import io
+import json
+from .config_manager import config_manager
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +50,8 @@ def upload_activity_data_direct(activity_data, email, task_name, file_extension=
     safe_task_name = task_name.replace(" ", "_").replace("/", "_")
     filename = f"activity_{safe_task_name}_{timestamp}.{file_extension}"
     
-    # Structure: users_logs/{date}/{email}/activity_{task_name}_{timestamp}.json (consistent with other logs)
-    s3_key = f"users_logs/{date_folder}/{safe_email}/{filename}"
+    # Structure: users_logs/{date}/{email}/{task}/activity_{timestamp}.json (consistent with screenshot structure)
+    s3_key = f"users_logs/{date_folder}/{safe_email}/{safe_task_name}/{filename}"
 
     logger.info("👤 Email: %s", email)
     logger.info("📋 Task: %s", task_name)
@@ -190,10 +193,16 @@ def upload_screenshot_direct(image_bytes, email, task_name, file_extension="webp
     logger.info("🔐 Using S3 config from configuration manager")
     logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
     logger.info("🌍 AWS_REGION: %s", region)
+    logger.info("🔑 ACCESS_KEY (first 8 chars): %s***", access_key[:8] if access_key else "None")
+    logger.info("🗝️ SECRET_KEY (length): %d chars", len(secret_key) if secret_key else 0)
 
     # Check if credentials are missing
     if not all([access_key, secret_key, bucket, region]):
         logger.error("❌ One or more AWS environment variables are missing.")
+        logger.error("❌ access_key: %s", "Present" if access_key else "Missing")
+        logger.error("❌ secret_key: %s", "Present" if secret_key else "Missing")
+        logger.error("❌ bucket: %s", "Present" if bucket else "Missing")
+        logger.error("❌ region: %s", "Present" if region else "Missing")
         return None
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -227,7 +236,14 @@ def upload_screenshot_direct(image_bytes, email, task_name, file_extension="webp
         logger.info("✅ Direct upload successful: %s", url)
         return url
     except Exception as e:
-        logger.error("❌ Direct upload failed: %s", e)
+        if "InvalidAccessKeyId" in str(e):
+            logger.error("❌ AWS ACCESS KEY INVALID: %s", str(e))
+            logger.error("🔑 Please update your AWS credentials in .env file:")
+            logger.error("   - Generate new Access Key in AWS IAM Console")
+            logger.error("   - Update S3_ACCESS_KEY and S3_SECRET_KEY in .env")
+            logger.error("   - Restart the application")
+        else:
+            logger.error("❌ Direct upload failed: %s", e)
         return None
 
 def upload_screenshot(local_path, email, task_name):

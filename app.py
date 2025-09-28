@@ -16,6 +16,7 @@ from flask_mail import Mail, Message
 from moduller.tracker import save_raw_program_log, logs_file, collect_program_usage, get_program_history_and_save, upload_program_data_to_s3
 # from moduller.tracker import auto_log_every_minute, start_logging, stop_logging, upload_logs_on_app_close  # Disabled old tracker
 from moduller.active_window_tracker import start_active_window_tracking, stop_active_window_tracking, upload_current_activity_to_s3
+from moduller.s3_uploader import upload_screenshot
 
 from flask import Flask, render_template, request, jsonify
 import requests 
@@ -30,7 +31,15 @@ from moduller.system_idle_detector import start_idle_monitor
 import json
 from datetime import datetime
 from flask_mail import Message
-from PIL import Image
+
+# Optional PIL import for screenshot functionality
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = None
+    
 import mss
 import threading
 import time
@@ -40,8 +49,6 @@ import time
 from moduller.ai_summarizer import summarize_program_usage
 import io
 
-import cv2
-import numpy as np
 import pyautogui
 import time
 import threading
@@ -432,6 +439,10 @@ def start_screen_recording(folder_path, email, task_name):
                     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                     sct_img = sct.grab(monitor)
 
+                    if not PIL_AVAILABLE:
+                        logging.warning("⚠️ PIL not available, skipping screenshot processing")
+                        continue
+
                     # Convert mss image to PIL image and save to bytes buffer
                     img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
                     
@@ -775,6 +786,10 @@ def start_screen_recording(folder_path, email, task_name):
                 try:
                     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                     sct_img = sct.grab(monitor)
+
+                    if not PIL_AVAILABLE:
+                        logging.warning("⚠️ PIL not available, skipping screenshot processing")
+                        continue
 
                     # Convert mss image to PIL image and save to bytes buffer
                     img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
@@ -1249,7 +1264,7 @@ def upload_all_screenshots_to_s3():
                     # print(f" Email: {email}")
                     # print(f" Task Name: {task_name}")
 
-                    result_url = upload_screenshot(full_path)  # now only needs local_path
+                    result_url = upload_screenshot(full_path, email, task_name)
 
                     if result_url:
                         all_uploaded.append(result_url)

@@ -1,24 +1,36 @@
-# -- mode: python ; coding: utf-8 --
-
+# -*- mode: python ; coding: utf-8 -*-
 
 a = Analysis(
-    ['app.py'],
+    ['connector.py'],
     pathex=[],
     binaries=[],
     datas=[
-    ('templates', 'templates'),
-    ('static', 'static'),
-    ('moduller', 'moduller'),  # ✅ Add this line
-],
+        ('templates', 'templates'),
+        ('static', 'static'),
+        ('moduller', 'moduller'),
+        ('.env', '.'),
+        ('themes.json', '.'),
+        ('rules', 'rules')
+    ],
     hiddenimports=[
-        'boto3', 'botocore',
-        'pygetwindow', 'pyautogui',
-        'win32api', 'win32gui', 'win32con', 'ctypes'
+        'mss',
+        'pymysql',
+        'boto3'
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        'PIL',
+        'PIL.Image', 
+        'PIL.ImageDraw',
+        'PIL.ImageFont',
+        'cv2',
+        'opencv-python',
+        'opencv-python-headless',
+        'tkinter',
+        'webview'
+    ],
     noarchive=False,
     optimize=0,
 )

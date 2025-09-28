@@ -501,16 +501,31 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
 
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-    if (totalSeconds < 10) {
-        // resetTimer();
-        // stopScreenRecording();
-        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-        const message = translations[lang].minWorkWarning;
-        showToast(message, 'error');
-        return;
+// Reset button event listener with error checking
+document.addEventListener('DOMContentLoaded', function() {
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            console.log('🔄 Reset button clicked');
+            console.log('⏱️ Total seconds:', totalSeconds);
+            
+            if (totalSeconds < 10) {
+                console.log('⚠️ Session too short, showing warning');
+                // resetTimer();
+                // stopScreenRecording();
+                const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+                const message = translations[lang].minWorkWarning;
+                showToast(message, 'error');
+                return;
+            }
+            
+            console.log('✅ Opening finish modal');
+            openModal();
+        });
+        console.log('✅ Reset button event listener attached');
+    } else {
+        console.error('❌ resetBtn element not found!');
     }
-    openModal();
 });
 
 // let sessionStartTime;
@@ -793,16 +808,46 @@ function fetchLoggedTaskTimes() {
 }
 
 function openModal() {
+    console.log('🎯 openModal() called');
     // clearInterval(timerInterval); 
-    document.getElementById('finishModal').style.display = 'flex';
+    const modal = document.getElementById('finishModal');
+    console.log('📋 Modal element:', modal);
+    
+    if (!modal) {
+        console.error('❌ finishModal not found!');
+        return;
+    }
+    
+    modal.style.display = 'flex';
+    console.log('👁️ Modal display set to flex');
+    
+    // Trigger animation after display is set
+    setTimeout(() => {
+        modal.classList.remove('hide');
+        modal.classList.add('show');
+        console.log('🎬 Modal animation classes applied');
+    }, 10);
+    
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
-
-
+    const loggingInput = document.getElementById('loggingInput');
+    if (loggingInput) {
+        loggingInput.value = lang === 'tr' ? 'EVET' : 'YES';
+        console.log('📝 Logging input set to:', loggingInput.value);
+    } else {
+        console.warn('⚠️ loggingInput not found');
+    }
 }
 
 function closeModal() {
-    document.getElementById('finishModal').style.display = 'none';
+    const modal = document.getElementById('finishModal');
+    modal.classList.remove('show');
+    modal.classList.add('hide');
+    
+    // Hide modal after animation completes
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('hide');
+    }, 300);
 }
 
 

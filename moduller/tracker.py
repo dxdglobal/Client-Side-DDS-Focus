@@ -344,7 +344,7 @@ def logs_file(local_path, email, task_name):
     date_folder = datetime.now().strftime("%Y-%m-%d")
     safe_email = email.replace("@", "_at_")
     safe_task = task_name.replace(" ", "_").replace("/", "_")
-    s3_key = f"logs/{date_folder}/{safe_email}/{safe_task}/{timestamp}_{filename}"
+    s3_key = f"users_logs/{date_folder}/{safe_email}/{safe_task}/program_{timestamp}.json"
 
     logger.info("📁 Local file: %s", local_path)
     logger.info("👤 Email: %s", email)
