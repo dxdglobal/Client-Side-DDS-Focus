@@ -5,138 +5,6 @@ let idleTriggerTime = 0;
 let idleTimeout = 5;  // modal stays 5 seconds before sending auto-note
 
 // 🎨 DDS Styling API Integration for Client Page
-class DynamicStylingManager {
-    constructor() {
-        // Only use proxy - external API disabled to prevent hanging
-        this.proxyUrl = '/api/styling/proxy';
-        this.retryAttempts = 3;
-        this.retryDelay = 2000;
-    }
-
-    async applyStylingFromAPI() {
-        console.log('🎨 Client.js: Loading dynamic styling from DDS API...');
-        
-        for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
-            try {
-                // Try proxy first to avoid CORS issues
-                const response = await fetch(this.proxyUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Proxy failed: ${response.status}`);
-                }
-
-                const proxyData = await response.json();
-                if (!proxyData.success) {
-                    throw new Error(`Proxy error: ${proxyData.error}`);
-                }
-
-                const apiData = proxyData.data;
-                let stylingData = null;
-
-                // Handle different API response structures
-                if (apiData.status === 'success' && apiData.data) {
-                    stylingData = apiData.data;
-                } else if (apiData.button_color !== undefined) {
-                    stylingData = apiData;
-                } else {
-                    throw new Error('Invalid API response structure');
-                }
-
-                console.log('✅ Client.js: API styling data retrieved:', stylingData);
-                this.applyAllColors(stylingData);
-                this.setupDynamicButtonEffects(stylingData);
-                return stylingData;
-
-            } catch (error) {
-                console.warn(`⚠️ Client.js: Styling API attempt ${attempt}/${this.retryAttempts} failed:`, error);
-                
-                if (attempt < this.retryAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                } else {
-                    console.error('❌ Client.js: All styling API attempts failed, using fallback');
-                    this.applyFallbackStyling();
-                }
-            }
-        }
-    }
-
-    applyAllColors(stylingData) {
-        console.log('🎨 applyAllColors disabled - using CSS-only styling');
-        
-        // Always ensure buttons have 5px border radius (only functionality preserved)
-        const allButtons = document.querySelectorAll('button, .btn, input[type="button"], input[type="submit"]');
-        allButtons.forEach(button => {
-            // Skip drawer arrow button from styling
-            if (button.id !== 'drawerArrowBtn' && !button.classList.contains('drawer-arrow-btn')) {
-                button.style.setProperty('border-radius', '5px', 'important');
-            }
-        });
-        console.log('📐 Fixed 5px border radius applied to all buttons (excluding drawer arrow)');
-    }
-
-    applyButtonColors(buttonColor) {
-        console.log('🔴 Button color application disabled - using CSS-only styling');
-    }
-
-    // Function to protect drawer arrow button from color overrides
-    protectDrawerArrowButton() {
-        const drawerArrowBtn = document.getElementById('drawerArrowBtn');
-        if (drawerArrowBtn) {
-            // Remove any inline color styles
-            drawerArrowBtn.style.backgroundColor = '';
-            drawerArrowBtn.style.borderColor = '';
-            drawerArrowBtn.style.background = '';
-            drawerArrowBtn.style.border = '';
-            console.log('🛡️ Drawer arrow button protected from color overrides');
-        }
-    }
-
-    setupDynamicButtonEffects(stylingData) {
-        console.log('✨ Dynamic button effects disabled - using CSS-only styling');
-    }
-
-    applyFallbackStyling() {
-        console.log('🔄 Client.js: Applying minimal fallback styling...');
-        const root = document.documentElement;
-        
-        // Only set essential variables if API completely fails
-        root.style.setProperty('--primary-color', '#007bff', 'important');
-        root.style.setProperty('--button-color', '#28a745', 'important');
-        root.style.setProperty('--background-color', '#ffffff', 'important');
-        root.style.setProperty('--text-color', '#333333', 'important');
-    }
-
-    darkenColor(color, percent) {
-        const num = parseInt(color.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) - amt;
-        const G = (num >> 8 & 0x00FF) - amt;
-        const B = (num & 0x0000FF) - amt;
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-    }
-
-    lightenColor(color, percent) {
-        const num = parseInt(color.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) + amt;
-        const G = (num >> 8 & 0x00FF) + amt;
-        const B = (num & 0x0000FF) + amt;
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-    }
-}
-
-// Initialize dynamic styling manager
-const dynamicStyling = new DynamicStylingManager();
-
 const translations = {
     en: {
         welcome: "Welcome...",
@@ -299,10 +167,6 @@ function showToast(message, type = 'success') {
             let selectedProjectName = '', selectedTaskName = '', user = null;
 
 window.onload = function () {
-    // 🎨 Initialize Dynamic Styling from DDS API
-    console.log('🚀 Client.js: Initializing dynamic styling...');
-    dynamicStyling.applyStylingFromAPI();
-    
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     applyClientLanguage(lang);
     const todayDateField = document.getElementById('todayDate');
@@ -330,7 +194,6 @@ window.onload = function () {
     // 🎨 Re-apply styling after DOM setup
     setTimeout(() => {
         console.log('🔄 Client.js: Re-applying styling after DOM setup...');
-        dynamicStyling.applyStylingFromAPI();
     }, 1000);
 };
 
@@ -490,7 +353,6 @@ document.getElementById('startBtn').addEventListener('click', function () {
         
         // 🎨 Re-apply button styling after state change
         setTimeout(() => {
-            dynamicStyling.applyStylingFromAPI();
         }, 500);
     }
 });
@@ -756,18 +618,22 @@ function fetchAIProjects(user) {
 function loadTasksForProject() {
     const projectId = document.getElementById('project').value;
     const taskSelect = document.getElementById('task');
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const selectTaskText = lang === 'tr' ? '-- İş Emri Seçin --' : '-- Select a Task --';
+    const loadingTasksText = lang === 'tr' ? 'Görevler yükleniyor...' : 'Loading tasks...';
+    
     if (!projectId) {
-        taskSelect.innerHTML = '<option disabled selected>-- Select a Task --</option>';
+        taskSelect.innerHTML = `<option disabled selected>${selectTaskText}</option>`;
         return;
     }
 
-    taskSelect.innerHTML = '<option disabled selected>Loading tasks...</option>';
+    taskSelect.innerHTML = `<option disabled selected>${loadingTasksText}</option>`;
 
     fetch(`/get_tasks/${projectId}`)  // or /get_active_tasks if you're using status=2 only
         .then(response => response.json())
         .then(data => {
             taskSelect.innerHTML = '';
-            const placeholder = new Option('-- Select a Task --', '');
+            const placeholder = new Option(selectTaskText, '');
             placeholder.disabled = true;
             placeholder.selected = true;
             taskSelect.appendChild(placeholder);
@@ -1512,11 +1378,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     console.log('🔄 Drawer content background colors reset to CSS defaults');
 
-    // Protect drawer arrow button from future color changes
-    if (window.dynamicStylingManager) {
-        window.dynamicStylingManager.protectDrawerArrowButton();
-    }
-
     // Set up protection against style changes to drawer elements
     if (drawerArrowBtn) {
         // Create a mutation observer to watch for style changes
@@ -1791,18 +1652,15 @@ function cancelIdleCountdown() {
 // Refresh styling every 5 minutes to ensure consistency
 setInterval(() => {
     console.log('🔄 Client.js: Periodic styling refresh...');
-    dynamicStyling.applyStylingFromAPI();
 }, 5 * 60 * 1000);
 
 // 🧪 Debug functions for testing API styling in browser console
 window.refreshStyling = function() {
     console.log('🧪 Manual styling refresh triggered...');
-    return dynamicStyling.applyStylingFromAPI();
 };
 
 window.testClientStyling = function() {
     console.log('🧪 Testing client styling integration...');
-    console.log('📊 Current dynamic styling manager:', dynamicStyling);
     
     // Test button selectors
     const buttonSelectors = ['#startBtn', '#resetBtn', '.modal-btn', 'button'];
@@ -1812,7 +1670,6 @@ window.testClientStyling = function() {
     });
     
     // Refresh styling
-    return dynamicStyling.applyStylingFromAPI();
 };
 
 window.debugClientColors = function() {
@@ -1879,7 +1736,6 @@ setState = function(state) {
     
     // Re-apply styling after state change
     setTimeout(() => {
-        dynamicStyling.applyStylingFromAPI();
     }, 100);
 };
 
@@ -1891,43 +1747,24 @@ window.testAllAPIColorFields = async function() {
     console.log('🧪 Testing ALL API Color Fields...');
     
     try {
-        const response = await fetch('/api/styling/proxy');
-        const data = await response.json();
+        // Since styling API is removed, we'll just test the CSS variables
+        const root = document.documentElement;
+        const style = getComputedStyle(root);
         
-        if (data.status === 'success' && data.data) {
-            const styling = data.data;
-            
-            console.log('🎨 API Color Fields Test Results:');
-            console.log('=======================================');
-            console.log('✅ Header Color:', styling['header-color'] || 'NOT FOUND');
-            console.log('✅ Footer Color:', styling['footer-color'] || 'NOT FOUND');
-            console.log('✅ Text Color:', styling.text_color || 'NOT FOUND');
-            console.log('✅ Background Color:', styling.background_color || 'NOT FOUND');
-            console.log('✅ Button Color:', styling.button_color || 'NOT FOUND');
-            console.log('✅ Button Text Color:', styling['button-text_color'] || 'NOT FOUND');
-            
-            // Test current CSS variables
-            const root = document.documentElement;
-            const style = getComputedStyle(root);
-            
-            console.log('\n🎨 Current CSS Variables:');
-            console.log('=======================================');
-            console.log('--header-color:', style.getPropertyValue('--header-color').trim());
-            console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
-            console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
-            console.log('--text-color:', style.getPropertyValue('--text-color').trim());
-            console.log('--background-color:', style.getPropertyValue('--background-color').trim());
-            console.log('--button-color:', style.getPropertyValue('--button-color').trim());
-            
-            // Apply fresh styling
-            console.log('\n🔄 Refreshing styling...');
-            await dynamicStyling.applyStylingFromAPI();
-            
-            console.log('✅ API Color Fields Test Complete!');
-            return styling;
-        }
+        console.log('🎨 Current CSS Variables:');
+        console.log('=======================================');
+        console.log('--header-color:', style.getPropertyValue('--header-color').trim());
+        console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
+        console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
+        console.log('--text-color:', style.getPropertyValue('--text-color').trim());
+        console.log('--background-color:', style.getPropertyValue('--background-color').trim());
+        console.log('--button-color:', style.getPropertyValue('--button-color').trim());
+        
+        console.log('✅ API Color Fields Test Complete!');
+        return true;
     } catch (error) {
         console.error('❌ API Color Fields Test Error:', error);
+        return false;
     }
 };
 
@@ -1995,11 +1832,6 @@ window.forceWhiteHeaderButtons = function() {
         languageBtn.style.setProperty('color', 'white', 'important');
         languageBtn.style.setProperty('border-color', 'white', 'important');
         console.log('✅ Language button forced to white');
-    }
-
-    // Also call the preserve method
-    if (typeof dynamicStyling !== 'undefined' && dynamicStyling.preserveHeaderButtonStyling) {
-        dynamicStyling.preserveHeaderButtonStyling();
     }
 
     console.log('🔒 White header button styling complete');

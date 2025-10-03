@@ -649,7 +649,7 @@ button:disabled {
    ============================================ */
 
 .nav-container {
-  background: var(--footer-color);
+  background: var(#003366);
   border-radius: 0;
   padding: 10px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
