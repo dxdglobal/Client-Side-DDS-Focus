@@ -2011,6 +2011,71 @@ def upload_activity_log():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+@app.route('/shutdown', methods=['POST'])
+def shutdown_application():
+    """Shutdown endpoint to gracefully stop the Flask application"""
+    try:
+        print("🛑 Shutdown requested via API endpoint")
+        logging.info("🛑 Shutdown requested via API endpoint")
+        
+        # Stop recording if active
+        global recording_active, recording_thread, is_user_idle
+        if recording_active:
+            print("📸 Stopping screen recording...")
+            recording_active = False
+            if recording_thread:
+                recording_thread.join(timeout=2)
+                recording_thread = None
+        
+        # Reset idle flag
+        is_user_idle = False
+        
+        # Stop activity tracking
+        try:
+            from moduller.active_window_tracker import stop_active_window_tracking
+            stop_active_window_tracking()
+            print("🔍 Stopped activity window tracking")
+        except Exception as e:
+            print(f"⚠️ Error stopping activity tracking: {e}")
+        
+        # Stop user program tracking if active
+        try:
+            from moduller.user_program_tracker import stop_all_user_tracking
+            stop_all_user_tracking()
+            print("📊 Stopped all user program tracking")
+        except Exception as e:
+            print(f"⚠️ Error stopping user program tracking: {e}")
+        
+        # Clean up session files
+        try:
+            import os
+            session_file = "data/current_session.json"
+            if os.path.exists(session_file):
+                os.remove(session_file)
+                print("🗑️ Session file cleaned up")
+        except Exception as e:
+            print(f"⚠️ Error cleaning up session file: {e}")
+        
+        response = jsonify({"status": "success", "message": "Application shutdown initiated"})
+        
+        # Schedule shutdown after response is sent
+        def shutdown_server():
+            import time
+            time.sleep(1)  # Give time for response to be sent
+            print("🔴 Shutting down Flask server...")
+            logging.info("🔴 Shutting down Flask server...")
+            os._exit(0)
+        
+        threading.Thread(target=shutdown_server, daemon=True).start()
+        
+        return response
+        
+    except Exception as e:
+        print(f"❌ Error during shutdown: {e}")
+        logging.error(f"❌ Error during shutdown: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 @app.route('/create_daily_log_file', methods=['POST'])
 def create_daily_log_file():
     """Create initial daily log file when user logs in"""

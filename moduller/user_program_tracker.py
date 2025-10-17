@@ -90,6 +90,20 @@ class UserProgramTracker:
         print(f"📊 Final report uploaded to S3 with {final_report.get('programs_tracked', 0)} programs")
         return final_report
     
+    def stop_all_tracking(self):
+        """Stop all active tracking sessions"""
+        active_sessions = list(self.user_sessions.keys())
+        print(f"🛑 Stopping {len(active_sessions)} active tracking sessions...")
+        
+        for user_key in active_sessions:
+            session = self.user_sessions[user_key]
+            email = session['email']
+            task_name = session['task_name']
+            print(f"⏹️ Stopping tracking for {email} - {task_name}")
+            self.stop_user_tracking(email, task_name)
+        
+        print("✅ All tracking sessions stopped")
+    
     def _user_tracking_loop(self, user_key):
         """Main tracking loop for a specific user"""
         capture_interval = 10  # Capture program data every 10 seconds (faster for testing)
@@ -287,6 +301,11 @@ def get_user_program_data(email, task_name="general"):
     """Get current program tracking data for a user"""
     tracker = get_user_program_tracker()
     return tracker.get_user_current_data(email, task_name)
+
+def stop_all_user_tracking():
+    """Stop all active user tracking sessions"""
+    tracker = get_user_program_tracker()
+    tracker.stop_all_tracking()
 
 if __name__ == "__main__":
     # Test the user program tracker

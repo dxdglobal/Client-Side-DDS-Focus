@@ -24,6 +24,7 @@ a = Analysis(
     ],
     hiddenimports=[
         # Desktop app imports
+        'webview',
         'tkinter',
         'tkinter.ttk',
         'tkinter.messagebox',
@@ -113,15 +114,6 @@ a = Analysis(
         'uvloop',
         'uvicorn',
         'fastapi',
-        'flask',
-        'flask_mail',
-        'werkzeug',
-        'jinja2',
-        'boto3',
-        'botocore',
-        'pymysql',
-        'cryptography',
-        'openai',
     ],
     noarchive=False,
     optimize=0,

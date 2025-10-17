@@ -841,6 +841,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Handle window close events to ensure proper cleanup
+        window.addEventListener('beforeunload', function(e) {
+            console.log('🛑 Window closing - stopping timer and cleaning up...');
+            
+            // Stop timer if it's running
+            if (timerState.isRunning) {
+                console.log('⏹️ Stopping timer due to window close');
+                try {
+                    stopTimer();
+                } catch (error) {
+                    console.error('❌ Error stopping timer:', error);
+                }
+            }
+            
+            // Call shutdown endpoint to clean up background processes
+            try {
+                fetch('/shutdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+            } catch (error) {
+                console.error('❌ Error calling shutdown endpoint:', error);
+            }
+            
+            // Don't show confirmation dialog, just clean up
+            return undefined;
+        });
+
+        // Also handle unload event as a backup
+        window.addEventListener('unload', function() {
+            console.log('🗑️ Window unloading - final cleanup');
+            
+            // Send shutdown signal synchronously as a last resort
+            try {
+                navigator.sendBeacon('/shutdown', JSON.stringify({}));
+            } catch (error) {
+                console.error('❌ Error sending shutdown beacon:', error);
+            }
+        });
+
     </script>
   
   <!-- Main Application Scripts -->

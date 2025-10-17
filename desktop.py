@@ -265,19 +265,64 @@ def cleanup_and_exit():
     global connector_process
     logging.info("[CLEANUP] UI closed by user. Cleaning up...")
 
+    # Step 1: Try to gracefully shut down Flask app via API
+    try:
+        logging.info("🛑 Sending shutdown signal to Flask app...")
+        
+        # Try multiple ports since the Flask app finds free ports
+        ports_to_try = [5000, 5001, 5002, 5003, 5004, 5005]
+        shutdown_success = False
+        
+        for port in ports_to_try:
+            try:
+                import requests
+                response = requests.post(f"http://127.0.0.1:{port}/shutdown", timeout=5)
+                if response.status_code == 200:
+                    logging.info(f"✅ Flask app shutdown successfully on port {port}")
+                    shutdown_success = True
+                    break
+            except requests.exceptions.RequestException:
+                continue  # Try next port
+        
+        if shutdown_success:
+            logging.info("⏳ Waiting for Flask app to shutdown...")
+            time.sleep(3)  # Give Flask time to cleanup
+        else:
+            logging.warning("⚠️ Could not reach Flask app via API")
+            
+    except Exception as e:
+        logging.warning(f"⚠️ Failed to shutdown Flask gracefully: {e}")
+
+    # Step 2: Try to terminate connector process
     try:
         if connector_process and connector_process.poll() is None:
-            logging.info("🛑 Terminating connector...")
+            logging.info("🛑 Terminating connector process...")
             connector_process.terminate()
             connector_process.wait(timeout=5)
-            logging.info("[OK] Connector terminated.")
+            logging.info("✅ Connector terminated.")
     except Exception as e:
         logging.warning(f"⚠️ Failed to terminate connector cleanly: {e}")
 
-    # Fallback: kill any remaining
-    kill_existing_connector()
+    # Step 3: Fallback - kill any remaining processes
+    try:
+        logging.info("🧹 Cleaning up any remaining processes...")
+        kill_existing_connector()
+        
+        # Also kill any Python processes that might be running the Flask app
+        for proc in psutil.process_iter(['name', 'cmdline']):
+            try:
+                if 'python' in proc.info['name'].lower() and proc.info['cmdline']:
+                    cmdline = ' '.join(proc.info['cmdline'])
+                    if 'app.py' in cmdline or 'DDSFocusPro' in cmdline:
+                        logging.info(f"� Killing Flask process: PID {proc.pid}")
+                        proc.kill()
+            except Exception as e:
+                continue
+                
+    except Exception as e:
+        logging.warning(f"⚠️ Error during process cleanup: {e}")
 
-    logging.info("👋 Exiting application.")
+    logging.info("👋 Application cleanup complete. Exiting.")
     os._exit(0)
 
 # ------------------ Main Launcher ------------------
