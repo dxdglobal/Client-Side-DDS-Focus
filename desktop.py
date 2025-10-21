@@ -10,35 +10,37 @@ import webview
 import psutil
 import webbrowser
 import pathlib
+import signal
+import atexit
 
-# ------------------ Kill Old Connector ------------------
+# Create necessary folders on startup
+def create_required_folders():
+    folders_to_create = ["logs", "output", "data"]
+    for folder in folders_to_create:
+        if not os.path.exists(folder):
+            os.makedirs(folder, exist_ok=True)
+            print(f"[OK] Created folder: {folder}")
+
+# Call folder creation
+create_required_folders()
+
 def kill_existing_connector():
     for proc in psutil.process_iter(['name']):
         try:
-            if 'DDSFocusPro' in proc.info['name']:
-                logging.info(f"[CLEANUP] Killing old connector: PID {proc.pid}")
+            if 'connector.exe' in proc.info['name']:
+                logging.info(f"[CLEAN] Killing old connector: PID {proc.pid}")
                 proc.kill()
         except Exception as e:
-            logging.warning(f"[WARNING] Could not kill connector: {e}")
+            logging.warning(f"[WARN] Could not kill connector: {e}")
 
 # ------------------ Globals ------------------
 connector_process = None
 flask_ready = False
 
 # ------------------ Logging ------------------
-# Get the directory where the executable is located
-if getattr(sys, 'frozen', False):
-    # Running as PyInstaller executable
-    base_dir = os.path.dirname(sys.executable)
-else:
-    # Running as Python script
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-log_folder = os.path.join(base_dir, "logs")
+log_folder = "logs"
 os.makedirs(log_folder, exist_ok=True)
 log_file = os.path.join(log_folder, "desktop.log")
-
-# Simple logging setup without stdout/stderr redirection
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -52,46 +54,87 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     logging.error("[ERROR] Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 sys.excepthook = handle_exception
 
-# ------------------ Flask Starter ------------------
 def start_flask():
     global connector_process
-    # Get the correct base path for both executable and script modes
-    if getattr(sys, 'frozen', False):
-        # Running as PyInstaller executable - use directory of executable
-        base_path = os.path.dirname(sys.executable)
-    else:
-        # Running as Python script - use dist directory if available
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        dist_dir = os.path.join(script_dir, "dist")
-        if os.path.exists(os.path.join(dist_dir, "DDSFocusPro Connector.exe")):
-            base_path = dist_dir
-        else:
-            base_path = script_dir
     
-    app_path = os.path.join(base_path, "DDSFocusPro Connector.exe")
+    # ✅ Improved path detection for both development and packaged environments
+    if getattr(sys, 'frozen', False):
+        # Running as compiled executable
+        base_path = os.path.dirname(sys.executable)
+        logging.info(f"[LAUNCH] Running as packaged app from: {base_path}")
+        
+        # For PyInstaller, the connector.exe should be in the same directory as DDSFocusPro.exe
+        app_path = os.path.join(base_path, "connector.exe")
+        logging.info(f"[LAUNCH] Looking for connector at: {app_path}")
+        
+        # Alternative: Check in the temporary extraction folder (_MEIPASS)
+        if not os.path.exists(app_path):
+            temp_path = getattr(sys, '_MEIPASS', base_path)
+            app_path = os.path.join(temp_path, "connector.exe")
+            logging.info(f"[LAUNCH] Trying temp path: {app_path}")
+            
+    else:
+        # Running in development mode
+        base_path = os.path.abspath(".")
+        logging.info(f"[LAUNCH] Running in development from: {base_path}")
+        
+        # Check if connector.exe exists in dist folder (built separately)
+        app_path = os.path.join(base_path, "dist", "connector.exe")
+        if not os.path.exists(app_path):
+            app_path = os.path.join(base_path, "connector.exe")
 
-    logging.info(f"[LAUNCH] Base path: {base_path}")
-    logging.info(f"[LAUNCH] Starting: {app_path}")
+    logging.info(f"[LAUNCH] Final connector path: {app_path}")
+    
     if not os.path.exists(app_path):
-        logging.error(f"[ERROR] File not found: {app_path}")
-        logging.error(f"[DEBUG] Available files in {base_path}: {os.listdir(base_path) if os.path.exists(base_path) else 'Directory not found'}")
-        return
+        logging.error(f"[ERROR] connector.exe not found at: {app_path}")
+        
+        # List files in the directory to debug
+        try:
+            dir_to_check = os.path.dirname(app_path)
+            files = os.listdir(dir_to_check)
+            logging.info(f"[DEBUG] Files in {dir_to_check}: {files}")
+        except Exception as e:
+            logging.error(f"[DEBUG] Could not list directory: {e}")
+        
+        # Try to build connector if we're in development
+        if not getattr(sys, 'frozen', False):
+            logging.info("[LAUNCH] Attempting to build connector...")
+            try:
+                build_cmd = f'pyinstaller --clean --noconfirm --onefile --noconsole --name connector app.py'
+                result = subprocess.run(build_cmd, shell=True, capture_output=True, text=True)
+                if result.returncode == 0:
+                    app_path = os.path.join(base_path, "dist", "connector.exe")
+                    logging.info(f"[LAUNCH] Connector built successfully: {app_path}")
+                else:
+                    logging.error(f"[LAUNCH] Failed to build connector: {result.stderr}")
+                    return
+            except Exception as e:
+                logging.error(f"[LAUNCH] Error building connector: {e}")
+                return
+        else:
+            logging.error("[ERROR] Cannot find connector.exe in packaged application")
+            logging.error("[ERROR] This means the build process did not properly embed the connector")
+            return
 
-    flask_log = open(os.path.join(log_folder, "flask.log"), "w")
-    startupinfo = subprocess.STARTUPINFO() if os.name == 'nt' else None
-    if startupinfo:
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-
+    # ✅ Start the connector process
+    flask_log_path = os.path.join(log_folder, "flask.log")
+    logging.info(f"[LAUNCH] Starting connector with logs at: {flask_log_path}")
+    
     try:
+        flask_log = open(flask_log_path, "w", encoding='utf-8')
+        startupinfo = subprocess.STARTUPINFO() if os.name == 'nt' else None
+        if startupinfo:
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
         connector_process = subprocess.Popen(
             [app_path],
             stdout=flask_log,
             stderr=flask_log,
-            shell=True,
+            shell=False,  # Changed from True to False for better process control
             creationflags=subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0,
             startupinfo=startupinfo
         )
-        logging.info("[SUCCESS] Connector started")
+        logging.info("[OK] Connector started")
     except Exception as e:
         logging.error(f"[ERROR] Failed to start connector: {e}")
 
@@ -104,90 +147,85 @@ def wait_until_flask_ready(max_wait=float("inf")):
             r = requests.get("http://127.0.0.1:5000")
             if r.status_code == 200:
                 flask_ready = True
-                logging.info("[SUCCESS] Flask ready")
+                logging.info("[OK] Flask ready")
                 return
         except:
             pass  # no log here
         time.sleep(0.25)
-    logging.warning("[TIMEOUT] Flask not ready in time")
+    logging.warning("[TIMEOUT] Timeout: Flask not ready in time")
+
 
 def background_launcher():
     global flask_ready
-    logging.info("[BACKGROUND] Starting Flask connector")
     start_flask()
-    logging.info("[BACKGROUND] Waiting for Flask to be ready")
-    wait_until_flask_ready(float("inf"))  # FIXED
+    wait_until_flask_ready(float("inf"))  # [OK] FIXED
+
     
     if flask_ready:
-        logging.info("[UI] Opening main app window")
-        if webview.windows:
-            webview.windows[0].load_url("http://127.0.0.1:5000")
-        else:
-            logging.error("[ERROR] No webview windows available to load URL")
+        logging.info("🌐 Opening main app window")
+        webview.windows[0].load_url("http://127.0.0.1:5000")
     else:
-        logging.warning("[WARNING] Flask did not respond in time. Keeping loader visible.")
+        logging.warning("[ERROR] Flask did not respond in time. Keeping loader visible.")
+
+
+
+
 
 def cleanup_and_exit():
     global connector_process
     logging.info("[CLEANUP] UI closed by user. Cleaning up...")
 
+    # ✅ First, cleanup any active timers before closing the app
+    try:
+        logging.info("[CLEANUP] Attempting to close active timers...")
+        response = requests.post("http://127.0.0.1:5000/cleanup_active_timers", timeout=5)
+        if response.status_code == 200:
+            logging.info("[CLEANUP] ✅ Active timers closed successfully")
+        else:
+            logging.warning(f"[CLEANUP] ⚠️ Timer cleanup returned status: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        logging.warning(f"[CLEANUP] ⚠️ Could not reach Flask app for timer cleanup: {e}")
+    except Exception as e:
+        logging.warning(f"[CLEANUP] ⚠️ Timer cleanup failed: {e}")
+
     try:
         if connector_process and connector_process.poll() is None:
-            logging.info("[CLEANUP] Terminating DDSFocusPro Connector...")
+            logging.info("🛑 Terminating connector...")
             connector_process.terminate()
             connector_process.wait(timeout=5)
-            logging.info("[SUCCESS] DDSFocusPro Connector terminated.")
+            logging.info("[OK] Connector terminated.")
     except Exception as e:
-        logging.warning(f"[WARNING] Failed to terminate connector cleanly: {e}")    # Fallback: kill any remaining
+        logging.warning(f"⚠️ Failed to terminate connector cleanly: {e}")
+
+    # Fallback: kill any remaining
     kill_existing_connector()
 
-    logging.info("[EXIT] Exiting application.")
+    logging.info("👋 Exiting application.")
     os._exit(0)
 
 # ------------------ Main Launcher ------------------
 if __name__ == '__main__':
-    try:
-        logging.info("[MAIN] Starting DDSFocusPro desktop application")
-        kill_existing_connector()
-        
-        logging.info("[MAIN] Starting background launcher thread")
-        background_thread = threading.Thread(target=background_launcher, daemon=True)
-        background_thread.start()
-        logging.info("[MAIN] Background thread started successfully")
-    except Exception as e:
-        logging.error(f"[ERROR] Failed during initialization: {e}")
-        logging.error("[ERROR] Exception details:", exc_info=True)
-        raise
+    # ✅ Register cleanup handlers for various exit scenarios
+    atexit.register(cleanup_and_exit)
+    signal.signal(signal.SIGINT, lambda sig, frame: cleanup_and_exit())
+    signal.signal(signal.SIGTERM, lambda sig, frame: cleanup_and_exit())
+    
+    kill_existing_connector()
+    threading.Thread(target=background_launcher, daemon=True).start()
 
     # Show UI immediately (no wait)
     try:
-        logging.info("[MAIN] Preparing to show UI")
-        
-        # Get the correct base path for PyInstaller executable
-        if getattr(sys, 'frozen', False):
-            # If running as executable, use sys._MEIPASS for temporary files
-            base_path = sys._MEIPASS
-            logging.info(f"[MAIN] Running as executable, base_path: {base_path}")
-        else:
-            # If running as script, use script directory
-            base_path = pathlib.Path(__file__).parent
-            logging.info(f"[MAIN] Running as script, base_path: {base_path}")
-        
-        loader_path = pathlib.Path(base_path) / "templates" / "loader.html"
+        loader_path = pathlib.Path(__file__).parent / "templates" / "loader.html"
 
         if not loader_path.exists():
             logging.error(f"[ERROR] loader.html NOT FOUND at {loader_path}")
-            logging.error(f"[DEBUG] Base path: {base_path}")
-            logging.error(f"[DEBUG] Available files: {list(pathlib.Path(base_path).rglob('*'))}")
             raise FileNotFoundError("loader.html missing.")
 
-        logging.info(f"[SUCCESS] loader.html found at {loader_path}")
+        logging.info(f"[OK] loader.html found at {loader_path}")
 
-        logging.info("[UI] Reading loader.html content")
         with open(loader_path, "r", encoding="utf-8") as f:
             loader_html = f.read()
 
-        logging.info("[UI] Creating webview window")
         webview.create_window(
             title="DDS FocusPro",
             html=loader_html,
@@ -195,26 +233,14 @@ if __name__ == '__main__':
             height=750,
         )
 
-        # Attach cleanup after window opens
-        def after_window_created():
-            logging.info("[UI] Window created callback executed")
-            if webview.windows:
-                logging.info("[UI] Attaching cleanup handler to window close event")
-                webview.windows[0].events.closed += cleanup_and_exit
-            else:
-                logging.error("[ERROR] No webview windows found")
 
-        logging.info("[UI] Starting webview with EdgeChromium")
-        try:
-            webview.start(gui='edgechromium', debug=False, func=after_window_created)
-            logging.info("[UI] Webview.start() completed")
-        except Exception as webview_error:
-            logging.error(f"[ERROR] WebView.start() failed: {webview_error}")
-            logging.error("[ERROR] WebView exception details:", exc_info=True)
-            raise
+        # [OK] Attach cleanup after window opens
+        def after_window_created():
+            if webview.windows:
+                webview.windows[0].events.closed += cleanup_and_exit
+
+        webview.start(gui='edgechromium', debug=False, func=after_window_created)
 
     except Exception as e:
-        logging.error(f"[ERROR] UI creation failed: {e}")
-        logging.error("[ERROR] Exception details:", exc_info=True)
-        # Try to keep the application running for debugging
-        input("Press Enter to exit...")
+        logging.error(f"[ERROR] WebView failed: {e}")
+        cleanup_and_exit()  # Ensure cleanup even if webview fails

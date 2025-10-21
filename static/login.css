@@ -7,22 +7,22 @@
   /* DDS Styling - Using Flask proxy (external API disabled to prevent hanging) */
   
   /* Primary API Color Variables - POPULATED BY API */
-  --primary-color: ;
-  --secondary-color: ;
-  --background-color: ;
-  --button-color: ;
-  --text-color: ;
-  --header-color: ;
-  --footer-color: ;
-  --button-text-color: ;
+  --primary-color: #006039;
+  --secondary-color: #006039;
+  --background-color: #ffffff;
+  --button-color: #006039;
+  --text-color: #333333;
+  --header-color: #003366;
+  --footer-color: #003366;
+  --button-text-color: #ffffff;
   
   /* Button Colors from API - POPULATED BY API */
-  --submit-button-bg-color: ;
-  --submit-button-text-color: ;
-  --primary-button-bg-color: ;
-  --primary-button-text-color: ;
-  --secondary-button-bg-color: ;
-  --secondary-button-text-color: ;
+  --submit-button-bg-color: #006039;
+  --submit-button-text-color: #ffffff;
+  --primary-button-bg-color: #006039;
+  --primary-button-text-color: #ffffff;
+  --secondary-button-bg-color: #6c757d;
+  --secondary-button-text-color: #ffffff;
   
   /* Layout Colors from API - POPULATED BY API */
   --drawer-background-color: ;
@@ -68,14 +68,14 @@
   --modal-border: ;
   
   /* Input Colors - POPULATED BY API */
-  --input-background: ;
-  --input-border: ;
-  --input-focus: ;
-  --input-text: ;
+  --input-background: #ffffff;
+  --input-border: #006039;
+  --input-focus: #006039;
+  --input-text: #333333;
   
   /* Standard Colors - POPULATED BY API */
-  --white: ;
-  --black: ;
+  --white: #ffffff;
+  --black: #000000;
   
   /* Gray Scale Palette - POPULATED BY API */
   --gray-100: ;
@@ -89,14 +89,14 @@
   --gray-900: ;
   
   /* Typography from API - POPULATED BY API */
-  --heading-font-size: ;
-  --body-font-size: ;
-  --font-family: ;
+  --heading-font-size: 24px;
+  --body-font-size: 14px;
+  --font-family: 'Roboto', sans-serif;
   --border-radius: 5px;
   
   /* System values and calculated transparencies */
   --transparent: transparent;
-  --input-focus-overlay: rgba(128, 189, 255, 0.25);
+  --input-focus-overlay: rgba(40, 167, 69, 0.25);
 }
 
 /* ============================================
@@ -206,14 +206,14 @@ body {
     font-weight: bold;
     text-align: center;
     margin-bottom: 10px;
-    color: var(--text-color);
+    color: rgb(255, 255, 255);
 }
 
 .subtitle {
     font-size: var(--body-font-size, 16px);
     text-align: center;
     margin-bottom: 30px;
-    color: var(--text-color);
+    color: rgb(255, 255, 255);
 }
 
 .login-form {
@@ -227,7 +227,7 @@ body {
     width: 100%;
     height: 45px;
     border-radius: var(--border-radius, 5px);
-    border: 2px solid var(--input-border);
+    border: 1px solid var(--input-border);
     padding: 0 15px;
     font-size: var(--body-font-size, 16px);
     color: var(--input-text);
@@ -270,8 +270,8 @@ body {
 .login-button {
     width: 100%;
     height: 45px;
-    background-color: #006039;
-    color: #ffff;
+    background-color: #006039 !important;
+    color: #ffffff;
     border: none;
     border-radius: var(--border-radius, 5px);
     font-size: var(--body-font-size, 16px);
@@ -281,13 +281,13 @@ body {
 }
 
 .login-button:hover {
-    background-color: #006039 !important;
+    background-color: #218838 !important;
     opacity: 0.9;
     transform: translateY(-1px);
 }
 
 .login-button:active {
-    background-color: #006039 !important;
+    background-color: #1e7e34 !important;
     transform: translateY(0);
 }
 
@@ -323,6 +323,9 @@ body {
     display: flex;
     align-items: center;
 }
+.language-selector:hover{
+    cursor: pointer;
+}
 
 .language-selector select {
     padding: 5px 10px;
@@ -330,6 +333,10 @@ body {
     border: none;
     background-color: var(--drawer-background-color);
     color: var(--drawer-text-color);
+}
+
+.language-selector select:hover {
+        cursor: pointer;
 }
 
 .version {
@@ -476,6 +483,43 @@ input[type="submit"],
 .cancel-btn,
 .modal-btn {
     border-radius: 5px !important;
+}
+
+/* ============================================
+   🎨 FINAL COLOR OVERRIDES - #006039 THEME
+   ============================================ */
+
+/* Login Button - Green Theme */
+.login-button,
+#loginBtn {
+    background-color: #006039 !important;
+    border-color: #006039 !important;
+    color: #ffffff !important;
+}
+
+.login-button:hover,
+#loginBtn:hover {
+    background-color: #218838 !important;
+    border-color: #218838 !important;
+}
+
+.login-button:active,
+.login-button:focus,
+#loginBtn:active,
+#loginBtn:focus {
+    background-color: #1e7e34 !important;
+    border-color: #1e7e34 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Input Fields - Green Theme */
+.input-field {
+    border-color: #006039 !important;
+}
+
+.input-field:focus {
+    border-color: #006039 !important;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
 }
 
 

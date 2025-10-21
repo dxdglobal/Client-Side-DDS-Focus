@@ -1,36 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+
 a = Analysis(
-    ['connector.py'],
+    ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('templates', 'templates'),
-        ('static', 'static'),
-        ('moduller', 'moduller'),
-        ('.env', '.'),
-        ('themes.json', '.'),
-        ('rules', 'rules')
-    ],
-    hiddenimports=[
-        'mss',
-        'pymysql',
-        'boto3'
-    ],
+    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('themes.json', '.'), ('rules', 'rules'), ('data', 'data'), ('user_cache', 'user_cache')],
+    hiddenimports=['flask', 'flask_mail', 'werkzeug', 'jinja2', 'requests', 'pymysql', 'openai', 'boto3', 'dotenv', 'cryptography'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[
-        'PIL',
-        'PIL.Image', 
-        'PIL.ImageDraw',
-        'PIL.ImageFont',
-        'cv2',
-        'opencv-python',
-        'opencv-python-headless',
-        'tkinter',
-        'webview'
-    ],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )
@@ -42,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='DDSFocusPro Connector',
+    name='connector',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

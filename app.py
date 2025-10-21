@@ -11,6 +11,16 @@ try:
 except Exception as e:
     print(f"[Warning] Could not set UTF-8 encoding for stdout/stderr: {e}")
 
+# Create necessary folders on startup
+def create_required_folders():
+    folders_to_create = ["logs", "output", "data"]
+    for folder in folders_to_create:
+        if not os.path.exists(folder):
+            os.makedirs(folder, exist_ok=True)
+            print(f"✅ Created folder: {folder}")
+
+# Call folder creation
+create_required_folders()
 
 from flask_mail import Mail, Message
 from moduller.tracker import save_raw_program_log, logs_file, collect_program_usage, get_program_history_and_save, upload_program_data_to_s3
@@ -18,7 +28,7 @@ from moduller.tracker import save_raw_program_log, logs_file, collect_program_us
 from moduller.active_window_tracker import start_active_window_tracking, stop_active_window_tracking, upload_current_activity_to_s3
 from moduller.s3_uploader import upload_screenshot
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import requests 
 import os, sys
 import logging  # ✅ MOVE THIS HERE
@@ -43,6 +53,9 @@ except ImportError:
 import mss
 import threading
 import time
+import pymysql  # Add pymysql import at top level
+import signal   # Add signal import at top level
+import traceback # Add traceback import for better error handling
 # from moduller.s3_uploader import logs
 # from moduller.tracker import logs_file
 # from moduller.tracker import collect_program_usage, logs_file
@@ -50,9 +63,7 @@ from moduller.ai_summarizer import summarize_program_usage
 import io
 
 import pyautogui
-import time
-import threading
-import mss
+# Remove duplicate time, threading, mss imports - already imported above
 import mss.tools
 import boto3
 import openai
@@ -185,6 +196,12 @@ mail = Mail(app)
 #     return jsonify(result)
 
 
+# --- Favicon Route ---
+@app.route('/favicon.ico')
+def favicon():
+    """Serve the favicon from root directory"""
+    return send_from_directory(os.path.join(app.root_path), 'icon.ico', mimetype='image/vnd.microsoft.icon')
+
 # --- Database Connection Check ---
 @app.route('/check-db-connection', methods=['GET'])
 def check_db_connection():
@@ -234,19 +251,35 @@ def loader():
 # Route to save user data (projects + tasks)
 @app.route('/cache_user_projects', methods=['POST'])
 def cache_user_projects():
-    data = request.json
-    email = data.get('email')
-    username = data.get('username')
-    projects = data.get('projects')  # This should include both projects and tasks
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+            
+        email = data.get('email')
+        username = data.get('username')
+        projects = data.get('projects')  # This should include both projects and tasks
 
-    # Debugging log
-    print(f"Received data: {data}")
+        # Debugging log
+        print(f"📋 Received cache data for {email}: {len(projects) if projects else 0} projects")
 
-    if not email or not projects:
-        return jsonify({"status": "error", "message": "Missing email or projects"}), 400
+        if not email:
+            return jsonify({"status": "error", "message": "Email is required"}), 400
+            
+        if not projects:
+            print(f"⚠️ No projects provided for {email}, using empty array")
+            projects = []
 
-    save_user_cache(email, username, projects)
-    return jsonify({"status": "success", "message": "User cache saved."})
+        # Ensure CACHE_FOLDER exists
+        os.makedirs(CACHE_FOLDER, exist_ok=True)
+        
+        save_user_cache(email, username or "Unknown User", projects)
+        return jsonify({"status": "success", "message": "User cache saved successfully"})
+        
+    except Exception as e:
+        print(f"❌ Error caching user projects: {e}")
+        logging.error(f"❌ Error caching user projects: {e}")
+        return jsonify({"status": "error", "message": f"Cache error: {str(e)}"}), 500
 
 
 
@@ -566,44 +599,6 @@ def refresh_configuration():
         return jsonify({
             'success': False,
             'error': str(e)
-        }), 500
-
-# --- Styling API Proxy (CORS Fix) ---
-@app.route('/api/styling/proxy', methods=['GET'])
-def get_styling_proxy():
-    """
-    Return default styling configuration (External API disabled to prevent hanging)
-    """
-    try:
-        logging.info("🎨 Returning default styling configuration (External API disabled)")
-        
-        # Return safe default styling to prevent app hanging
-        default_styling = {
-            'status': 'success',
-            'data': {
-                'button_color': '#28a745',
-                'background_color': '#006039', 
-                'text_color': '#ffffff',
-                'primary_color': '#006039',
-                'secondary_color': '#28a745',
-                'header_color': '#004d2e',
-                'footer_color': '#004d2e',
-                'button_text_color': '#ffffff',
-                'accent_color': '#218838'
-            }
-        }
-        
-        return jsonify({
-            'success': True,
-            'data': default_styling,
-            'source': 'default_config'
-        })
-            
-    except Exception as e:
-        logging.error(f"❌ Error in styling proxy: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'Styling proxy error: {str(e)}'
         }), 500
 
 @app.route('/api/config/screenshot-interval', methods=['GET'])
@@ -954,13 +949,8 @@ def save_task_detail_json():
 
 
 @app.route('/insert_user_timesheet', methods=['POST'])
-
 def insert_user_timesheet():
-    import json
-    from flask import request, jsonify
-    from datetime import datetime
-    import pymysql
-
+    # Remove local imports since they're now at the top
     try:
         req = request.get_json()
         
@@ -994,8 +984,16 @@ def insert_user_timesheet():
     # Now define your filename properly
     # Match data filename
     filename = os.path.join(DATA_FOLDER, email.replace("@", "_at_").replace(".", "_") + ".json")
+    
+    # Better error handling for missing file
     if not os.path.exists(filename):
-        return jsonify({'error': 'No task data found'}), 404
+        print(f"⚠️ No data file found for user {email} at {filename}")
+        logging.warning(f"No data file found for user {email} at {filename}")
+        return jsonify({
+            'status': 'no_data', 
+            'message': 'No task data found for this user. Please log some tasks first.',
+            'expected_file': filename
+        }), 200  # Changed from 404 to 200 for better frontend handling
 
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -1004,62 +1002,85 @@ def insert_user_timesheet():
         if not entries:
             return jsonify({'status': 'empty', 'message': 'No entries to insert.'}), 200
 
-        connection = pymysql.connect(
-            host=DB_HOST,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME,
-            port=DB_PORT,
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        # Add connection error handling
+        try:
+            connection = pymysql.connect(
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME,
+                port=DB_PORT,
+                charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except pymysql.Error as db_error:
+            print(f"❌ Database connection failed: {db_error}")
+            logging.error(f"Database connection failed: {db_error}")
+            return jsonify({'error': f'Database connection failed: {str(db_error)}'}), 500
 
         inserted = 0
+        skipped = 0
+        errors = 0
         with connection.cursor() as cursor:
-            for entry in entries:
-                task_id = entry["task_id"]
-                staff_id = entry["staff_id"]
-                start_time = entry["start_time"]
-                end_time = entry["end_time"]
-                note = entry["note"]
-                hourly_rate = entry.get("hourly_rate")
-                #  Console log:
-                print(f" Inserting into DB  task_id: {task_id}, staff_id: {staff_id}, start_time: {start_time}, end_time: {end_time}, note: {note}, hourly_rate: {hourly_rate}")
+            for i, entry in enumerate(entries):
+                try:
+                    # Validate required fields
+                    required_fields = ["task_id", "staff_id", "start_time", "end_time", "note"]
+                    missing_fields = [field for field in required_fields if field not in entry]
+                    
+                    if missing_fields:
+                        print(f"⚠️ Entry {i+1} missing fields: {missing_fields}")
+                        errors += 1
+                        continue
+                        
+                    task_id = entry["task_id"]
+                    staff_id = entry["staff_id"]
+                    start_time = entry["start_time"]
+                    end_time = entry["end_time"]
+                    note = entry["note"]
+                    hourly_rate = entry.get("hourly_rate")
+                    
+                    print(f"📝 Processing entry {i+1}: Task {task_id}, Staff {staff_id}")
 
+                    #  Safe duplicate check using BINARY
+                    check_query = """
+                        SELECT id FROM tbltaskstimers
+                        WHERE task_id = %s AND staff_id = %s AND start_time = %s AND end_time = %s
+                        AND BINARY note = BINARY %s
+                        LIMIT 1
+                    """
+                    cursor.execute(check_query, (task_id, staff_id, start_time, end_time, note))
+                    if cursor.fetchone():
+                        print(f"⏩ Skipping duplicate entry: Task {task_id}")
+                        skipped += 1
+                        continue  # skip if already inserted
 
-                print(" INSERTING TO DATABASE:")
-                print(f"   Task ID     : {task_id}")
-                print(f"   Staff ID    : {staff_id}")
-                print(f"   Start Time  : {start_time}")
-                print(f"   End Time    : {end_time}")
-                print(f"   Note        : {note}")
-                print(f"   Hourly Rate : {hourly_rate}")
-
-                #  Safe duplicate check using BINARY
-                check_query = """
-                    SELECT id FROM tbltaskstimers
-                    WHERE task_id = %s AND staff_id = %s AND start_time = %s AND end_time = %s
-                    AND BINARY note = BINARY %s
-                    LIMIT 1
-                """
-                cursor.execute(check_query, (task_id, staff_id, start_time, end_time, note))
-                if cursor.fetchone():
-                    continue  # skip if already inserted
-
-                insert_query = """
-                    INSERT INTO tbltaskstimers (task_id, staff_id, start_time, end_time, note, hourly_rate)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """
-                cursor.execute(insert_query, (task_id, staff_id, start_time, end_time, note, hourly_rate))
-                print(f" Inserted: Task {task_id} / Staff {staff_id}")
-                inserted += 1
+                    insert_query = """
+                        INSERT INTO tbltaskstimers (task_id, staff_id, start_time, end_time, note, hourly_rate)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(insert_query, (task_id, staff_id, start_time, end_time, note, hourly_rate))
+                    print(f"✅ Inserted: Task {task_id} / Staff {staff_id}")
+                    inserted += 1
+                    
+                except Exception as entry_error:
+                    print(f"❌ Error processing entry {i+1}: {entry_error}")
+                    errors += 1
+                    continue
 
             connection.commit()
 
-        return jsonify({'status': 'success', 'inserted': inserted})
+        return jsonify({
+            'status': 'success', 
+            'inserted': inserted,
+            'skipped': skipped,
+            'errors': errors,
+            'total_processed': len(entries)
+        })
 
     except Exception as e:
-        print(" Error during insert:", str(e))
+        print(f"❌ Error during insert: {str(e)}")
+        traceback.print_exc()  # Print full stack trace
         return jsonify({'error': str(e)}), 500
 
 
@@ -1292,7 +1313,7 @@ def upload_all_screenshots_to_s3():
 #  New endpoint to store session START
 @app.route('/start_task_session', methods=['POST']) 
 def start_task_session():
-    import pymysql
+    # Remove local import since it's now at the top
     data = request.get_json()
     email = data.get('email')
     staff_id = data.get('staff_id')
@@ -1436,19 +1457,29 @@ def check_idle_state():
 
 @app.route('/end_task_session', methods=['POST'])
 def end_task_session():
-    import pymysql
+    # Remove local import since it's now at the top
     data = request.get_json()
     email = data.get("email")
     staff_id = data.get("staff_id")
     task_id = data.get("task_id")
     end_time = int(data.get("end_time"))
+    start_time = data.get("start_time")  # ✅ Get start time from frontend
+    worked_duration = data.get("worked_duration")  # ✅ Actual worked seconds
+    worked_hours = data.get("worked_hours")  # ✅ Decimal hours for CRM
     note = data.get("note", "").lower()
 
-    # ✅ If idle note detected, minus 180 seconds
+    # ✅ If idle note detected, use the pre-calculated times from frontend
     if "idle" in note or "boşta" in note:
-        print("⏳ Idle session detected, subtracting 180 seconds from end_time")
-        end_time -= 180
-    note = data.get("note")
+        print(f"⏳ Idle session detected")
+        print(f"⏱️ Worked duration: {worked_duration} seconds ({worked_hours} hours)")
+        # Don't subtract here since frontend already calculated it
+    else:
+        # For manual submissions, calculate normally
+        if start_time and not worked_duration:
+            worked_duration = end_time - int(start_time)
+            worked_hours = worked_duration / 3600
+    
+    note = data.get("note")  # Get original note (not lowercased)
 
     if not all([email, staff_id, task_id, end_time, note]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -1458,7 +1489,9 @@ def end_task_session():
     print(f"🆔 Task ID: {task_id}")
     print(f"🧑 Staff ID: {staff_id}")
     print(f"🕐 End Time: {end_time}")
-    print(f"📝 Note: {note}")
+    print(f"⏱️ Worked Duration: {worked_duration} seconds")
+    print(f"� Worked Hours: {worked_hours}")
+    print(f"�📝 Note: {note}")
 
     try:
         connection = pymysql.connect(
@@ -1472,16 +1505,32 @@ def end_task_session():
         )
 
         with connection.cursor() as cursor:
-            # 👇 UPDATE karein jahan end_time NULL hai
-            update_query = """
-                UPDATE tbltaskstimers
-                SET end_time = %s, note = %s
-                WHERE task_id = %s AND staff_id = %s AND end_time IS NULL
-                ORDER BY start_time DESC
-                LIMIT 1
-            """
-            cursor.execute(update_query, (end_time, note, task_id, staff_id))
+            # ✅ UPDATE with proper time calculations for CRM display
+            if worked_hours:
+                # Include hourly_rate calculation for proper CRM time display
+                hourly_rate = max(float(worked_hours), 0.02)  # Minimum 0.02 hours (1.2 minutes)
+                update_query = """
+                    UPDATE tbltaskstimers
+                    SET end_time = %s, note = %s, hourly_rate = %s
+                    WHERE task_id = %s AND staff_id = %s AND end_time IS NULL
+                    ORDER BY start_time DESC
+                    LIMIT 1
+                """
+                cursor.execute(update_query, (end_time, note, hourly_rate, task_id, staff_id))
+                print(f"✅ Updated with hourly_rate: {hourly_rate} hours")
+            else:
+                # Standard update without hourly_rate
+                update_query = """
+                    UPDATE tbltaskstimers
+                    SET end_time = %s, note = %s
+                    WHERE task_id = %s AND staff_id = %s AND end_time IS NULL
+                    ORDER BY start_time DESC
+                    LIMIT 1
+                """
+                cursor.execute(update_query, (end_time, note, task_id, staff_id))
+            
             connection.commit()
+            print(f"✅ Database updated successfully")
 
         # ✅ Stop automatic logging when timer ends (disabled old tracker)
         # stop_logging()
@@ -1813,9 +1862,9 @@ def signal_handler(sig, frame):
     print("✅ Graceful shutdown complete.")
     exit(0)
 
-# Register signal handlers for graceful shutdown
-signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
-signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
+# Register signal handlers for graceful shutdown (temporarily disabled for testing)
+# signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
+# signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
 
 # Register exit handler
 # atexit.register(lambda: upload_logs_on_app_close())  # Disabled old tracker system
@@ -1828,10 +1877,10 @@ if __name__ == "__main__":
         app.run(debug=True, port=5000)
     except KeyboardInterrupt:
         print("\n🛑 Application stopped by user")
-        upload_logs_on_app_close()
+        # upload_logs_on_app_close()  # Disabled - function not available
     except Exception as e:
         print(f"❌ Application error: {e}")
-        upload_logs_on_app_close()
+        # upload_logs_on_app_close()  # Disabled - function not available
         raise
 
 @app.route('/upload_all_tracker_logs', methods=['POST'])
@@ -2015,45 +2064,78 @@ def capture_activity_log():
     """Append activity logs to the existing daily log file"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+            
         email = data.get('email')
         staff_id = data.get('staff_id') 
         task_id = data.get('task_id')
-        project_name = data.get('project_name')
-        task_name = data.get('task_name')
-        timestamp = data.get('timestamp')
-        activity_type = data.get('activity_type')
-        timer_seconds = data.get('timer_seconds')
+        project_name = data.get('project_name', 'Unknown Project')
+        task_name = data.get('task_name', 'Unknown Task')
+        timestamp = data.get('timestamp', datetime.now().isoformat())
+        activity_type = data.get('activity_type', 'working')
+        timer_seconds = data.get('timer_seconds', 0)
         
         if not email:
             return jsonify({"status": "error", "message": "Email is required"}), 400
             
-        # Create activity entry
+        print(f"📋 Activity log captured for {email}: {activity_type} on {task_name}")
+        
+        # Create logs directory if it doesn't exist
+        logs_dir = os.path.join("logs", "activity")
+        os.makedirs(logs_dir, exist_ok=True)
+        
+        # Create activity log entry
         activity_entry = {
             "timestamp": timestamp,
-            "action": activity_type,
+            "email": email,
+            "staff_id": staff_id,
             "task_id": task_id,
             "project_name": project_name,
             "task_name": task_name,
+            "activity_type": activity_type,
             "timer_seconds": timer_seconds,
-            "details": f"User working on {project_name} - {task_name}"
+            "logged_at": datetime.now().isoformat()
         }
         
-        # Append to existing daily log file
-        from moduller.s3_uploader import append_to_daily_log_file
-        result = append_to_daily_log_file(email, activity_entry)
+        # Save to daily activity log file
+        safe_email = email.replace('@', '_at_').replace('.', '_')
+        today = datetime.now().strftime('%Y-%m-%d')
+        log_filename = os.path.join(logs_dir, f"{safe_email}_{today}_activity.json")
         
-        if result:
-            return jsonify({
-                "status": "success", 
-                "message": "Activity logged", 
-                "s3_url": result
-            })
+        # Load existing logs or create new list
+        if os.path.exists(log_filename):
+            with open(log_filename, 'r', encoding='utf-8') as f:
+                daily_logs = json.load(f)
         else:
-            return jsonify({"status": "error", "message": "Failed to log activity"}), 500
+            daily_logs = []
+            
+        daily_logs.append(activity_entry)
+        
+        # Save updated logs
+        with open(log_filename, 'w', encoding='utf-8') as f:
+            json.dump(daily_logs, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Activity log saved to {log_filename}")
+        
+        # Simple success response
+        return jsonify({
+            "status": "success", 
+            "message": "Activity logged successfully",
+            "logged_activity": {
+                "email": email,
+                "task": task_name,
+                "type": activity_type,
+                "timestamp": timestamp
+            },
+            "log_file": log_filename
+        })
             
     except Exception as e:
+        print(f"❌ Error capturing activity log: {e}")
+        traceback.print_exc()  # Print full stack trace
         logging.error(f"❌ Error capturing activity log: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": f"Activity log error: {str(e)}"}), 500
 
 
 @app.route('/get_employee_logs_summary', methods=['POST'])
@@ -2207,7 +2289,7 @@ def submit_task_report():
     This uploads all logs and session data to S3
     """
     try:
-        import pymysql
+        # Remove local import since it's now at the top
         data = request.get_json()
         email = data.get('email')
         task_id = data.get('task_id')

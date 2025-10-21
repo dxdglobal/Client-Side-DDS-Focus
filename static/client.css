@@ -7,28 +7,28 @@
   /* DDS Styling - Using Flask proxy (external API disabled to prevent hanging) */
   
   /* Primary API Color Variables - POPULATED BY API */
-  --primary-color: ;
-  --secondary-color: ;
-  --background-color: ;
-  --button-color: ;
-  --text-color: ;
-  --header-color: ;
-  --footer-color: ;
-  --button-text-color: ;
+  --primary-color: #006039;
+  --secondary-color: #006039;
+  --background-color: #ffffff;
+  --button-color: #006039;
+  --text-color: #333333;
+  --header-color: #003366;
+  --footer-color: #003366;
+  --button-text-color: #ffffff;
   
   /* Button Colors from API - POPULATED BY API */
-  --submit-button-bg-color: ;
-  --submit-button-text-color: ;
-  --primary-button-bg-color: ;
-  --primary-button-text-color: ;
-  --secondary-button-bg-color: ;
-  --secondary-button-text-color: ;
+  --submit-button-bg-color: #006039;
+  --submit-button-text-color: #ffffff;
+  --primary-button-bg-color: #006039;
+  --primary-button-text-color: #ffffff;
+  --secondary-button-bg-color: #6c757d;
+  --secondary-button-text-color: #ffffff;
   
   /* Layout Colors from API - POPULATED BY API */
-  --drawer-background-color: ;
-  --drawer-text-color: ;
-  --icon-color: ;
-  --top-color: ;
+  --drawer-background-color: #003366;
+  --drawer-text-color: #ffffff;
+  --icon-color: #ffffff;
+  --top-color: #003366;
   
   /* Primary Color Variants - POPULATED BY API */
   --primary-dark: ;
@@ -42,11 +42,11 @@
   --secondary-light: ;
   
   /* State Colors - POPULATED BY API */
-  --success-color: ;
-  --warning-color: ;
-  --danger-color: ;
-  --danger-dark: ;
-  --info-color: ;
+  --success-color: #006039;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --danger-dark: #c82333;
+  --info-color: #17a2b8;
   
   /* Text Colors - POPULATED BY API */
   --text-light: ;
@@ -63,10 +63,10 @@
   --button-light: ;
   
   /* Application State Colors - POPULATED BY API */
-  --state-idle: ;
-  --state-work: ;
-  --state-break: ;
-  --state-meeting: ;
+  --state-idle: #6c757d;
+  --state-work: #007D7B;
+  --state-break: #ffc107;
+  --state-meeting: #17a2b8;
   
   /* Drawer UI Colors - POPULATED BY API */
   --drawer-overlay: ;
@@ -85,14 +85,14 @@
   --input-text: ;
   
   /* Navigation Colors - POPULATED BY API */
-  --nav-background: ;
-  --nav-text: ;
-  --nav-hover: ;
-  --nav-active: ;
+  --nav-background: #003366;
+  --nav-text: #ffffff;
+  --nav-hover: #004080;
+  --nav-active: #002040;
   
   /* Standard Colors - POPULATED BY API */
-  --white: ;
-  --black: ;
+  --white: #ffffff;
+  --black: #000000;
   
   /* Gray Scale Palette - POPULATED BY API */
   --gray-100: ;
@@ -106,9 +106,9 @@
   --gray-900: ;
   
   /* Typography from API - POPULATED BY API */
-  --heading-font-size: ;
-  --body-font-size: ;
-  --font-family: ;
+  --heading-font-size: 24px;
+  --body-font-size: 14px;
+  --font-family: 'Inter', system-ui, sans-serif;
   --border-radius: 5px;
   
   /* System values and calculated transparencies */
@@ -1208,4 +1208,9 @@ cubic-bezier(0.25, 0.8, 0.25, 1);
   font-family: monospace;
   font-size: 12px;
   color: var(--drawer-text-color);
+}
+
+.nav-item a:hover{
+cursor: pointer;
+transition: all 0.3s ease;
 }

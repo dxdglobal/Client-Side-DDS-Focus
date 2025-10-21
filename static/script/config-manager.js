@@ -6,7 +6,6 @@
 class ConfigManager {
     constructor() {
         this.config = null;
-        this.ddsApiUrl = '/api/styling/proxy'; // Use Flask proxy - external API disabled
         this.defaultConfig = {
             ui: {
                 // API-only color system - no defaults
@@ -55,6 +54,8 @@ class ConfigManager {
 
             const apiResponse = await response.json();
             
+            console.log('🔍 DDS API Response:', apiResponse); // Debug logging
+            
             if (apiResponse.status === 'success' && apiResponse.data) {
                 const stylingData = apiResponse.data;
                 
@@ -100,12 +101,16 @@ class ConfigManager {
                     console.log(`🎨 Text Color: ${stylingData.text_color}`);
                     console.log(`🎨 Header Color: ${stylingData['header-color'] || stylingData.header_color}`);
                     console.log(`🎨 Footer Color: ${stylingData['footer-color'] || stylingData.footer_color}`);
-                    console.log(`🎨 Button Text Color: ${stylingData['button-text_color'] || stylingData.button_text_color}`);                return transformedConfig;
+                    console.log(`🎨 Button Text Color: ${stylingData['button-text_color'] || stylingData.button_text_color}`);
+                    
+                return transformedConfig;
             } else {
-                throw new Error('Invalid DDS API response format');
+                console.error('❌ Invalid DDS API response structure:', apiResponse);
+                throw new Error(`Invalid DDS API response format. Expected: {status: 'success', data: {...}}, Got: ${JSON.stringify(apiResponse)}`);
             }
         } catch (error) {
             console.warn('⚠️ Failed to fetch from DDS API:', error.message);
+            console.error('🔍 Full error details:', error);
             return null;
         }
     }
@@ -797,67 +802,6 @@ class ConfigManager {
 
 // Global instance
 window.configManager = new ConfigManager();
-
-// Debug function to test button color API
-window.testButtonColorAPI = async function() {
-    console.log('🧪 Testing Button Color API...');
-    
-    try {
-        const response = await fetch('/api/styling/proxy', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'DDS-FocusPro/1.3'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('🎨 Full API Response:', data);
-        
-        if (data.status === 'success' && data.data) {
-            console.log('🔘 Button Color from API:', data.data.button_color);
-            
-            if (data.data.button_color) {
-                // Force apply the button color immediately
-                const root = document.documentElement;
-                root.style.setProperty('--button-color', data.data.button_color, 'important');
-                
-                // Apply to all login buttons
-                const buttons = document.querySelectorAll('.login-button, .login-btn, button');
-                buttons.forEach(button => {
-                    button.style.setProperty('background-color', data.data.button_color, 'important');
-                    button.style.setProperty('border-color', data.data.button_color, 'important');
-                });
-                
-                console.log(`✅ Applied button color ${data.data.button_color} directly to ${buttons.length} buttons`);
-                return data.data.button_color;
-            }
-        }
-    } catch (error) {
-        console.error('❌ API Test Error:', error);
-    }
-};
-
-// Debug function to force red button color
-window.forceRedButton = function() {
-    console.log('🔴 Forcing red button color...');
-    const redColor = '#ff0000';
-    
-    const root = document.documentElement;
-    root.style.setProperty('--button-color', redColor, 'important');
-    
-    const buttons = document.querySelectorAll('.login-button, .login-btn, button');
-    buttons.forEach(button => {
-        button.style.setProperty('background-color', redColor, 'important');
-        button.style.setProperty('border-color', redColor, 'important');
-    });
-    
-    console.log(`🔴 Applied red color to ${buttons.length} buttons`);
-};
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {

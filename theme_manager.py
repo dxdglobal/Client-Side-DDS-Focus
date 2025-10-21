@@ -27,7 +27,7 @@ class ThemeConfig:
     background_color: str = "#ffffff"
     button_color: str = "#007bff"
     button_text_color: str = "#ffffff"
-    submit_button_bg_color: str = "#28a745"
+    submit_button_bg_color: str = "#006039"
     submit_button_text_color: str = "#ffffff"
     primary_button_bg_color: str = "#007bff"
     primary_button_text_color: str = "#ffffff"
@@ -169,7 +169,7 @@ class ThemeManager:
             background_color="#ECF0F1",
             button_color="transpsrant",
             button_text_color="#2C3E50",
-            submit_button_bg_color="#28a745",
+            submit_button_bg_color="#006039",
             submit_button_text_color="#ffffff",
             primary_button_bg_color="#007bff",
             primary_button_text_color="#ffffff",
@@ -392,11 +392,6 @@ def create_theme_app():
                 'message': str(e)
             }), 500
     
-    @app.route('/api/styling/global/', methods=['GET'])
-    def get_styling_global():
-        """Global styling endpoint (compatible with existing DDS API)"""
-        return get_active_theme()
-    
     @app.route('/api/themes', methods=['POST'])
     def create_theme():
         """Create new theme"""
@@ -500,7 +495,7 @@ if __name__ == '__main__':
         "background_color": "#ECF0F1",
         "button_color": "transpsrant",
         "button_text_color": "#2C3E50",
-        "submit_button_bg_color": "#28a745",
+        "submit_button_bg_color": "#006039",
         "submit_button_text_color": "#ffffff",
         "primary_button_bg_color": "#007bff",
         "primary_button_text_color": "#ffffff",

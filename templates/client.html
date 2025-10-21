@@ -33,7 +33,7 @@
 <div class="header">
         <div class="logo">
             <figure>
-                <img src="https://dxdglobal.com/wp-content/uploads/2024/08/Logo-Light-H-small.webp" alt="" width="113px" height="" />
+                <img src="./static/dds-logo.png" alt="DDS Logo" width="113px" height="auto" style="width: 113px !important;">
             </figure>
         </div>
         <div class="user-controls">
@@ -43,7 +43,7 @@
             <!-- Language Dropdown -->
             <div class="language-dropdown">
               <button class="language-btn" onclick="toggleLanguageDropdown()">
-                <span id="currentLanguage">Language</span>
+                <span id="currentLanguage">Dil</span>
                 <span class="dropdown-arrow">▼</span>
               </button>
 
@@ -111,7 +111,7 @@
 <p id="statusText" style="text-align: center; color: #000; font-weight: bold; margin-top: 10px;"></p>
 
           <div class="action-buttons">
-            <button class="action-button start-button" id="startBtn">START</button>
+            <button class="action-button start-button" id="startBtn" style="color: #fff;">START</button>
         <!-- <button class="state-btn break" onclick="handleBreak()" id="breakBtn">☕ Break</button> -->
 
             <button class="action-button reset-button" id="resetBtn" style="background-color: orange;">Finish</button>
@@ -152,12 +152,9 @@
 
     <li class="nav-item active">
       <a  class="" onclick="openInNewTab('https://crm.deluxebilisim.com/')">
-       <svg width="40px" height="40px" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.918 10.0005H7.082C6.66587 9.99708 6.26541 10.1591 5.96873 10.4509C5.67204 10.7427 5.50343 11.1404 5.5 11.5565V17.4455C5.5077 18.3117 6.21584 19.0078 7.082 19.0005H9.918C10.3341 19.004 10.7346 18.842 11.0313 18.5502C11.328 18.2584 11.4966 17.8607 11.5 17.4445V11.5565C11.4966 11.1404 11.328 10.7427 11.0313 10.4509C10.7346 10.1591 10.3341 9.99708 9.918 10.0005Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.918 4.0006H7.082C6.23326 3.97706 5.52559 4.64492 5.5 5.4936V6.5076C5.52559 7.35629 6.23326 8.02415 7.082 8.0006H9.918C10.7667 8.02415 11.4744 7.35629 11.5 6.5076V5.4936C11.4744 4.64492 10.7667 3.97706 9.918 4.0006Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M15.082 13.0007H17.917C18.3333 13.0044 18.734 12.8425 19.0309 12.5507C19.3278 12.2588 19.4966 11.861 19.5 11.4447V5.55666C19.4966 5.14054 19.328 4.74282 19.0313 4.45101C18.7346 4.1592 18.3341 3.9972 17.918 4.00066H15.082C14.6659 3.9972 14.2654 4.1592 13.9687 4.45101C13.672 4.74282 13.5034 5.14054 13.5 5.55666V11.4447C13.5034 11.8608 13.672 12.2585 13.9687 12.5503C14.2654 12.8421 14.6659 13.0041 15.082 13.0007Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M15.082 19.0006H17.917C18.7661 19.0247 19.4744 18.3567 19.5 17.5076V16.4936C19.4744 15.6449 18.7667 14.9771 17.918 15.0006H15.082C14.2333 14.9771 13.5256 15.6449 13.5 16.4936V17.5066C13.525 18.3557 14.2329 19.0241 15.082 19.0006Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M23 9L19.8 12.1999L18 10.4M8 15C5.79086 15 4 16.7909 4 19V21H20V19C20 16.7909 18.2091 15 16 15H12M12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11C14.2091 11 16 9.20914 16 7C16 6.27143 15.8052 5.58835 15.4649 5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
       
       </a>
     </li>
@@ -170,9 +167,8 @@
     </li>
 
     <li class="nav-item">
-      <a  class="" data-page="settings">
-        <svg width="40px" height="40px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#000000" d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z"/></svg>
-       
+      <a class="" data-page="settings">
+       <svg width="40px" height="40px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#000000" d="M600.704 64a32 32 0 0 1 30.464 22.208l35.2 109.376c14.784 7.232 28.928 15.36 42.432 24.512l112.384-24.192a32 32 0 0 1 34.432 15.36L944.32 364.8a32 32 0 0 1-4.032 37.504l-77.12 85.12a357.12 357.12 0 0 1 0 49.024l77.12 85.248a32 32 0 0 1 4.032 37.504l-88.704 153.6a32 32 0 0 1-34.432 15.296L708.8 803.904c-13.44 9.088-27.648 17.28-42.368 24.512l-35.264 109.376A32 32 0 0 1 600.704 960H423.296a32 32 0 0 1-30.464-22.208L357.696 828.48a351.616 351.616 0 0 1-42.56-24.64l-112.32 24.256a32 32 0 0 1-34.432-15.36L79.68 659.2a32 32 0 0 1 4.032-37.504l77.12-85.248a357.12 357.12 0 0 1 0-48.896l-77.12-85.248A32 32 0 0 1 79.68 364.8l88.704-153.6a32 32 0 0 1 34.432-15.296l112.32 24.256c13.568-9.152 27.776-17.408 42.56-24.64l35.2-109.312A32 32 0 0 1 423.232 64H600.64zm-23.424 64H446.72l-36.352 113.088-24.512 11.968a294.113 294.113 0 0 0-34.816 20.096l-22.656 15.36-116.224-25.088-65.28 113.152 79.68 88.192-1.92 27.136a293.12 293.12 0 0 0 0 40.192l1.92 27.136-79.808 88.192 65.344 113.152 116.224-25.024 22.656 15.296a294.113 294.113 0 0 0 34.816 20.096l24.512 11.968L446.72 896h130.688l36.48-113.152 24.448-11.904a288.282 288.282 0 0 0 34.752-20.096l22.592-15.296 116.288 25.024 65.28-113.152-79.744-88.192 1.92-27.136a293.12 293.12 0 0 0 0-40.256l-1.92-27.136 79.808-88.128-65.344-113.152-116.288 24.96-22.592-15.232a287.616 287.616 0 0 0-34.752-20.096l-24.448-11.904L577.344 128zM512 320a192 192 0 1 1 0 384 192 192 0 0 1 0-384zm0 64a128 128 0 1 0 0 256 128 128 0 0 0 0-256z"/></svg>
       </a>
     </li>
 
@@ -195,8 +191,10 @@
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
   <div class="drawer" id="drawer">
     <div class="drawer-header">
-      <h2 class="drawer-title">DDS FocusPro</h2>
-      <p class="drawer-subtitle">Navigation Menu</p>
+      <figure style="display: flex; align-items: center; justify-content: center;">
+        <img src="./static/dds-logo.png" alt="Logo" class="drawer-logo" width="250px">
+       
+      </figure>
       <!-- <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -211,8 +209,8 @@
             <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
           </svg>
           <div class="project-details">
-            <div class="project-name" id="drawerProjectName">No Project Selected</div>
-            <div class="project-client" id="drawerClientName">Please select a project</div>
+            <div class="project-name" id="drawerProjectName">Proje Seçilmedi</div>
+            <div class="project-client" id="drawerClientName">Lütfen bir proje seçin</div>
           </div>
         </div>
       </div>
@@ -225,7 +223,7 @@
           </svg>
           <div class="task-details">
             <div class="task-name" id="drawerTaskName">No Task Selected</div>
-            <div class="task-status" id="drawerTaskStatus">Please select a task to start working</div>
+            <div class="task-status" id="drawerTaskStatus">Lütfen çalışmaya başlamak için bir görev seçin</div>
           </div>
         </div>
       </div>
@@ -238,7 +236,7 @@
           </svg>
           <div class="time-details">
             <div class="current-time" id="drawerCurrentTime">00:00:00</div>
-            <div class="total-time" id="drawerTotalTime">Total: 00:00</div>
+            <div class="total-time" id="drawerTotalTime">Toplam: 00:00</div>
           </div>
         </div>
       </div>
@@ -435,8 +433,7 @@
 
   <!-- External Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <!-- Configuration Manager -->
-  <script src="../static/script/config-manager.js"></script>
+  <!-- Configuration Manager removed - API functionality disabled -->
   <script>
         function toggleLanguageDropdown() {
             const dropdown = document.getElementById('languageDropdown');
@@ -529,11 +526,19 @@ function updateDrawerProjectInfo() {
         const selectedProject = projectSelect.selectedOptions[0].text;
         const clientName = clientInput ? clientInput.value : 'Unknown Client';
         
-        drawerProjectName.textContent = selectedProject !== '-- Select a Project --' ? selectedProject : 'No Project Selected';
-        drawerClientName.textContent = clientName || 'Please select a project';
+        // Get current language for translations
+        const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        const translation = clientTranslations[currentLang] || clientTranslations.en;
+        
+        drawerProjectName.textContent = selectedProject !== translation.selectProject ? selectedProject : translation.noProjectSelected;
+        drawerClientName.textContent = clientName || translation.pleaseSelectProject;
     } else {
-        drawerProjectName.textContent = 'No Project Selected';
-        drawerClientName.textContent = 'Please select a project';
+        // Get current language for translations
+        const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        const translation = clientTranslations[currentLang] || clientTranslations.en;
+        
+        drawerProjectName.textContent = translation.noProjectSelected;
+        drawerClientName.textContent = translation.pleaseSelectProject;
     }
 }
 
@@ -543,15 +548,19 @@ function updateDrawerTaskInfo() {
     const drawerTaskStatus = document.getElementById('drawerTaskStatus');
     const stateLabel = document.getElementById('stateLabel');
     
+    // Get current language for translations
+    const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const translation = clientTranslations[currentLang] || clientTranslations.en;
+    
     if (taskSelect && taskSelect.selectedOptions.length > 0) {
         const selectedTask = taskSelect.selectedOptions[0].text;
         const currentState = stateLabel ? stateLabel.textContent : 'IDLE';
         
-        drawerTaskName.textContent = selectedTask !== '-- Select a Task --' ? selectedTask : 'No Task Selected';
-        drawerTaskStatus.textContent = selectedTask !== '-- Select a Task --' ? `Status: ${currentState}` : 'Please select a task to start working';
+        drawerTaskName.textContent = selectedTask !== translation.selectTask ? selectedTask : 'No Task Selected';
+        drawerTaskStatus.textContent = selectedTask !== translation.selectTask ? `${translation.status} ${currentState}` : translation.pleaseSelectTask;
     } else {
         drawerTaskName.textContent = 'No Task Selected';
-        drawerTaskStatus.textContent = 'Please select a task to start working';
+        drawerTaskStatus.textContent = translation.pleaseSelectTask;
     }
 }
 
@@ -574,7 +583,10 @@ function updateDrawerTimeInfo() {
     
     if (totalTimeElement) {
         const totalTime = totalTimeElement.textContent || '00:00';
-        drawerTotalTime.textContent = `Total: ${totalTime}`;
+        // Get current language for translations
+        const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        const translation = clientTranslations[currentLang] || clientTranslations.en;
+        drawerTotalTime.textContent = `${translation.total} ${totalTime}`;
     }
 }
 
@@ -630,82 +642,50 @@ function closeConfigModal() {
 }
 
 function updateConfigDisplay() {
-    if (window.configManager && window.configManager.config) {
-        const config = window.configManager.config;
-        const ui = config.ui || {};
-        const screenshot = config.screenshot || {};
-        const features = config.features || {};
-        const themeInfo = config.theme_info || {};
-
-        // Update source info
-        document.getElementById('config-source-info').innerHTML = `
-            <strong>Theme:</strong> ${themeInfo.theme_name || 'Default'}<br>
-            <strong>Version:</strong> ${themeInfo.version || '1.0'}<br>
-            <strong>Source:</strong> DDS Styling API<br>
-            <strong>Status:</strong> ${themeInfo.is_active ? '✅ Active' : '❌ Inactive'}
-        `;
-
-        // Update UI values
-        document.getElementById('config-primary-color').value = ui.primary_color || '#006039';
-        document.getElementById('config-primary-color-value').textContent = ui.primary_color || '#006039';
-        
-        // Update screenshot settings
-        document.getElementById('config-screenshot-interval').textContent = screenshot.interval_seconds || 60;
-        document.getElementById('config-screenshot-quality').textContent = screenshot.quality || 85;
-
-        // Update feature toggles
-        document.getElementById('feature-ai-analysis').checked = features.ai_analysis || false;
-        document.getElementById('feature-auto-categorization').checked = features.auto_categorization || false;
-        document.getElementById('feature-idle-detection').checked = features.idle_detection || false;
-    }
+    // ConfigManager API disabled - using static configuration
+    console.log('⚠️ ConfigManager API disabled - using default settings');
+    
+    // Update source info with static values
+    document.getElementById('config-source-info').innerHTML = `
+        <strong>Theme:</strong> Default<br>
+        <strong>Version:</strong> 1.4<br>
+        <strong>Source:</strong> Static Configuration<br>
+        <strong>Status:</strong> API Disabled
+    `;
+    
+    // Set default values for other config displays if they exist
+    const elements = {
+        'config-font-size': '14px',
+        'config-font-family': 'Segoe UI, sans-serif',
+        'config-screenshot-interval': '60 seconds',
+        'config-screenshot-quality': '85%',
+        'config-ai-analysis': 'Enabled',
+        'config-idle-detection': 'Enabled'
+    };
+    
+    Object.entries(elements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    });
 }
 
 async function refreshConfiguration() {
     try {
-        console.log('🔄 Manually refreshing configuration...');
+        console.log('🔄 Configuration refresh requested - API disabled');
         const refreshBtn = event.target;
-        refreshBtn.textContent = '🔄 Refreshing...';
+        refreshBtn.textContent = '⚠️ API Disabled';
         refreshBtn.disabled = true;
 
-        await window.configManager.fetchConfiguration();
-        window.configManager.applyConfiguration();
-        updateConfigDisplay();
-
-        refreshBtn.textContent = '✅ Refreshed!';
         setTimeout(() => {
-            refreshBtn.textContent = '🔄 Refresh from API';
-            refreshBtn.disabled = false;
-        }, 2000);
+            refreshBtn.textContent = '❌ API Disabled';
+            refreshBtn.disabled = true;
+        }, 1000);
 
-        // Show success notification
-        if (typeof Toastify !== 'undefined') {
-            Toastify({
-                text: "✅ Configuration refreshed successfully!",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)"
-            }).showToast();
-        }
+        console.log('⚠️ ConfigManager API disabled - no refresh available');
     } catch (error) {
-        console.error('❌ Failed to refresh configuration:', error);
-        const refreshBtn = event.target;
-        refreshBtn.textContent = '❌ Failed';
-        setTimeout(() => {
-            refreshBtn.textContent = '🔄 Refresh from API';
-            refreshBtn.disabled = false;
-        }, 2000);
-
-        // Show error notification
-        if (typeof Toastify !== 'undefined') {
-            Toastify({
-                text: "❌ Failed to refresh configuration",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)"
-            }).showToast();
-        }
+        console.error('❌ Configuration refresh error:', error);
     }
 }
 
@@ -776,14 +756,78 @@ function selectLanguage(langCode) {
     document.getElementById(`option-${langCode}`)?.classList.add('selected');
 }
 
+// Translation system for the client interface
+const clientTranslations = {
+    tr: {
+        noProjectSelected: "Proje Seçilmedi",
+        pleaseSelectProject: "Lütfen bir proje seçin",
+        selectProject: "-- Proje Seçin --",
+        selectTask: "-- İş Emri Seçin --",
+        language: "Dil",
+        status: "Durum:",
+        total: "Toplam:",
+        pleaseSelectTask: "Lütfen çalışmaya başlamak için bir görev seçin"
+    },
+    en: {
+        noProjectSelected: "No Project Selected",
+        pleaseSelectProject: "Please select a project", 
+        selectProject: "-- Select a Project --",
+        selectTask: "-- Select a Task --",
+        language: "Language",
+        status: "Status:",
+        total: "Total:",
+        pleaseSelectTask: "Please select a task to start working"
+    }
+};
 
+function applyClientLanguage(langCode) {
+    const translation = clientTranslations[langCode] || clientTranslations.en;
+    
+    // Update drawer project elements
+    const drawerProjectName = document.getElementById('drawerProjectName');
+    const drawerClientName = document.getElementById('drawerClientName');
+    const drawerTaskStatus = document.getElementById('drawerTaskStatus');
+    const drawerTotalTime = document.getElementById('drawerTotalTime');
+    
+    // Check if they currently have default text and update them
+    if (drawerProjectName && (drawerProjectName.textContent === 'No Project Selected' || 
+                             drawerProjectName.textContent === 'Proje Seçilmedi')) {
+        drawerProjectName.textContent = translation.noProjectSelected;
+    }
+    
+    if (drawerClientName && (drawerClientName.textContent === 'Please select a project' || 
+                            drawerClientName.textContent === 'Lütfen bir proje seçin')) {
+        drawerClientName.textContent = translation.pleaseSelectProject;
+    }
+    
+    // Update task status text
+    if (drawerTaskStatus && (drawerTaskStatus.textContent === 'Please select a task to start working' || 
+                            drawerTaskStatus.textContent === 'Lütfen çalışmaya başlamak için bir görev seçin')) {
+        drawerTaskStatus.textContent = translation.pleaseSelectTask;
+    }
+    
+    // Update total time text if it contains "Total:" or "Toplam:"
+    if (drawerTotalTime) {
+        const currentText = drawerTotalTime.textContent;
+        if (currentText.startsWith('Total:') || currentText.startsWith('Toplam:')) {
+            const timeValue = currentText.split(': ')[1] || '00:00';
+            drawerTotalTime.textContent = `${translation.total} ${timeValue}`;
+        }
+    }
+    
+    // Update language button text if it shows default text
+    const currentLanguage = document.getElementById('currentLanguage');
+    if (currentLanguage && (currentLanguage.textContent === 'Language' || 
+                           currentLanguage.textContent === 'Dil')) {
+        // Don't change the language button text as it shows flags + text, handled in selectLanguage function
+    }
+}
 
-
-
-
-
-
-
+// Initialize language on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedLanguage = sessionStorage.getItem('selectedLanguage') || 'tr';
+    selectLanguage(savedLanguage);
+});
 
         // Close dropdown when clicking outside
         window.onclick = function(event) {
@@ -798,9 +842,6 @@ function selectLanguage(langCode) {
         }
 
     </script>
-  
-  <!-- DDS Styling API Integration -->
-  <script src="../static/script/dds-styling-api.js"></script>
   
   <!-- Main Application Scripts -->
   <script src="../static/script/client.js"></script>

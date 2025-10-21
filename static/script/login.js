@@ -6,7 +6,7 @@
 class LoginStylingManager {
     constructor() {
         // Only use proxy - external API disabled to prevent hanging
-        this.proxyUrl = '/api/styling/proxy';
+//         this.proxyUrl = '/api/styling/proxy';  // STYLING API DISABLED
         this.retryAttempts = 3;
         this.retryDelay = 1500;
         this.currentStyling = null;

@@ -1,13 +1,12 @@
-# -- mode: python ; coding: utf-8 --
+# -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
 
 a = Analysis(
     ['desktop.py'],
-    pathex=['.'],  # Optional: specify project path
+    pathex=[],
     binaries=[],
-    datas=[('templates/*', 'templates')],
-    hiddenimports=['qtpy', 'PyQt5','psutil', 'webview', 'requests'],
+    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('themes.json', '.'), ('rules', 'rules'), ('data', 'data'), ('user_cache', 'user_cache'), ('dist/connector.exe', '.')],
+    hiddenimports=['webview', 'webview.platforms.edgechromium', 'requests', 'threading', 'signal', 'atexit', 'psutil'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -15,8 +14,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
@@ -28,7 +26,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,
+    upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
@@ -37,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['static\\icon.ico'],
 )

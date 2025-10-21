@@ -5,138 +5,6 @@ let idleTriggerTime = 0;
 let idleTimeout = 5;  // modal stays 5 seconds before sending auto-note
 
 // 🎨 DDS Styling API Integration for Client Page
-class DynamicStylingManager {
-    constructor() {
-        // Only use proxy - external API disabled to prevent hanging
-        this.proxyUrl = '/api/styling/proxy';
-        this.retryAttempts = 3;
-        this.retryDelay = 2000;
-    }
-
-    async applyStylingFromAPI() {
-        console.log('🎨 Client.js: Loading dynamic styling from DDS API...');
-        
-        for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
-            try {
-                // Try proxy first to avoid CORS issues
-                const response = await fetch(this.proxyUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Proxy failed: ${response.status}`);
-                }
-
-                const proxyData = await response.json();
-                if (!proxyData.success) {
-                    throw new Error(`Proxy error: ${proxyData.error}`);
-                }
-
-                const apiData = proxyData.data;
-                let stylingData = null;
-
-                // Handle different API response structures
-                if (apiData.status === 'success' && apiData.data) {
-                    stylingData = apiData.data;
-                } else if (apiData.button_color !== undefined) {
-                    stylingData = apiData;
-                } else {
-                    throw new Error('Invalid API response structure');
-                }
-
-                console.log('✅ Client.js: API styling data retrieved:', stylingData);
-                this.applyAllColors(stylingData);
-                this.setupDynamicButtonEffects(stylingData);
-                return stylingData;
-
-            } catch (error) {
-                console.warn(`⚠️ Client.js: Styling API attempt ${attempt}/${this.retryAttempts} failed:`, error);
-                
-                if (attempt < this.retryAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                } else {
-                    console.error('❌ Client.js: All styling API attempts failed, using fallback');
-                    this.applyFallbackStyling();
-                }
-            }
-        }
-    }
-
-    applyAllColors(stylingData) {
-        console.log('🎨 applyAllColors disabled - using CSS-only styling');
-        
-        // Always ensure buttons have 5px border radius (only functionality preserved)
-        const allButtons = document.querySelectorAll('button, .btn, input[type="button"], input[type="submit"]');
-        allButtons.forEach(button => {
-            // Skip drawer arrow button from styling
-            if (button.id !== 'drawerArrowBtn' && !button.classList.contains('drawer-arrow-btn')) {
-                button.style.setProperty('border-radius', '5px', 'important');
-            }
-        });
-        console.log('📐 Fixed 5px border radius applied to all buttons (excluding drawer arrow)');
-    }
-
-    applyButtonColors(buttonColor) {
-        console.log('🔴 Button color application disabled - using CSS-only styling');
-    }
-
-    // Function to protect drawer arrow button from color overrides
-    protectDrawerArrowButton() {
-        const drawerArrowBtn = document.getElementById('drawerArrowBtn');
-        if (drawerArrowBtn) {
-            // Remove any inline color styles
-            drawerArrowBtn.style.backgroundColor = '';
-            drawerArrowBtn.style.borderColor = '';
-            drawerArrowBtn.style.background = '';
-            drawerArrowBtn.style.border = '';
-            console.log('🛡️ Drawer arrow button protected from color overrides');
-        }
-    }
-
-    setupDynamicButtonEffects(stylingData) {
-        console.log('✨ Dynamic button effects disabled - using CSS-only styling');
-    }
-
-    applyFallbackStyling() {
-        console.log('🔄 Client.js: Applying minimal fallback styling...');
-        const root = document.documentElement;
-        
-        // Only set essential variables if API completely fails
-        root.style.setProperty('--primary-color', '#007bff', 'important');
-        root.style.setProperty('--button-color', '#28a745', 'important');
-        root.style.setProperty('--background-color', '#ffffff', 'important');
-        root.style.setProperty('--text-color', '#333333', 'important');
-    }
-
-    darkenColor(color, percent) {
-        const num = parseInt(color.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) - amt;
-        const G = (num >> 8 & 0x00FF) - amt;
-        const B = (num & 0x0000FF) - amt;
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-    }
-
-    lightenColor(color, percent) {
-        const num = parseInt(color.replace("#", ""), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) + amt;
-        const G = (num >> 8 & 0x00FF) + amt;
-        const B = (num & 0x0000FF) + amt;
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-    }
-}
-
-// Initialize dynamic styling manager
-const dynamicStyling = new DynamicStylingManager();
-
 const translations = {
     en: {
         welcome: "Welcome...",
@@ -145,7 +13,7 @@ const translations = {
         loadingTasks: "Loading tasks...",
         idleTitle: "⏸️ You're Idle",
         idleDesc: "You’ve been inactive. Timer is paused.",
-        min: "min", 
+        min: "min",
         today: "Today",
         work: "WORK",
         start: "START",
@@ -248,66 +116,62 @@ const translations = {
 
 
 function showToast(message, type = 'success') {
-                Toastify({
-                    text: message,
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: type === 'error' ? "#e74c3c" : "#27ae60",
-                    close: true
-                }).showToast();
-            }
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: type === 'error' ? "#e74c3c" : "#27ae60",
+        close: true
+    }).showToast();
+}
 
-            function logout() {
-                sessionStorage.clear();
-                window.location.href = '/';
-            }
+function logout() {
+    sessionStorage.clear();
+    window.location.href = '/';
+}
 
-            function updateDrawerContent(projectName, taskName) {
-                // Update project details
-                const drawerProjectName = document.getElementById('drawerProjectName');
-                const drawerProjectDesc = document.getElementById('drawerProjectDesc');
-                
-                if (drawerProjectName) {
-                    drawerProjectName.textContent = projectName || 'No Project Selected';
-                }
-                if (drawerProjectDesc) {
-                    drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
-                }
-                
-                // Update task details
-                const drawerTaskName = document.getElementById('drawerTaskName');
-                const drawerTaskDesc = document.getElementById('drawerTaskDesc');
-                
-                if (drawerTaskName) {
-                    drawerTaskName.textContent = taskName || 'No Task Selected';
-                }
-                if (drawerTaskDesc) {
-                    drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
-                }
-                
-                // Update session info
-                const drawerSessionStart = document.getElementById('drawerSessionStart');
-                if (drawerSessionStart) {
-                    drawerSessionStart.textContent = new Date().toLocaleTimeString();
-                }
-            }
+function updateDrawerContent(projectName, taskName) {
+    // Update project details
+    const drawerProjectName = document.getElementById('drawerProjectName');
+    const drawerProjectDesc = document.getElementById('drawerProjectDesc');
 
-            let timerInterval, totalSeconds = 0;
-            let isTimerRunning = false;
-            let currentTaskId = null, sessionStartTime = null;
-            let selectedProjectName = '', selectedTaskName = '', user = null;
+    if (drawerProjectName) {
+        drawerProjectName.textContent = projectName || 'No Project Selected';
+    }
+    if (drawerProjectDesc) {
+        drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
+    }
+
+    // Update task details
+    const drawerTaskName = document.getElementById('drawerTaskName');
+    const drawerTaskDesc = document.getElementById('drawerTaskDesc');
+
+    if (drawerTaskName) {
+        drawerTaskName.textContent = taskName || 'No Task Selected';
+    }
+    if (drawerTaskDesc) {
+        drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
+    }
+
+    // Update session info
+    const drawerSessionStart = document.getElementById('drawerSessionStart');
+    if (drawerSessionStart) {
+        drawerSessionStart.textContent = new Date().toLocaleTimeString();
+    }
+}
+
+let timerInterval, totalSeconds = 0;
+let isTimerRunning = false;
+let currentTaskId = null, sessionStartTime = null;
+let selectedProjectName = '', selectedTaskName = '', user = null;
 
 window.onload = function () {
-    // 🎨 Initialize Dynamic Styling from DDS API
-    console.log('🚀 Client.js: Initializing dynamic styling...');
-    dynamicStyling.applyStylingFromAPI();
-    
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     applyClientLanguage(lang);
     const todayDateField = document.getElementById('todayDate');
     const today = new Date();
-    todayDateField.value = today.toLocaleDateString('en-CA');    
+    todayDateField.value = today.toLocaleDateString('en-CA');
 
 
     user = JSON.parse(sessionStorage.getItem('user'));
@@ -330,7 +194,6 @@ window.onload = function () {
     // 🎨 Re-apply styling after DOM setup
     setTimeout(() => {
         console.log('🔄 Client.js: Re-applying styling after DOM setup...');
-        dynamicStyling.applyStylingFromAPI();
     }, 1000);
 };
 
@@ -365,7 +228,7 @@ setInterval(() => {
 
 
 
-                   idleModal.style.display = 'flex';
+                    idleModal.style.display = 'flex';
 
                     const idleContent = idleModal.querySelector(".modal-content");
                     idleContent.classList.remove('idle-shake');
@@ -394,27 +257,33 @@ async function handleAutoIdleSubmit() {
     stopScreenRecording();  // ✅ Yeh yahan hona chahiye, function ke andar nahi
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
 
-    // ✅ Total idle = 5 minutes (300s) + modal display (5s)
+    // ✅ Total idle = 3 minutes (180s) + modal display (5s)
     const totalIdleSeconds = 180;
 
     const actualEndTime = Math.floor(idleTriggerTime / 1000);
     const adjustedEndTime = actualEndTime - totalIdleSeconds;
     const durationWorked = adjustedEndTime - sessionStartTime;
 
-    const minsWorked = durationWorked >= 60 ? Math.floor(durationWorked / 60) : 0;
+    // ✅ Ensure minimum work time is recorded
+    const finalDurationWorked = Math.max(durationWorked, 60); // Minimum 1 minute
+    const minsWorked = Math.floor(finalDurationWorked / 60);
+    const secsWorked = finalDurationWorked % 60;
+
+    // ✅ Calculate hours and decimal time for CRM display
+    const hoursWorked = finalDurationWorked / 3600; // Convert to hours (decimal)
+    const displayHours = Math.floor(hoursWorked);
+    const displayMins = Math.floor((hoursWorked - displayHours) * 60);
+
     const idleMsg = lang === 'tr'
-    ? (minsWorked === 0
-        ? `Kullanıcı 1 dakikadan az çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`
-        : `Kullanıcı ${minsWorked} dakika çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`)
-    : (minsWorked === 0
-        ? `User worked for less than 1 minute and stayed idle for ${totalIdleSeconds} seconds.`
-        : `User worked for ${minsWorked} minutes and stayed idle for ${totalIdleSeconds} seconds.`);
+        ? (minsWorked === 0
+            ? `Kullanıcı 1 dakikadan az çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`
+            : `Kullanıcı ${minsWorked} dakika ${secsWorked} saniye çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`)
+        : (minsWorked === 0
+            ? `User worked for less than 1 minute and stayed idle for ${totalIdleSeconds} seconds.`
+            : `User worked for ${minsWorked} minutes ${secsWorked} seconds and stayed idle for ${totalIdleSeconds} seconds.`);
 
-
-    // 👇 ADD THIS LINE
-const secsWorked = durationWorked % 60;
-document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
-
+    // ✅ Update total time display with actual worked time
+    document.getElementById('totaltimecount').innerText = `${minsWorked} min ${secsWorked} sec`;
 
     console.log("📤 Auto-submitting due to idle...");
     console.log({
@@ -422,10 +291,13 @@ document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
         task: currentTaskId,
         start: sessionStartTime,
         adjustedEndTime,
+        actualWorkedSeconds: finalDurationWorked,
+        hoursDecimal: hoursWorked.toFixed(2),
         idleMsg
     });
 
     try {
+        // ✅ Send both end_time and worked duration for proper CRM calculation
         await fetch('/end_task_session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -434,6 +306,9 @@ document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
                 end_time: adjustedEndTime,
+                start_time: sessionStartTime, // ✅ Include start time for server calculation
+                worked_duration: finalDurationWorked, // ✅ Actual worked seconds
+                worked_hours: parseFloat(hoursWorked.toFixed(2)), // ✅ Decimal hours for CRM
                 note: idleMsg
             })
         });
@@ -487,10 +362,9 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
         // ✅ Automatically update stateCircle to WORK
         setState('work');
-        
+
         // 🎨 Re-apply button styling after state change
         setTimeout(() => {
-            dynamicStyling.applyStylingFromAPI();
         }, 500);
     }
 });
@@ -502,13 +376,13 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
 
 // Reset button event listener with error checking
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             console.log('🔄 Reset button clicked');
             console.log('⏱️ Total seconds:', totalSeconds);
-            
+
             if (totalSeconds < 10) {
                 console.log('⚠️ Session too short, showing warning');
                 // resetTimer();
@@ -518,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast(message, 'error');
                 return;
             }
-            
+
             console.log('✅ Opening finish modal');
             openModal();
         });
@@ -650,7 +524,7 @@ function stopScreenRecording() {
         .then(res => res.json())
         // .then(data => console.log("🛑 Recording stopped:", data))
         .catch(console.error);
-        
+
 }
 
 // ✅ Daily logs capture functions
@@ -658,10 +532,10 @@ let dailyLogsInterval;
 
 function startDailyLogsCapture() {
     console.log("📋 Starting automatic daily logs capture...");
-    
+
     // Capture initial log when work starts
     captureCurrentActivityLog();
-    
+
     // Set interval to capture logs every 60 seconds (1 minute)
     dailyLogsInterval = setInterval(() => {
         captureCurrentActivityLog();
@@ -678,7 +552,7 @@ function stopDailyLogsCapture() {
 
 function captureCurrentActivityLog() {
     if (!user || !currentTaskId) return;
-    
+
     const currentTime = new Date().toISOString();
     const logData = {
         email: user.email,
@@ -690,19 +564,19 @@ function captureCurrentActivityLog() {
         activity_type: isTimerRunning ? 'working' : 'idle',
         timer_seconds: totalSeconds
     };
-    
+
     fetch('/capture_activity_log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(logData)
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            console.log("📋 Activity log captured successfully");
-        }
-    })
-    .catch(err => console.error("❌ Failed to capture activity log:", err));
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log("📋 Activity log captured successfully");
+            }
+        })
+        .catch(err => console.error("❌ Failed to capture activity log:", err));
 }
 
 function fetchAIProjects(user) {
@@ -756,18 +630,22 @@ function fetchAIProjects(user) {
 function loadTasksForProject() {
     const projectId = document.getElementById('project').value;
     const taskSelect = document.getElementById('task');
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const selectTaskText = lang === 'tr' ? '-- İş Emri Seçin --' : '-- Select a Task --';
+    const loadingTasksText = lang === 'tr' ? 'Görevler yükleniyor...' : 'Loading tasks...';
+
     if (!projectId) {
-        taskSelect.innerHTML = '<option disabled selected>-- Select a Task --</option>';
+        taskSelect.innerHTML = `<option disabled selected>${selectTaskText}</option>`;
         return;
     }
 
-    taskSelect.innerHTML = '<option disabled selected>Loading tasks...</option>';
+    taskSelect.innerHTML = `<option disabled selected>${loadingTasksText}</option>`;
 
     fetch(`/get_tasks/${projectId}`)  // or /get_active_tasks if you're using status=2 only
         .then(response => response.json())
         .then(data => {
             taskSelect.innerHTML = '';
-            const placeholder = new Option('-- Select a Task --', '');
+            const placeholder = new Option(selectTaskText, '');
             placeholder.disabled = true;
             placeholder.selected = true;
             taskSelect.appendChild(placeholder);
@@ -812,22 +690,22 @@ function openModal() {
     // clearInterval(timerInterval); 
     const modal = document.getElementById('finishModal');
     console.log('📋 Modal element:', modal);
-    
+
     if (!modal) {
         console.error('❌ finishModal not found!');
         return;
     }
-    
+
     modal.style.display = 'flex';
     console.log('👁️ Modal display set to flex');
-    
+
     // Trigger animation after display is set
     setTimeout(() => {
         modal.classList.remove('hide');
         modal.classList.add('show');
         console.log('🎬 Modal animation classes applied');
     }, 10);
-    
+
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     const loggingInput = document.getElementById('loggingInput');
     if (loggingInput) {
@@ -842,7 +720,7 @@ function closeModal() {
     const modal = document.getElementById('finishModal');
     modal.classList.remove('show');
     modal.classList.add('hide');
-    
+
     // Hide modal after animation completes
     setTimeout(() => {
         modal.style.display = 'none';
@@ -862,11 +740,19 @@ async function submitTaskDetails() {
     const end_time_unix = Math.floor(Date.now() / 1000); // UNIX format
     const taskId = document.getElementById('task').value;
 
+    // ✅ Calculate worked duration for manual submission
+    const workedDuration = end_time_unix - sessionStartTime;
+    const workedHours = workedDuration / 3600; // Convert to decimal hours
+    const minsWorked = Math.floor(workedDuration / 60);
+    const secsWorked = workedDuration % 60;
+
     console.log("📤 Sending to /end_task_session:");
     console.log("📧 Email:", user.email);
     console.log("🆔 Task ID:", taskId);
     console.log("🕐 End Time (UNIX):", end_time_unix);
-    console.log("📝 Note:", detailText);
+    console.log("⏱️ Worked Duration:", workedDuration, "seconds");
+    console.log("� Worked Hours:", workedHours.toFixed(2));
+    console.log("�📝 Note:", detailText);
 
     try {
         // ⚡ Close modal immediately for better UX
@@ -874,7 +760,7 @@ async function submitTaskDetails() {
         resetTimer();
         showToast('💾 Saving task details...', 'info');
 
-        // First, send the critical task completion data
+        // ✅ Send complete time calculation data to backend
         const saveRes = await fetch('/end_task_session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -883,16 +769,19 @@ async function submitTaskDetails() {
                 staff_id: String(user.staffid),
                 task_id: taskId,
                 end_time: end_time_unix,
+                start_time: sessionStartTime, // ✅ Include start time
+                worked_duration: workedDuration, // ✅ Actual worked seconds
+                worked_hours: parseFloat(workedHours.toFixed(2)), // ✅ Decimal hours for CRM
                 note: detailText
             })
         });
 
         if (saveRes.ok) {
             showToast('✅ Task details saved!');
-            
+
             // ⚡ Send timesheet data first, then other operations in background
             await sendTimesheetToBackend();
-            
+
             // Show loader for background operations
             showLoader();
 
@@ -908,7 +797,7 @@ async function submitTaskDetails() {
                 console.warn('⚠️ Some background operations failed:', err);
                 hideLoader();
             });
-            
+
         } else {
             const saveJson = await saveRes.json();
             showToast('❌ Failed to save task details', 'error');
@@ -1103,16 +992,16 @@ function applyClientLanguage(lang) {
     document.getElementById("logout").textContent = t.logout;
 
     if (document.getElementById("logoutModalTitle"))
-    document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
+        document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
 
     if (document.getElementById("logoutModalDesc"))
-    document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
+        document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
 
     if (document.getElementById("logoutConfirmBtn"))
-    document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
+        document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
 
     if (document.getElementById("logoutCancelBtn"))
-    document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
+        document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
 
 
     const reviewModalTitle = document.getElementById("reviewModalTitle");
@@ -1131,34 +1020,34 @@ function applyClientLanguage(lang) {
     if (document.getElementById("navDashboard"))
         document.getElementById("navDashboard").textContent = t.navDashboard;
 
-        if (document.getElementById("navHelp"))
+    if (document.getElementById("navHelp"))
         document.getElementById("navHelp").textContent = t.navHelp;
 
-        if (document.getElementById("navSettings"))
+    if (document.getElementById("navSettings"))
         document.getElementById("navSettings").textContent = t.navSettings;
 
-        if (document.getElementById("navFeedback"))
+    if (document.getElementById("navFeedback"))
         document.getElementById("navFeedback").textContent = t.navFeedback;
 
-if (document.getElementById("rememberMeLabel")) {
-document.getElementById("rememberMeLabel").textContent = t.rememberMe;
-}
+    if (document.getElementById("rememberMeLabel")) {
+        document.getElementById("rememberMeLabel").textContent = t.rememberMe;
+    }
 
-if (document.getElementById("logoutModalTitle")) {
-document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
-}
+    if (document.getElementById("logoutModalTitle")) {
+        document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
+    }
 
-if (document.getElementById("logoutModalDesc")) {
-document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
-}
+    if (document.getElementById("logoutModalDesc")) {
+        document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
+    }
 
-if (document.getElementById("logoutCancelBtn")) {
-document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
-}
+    if (document.getElementById("logoutCancelBtn")) {
+        document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
+    }
 
-if (document.getElementById("logoutConfirmBtn")) {
-document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
-}
+    if (document.getElementById("logoutConfirmBtn")) {
+        document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
+    }
 
 
 
@@ -1257,7 +1146,7 @@ async function uploadUsageLogToS3() {
     }
 }
 
-       
+
 
 const stateCircle = document.getElementById('stateCircle');
 const stateLabel = document.getElementById('stateLabel');
@@ -1378,8 +1267,8 @@ function handleBreak() {
     breakBtn.style.backgroundColor = 'gray';
 }
 
-      
-            // Ripple effect on click
+
+// Ripple effect on click
 function createRipple(event) {
     const button = event.currentTarget;
     const ripple = document.createElement('span');
@@ -1400,7 +1289,7 @@ function createRipple(event) {
     }, 600);
 }
 
-            // Navigation functionality
+// Navigation functionality
 function handleNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const navItems = document.querySelectorAll('.nav-item');
@@ -1431,7 +1320,7 @@ function handleNavigation() {
     });
 }
 
-            // Smooth hover effects with mousemove
+// Smooth hover effects with mousemove
 function addAdvancedHoverEffects() {
     const navLinks = document.querySelectorAll('.nav-link');
 
@@ -1466,15 +1355,15 @@ function addAdvancedHoverEffects() {
     });
 }
 
-            // Initialize everything when page loads
+// Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', () => {
     handleNavigation();
     // createParticles();
     addAdvancedHoverEffects();
-    
+
     // Reset any transforms on the feedback link
-    const feedbackLink = document.querySelector('.nav-link:has(#navFeedback)') || 
-                        document.getElementById('navFeedback')?.closest('.nav-link');
+    const feedbackLink = document.querySelector('.nav-link:has(#navFeedback)') ||
+        document.getElementById('navFeedback')?.closest('.nav-link');
     if (feedbackLink) {
         feedbackLink.style.transform = 'none';
         feedbackLink.style.transition = 'none';
@@ -1512,11 +1401,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     console.log('🔄 Drawer content background colors reset to CSS defaults');
 
-    // Protect drawer arrow button from future color changes
-    if (window.dynamicStylingManager) {
-        window.dynamicStylingManager.protectDrawerArrowButton();
-    }
-
     // Set up protection against style changes to drawer elements
     if (drawerArrowBtn) {
         // Create a mutation observer to watch for style changes
@@ -1524,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     const target = mutation.target;
-                    
+
                     // Protect drawer arrow button
                     if (target.id === 'drawerArrowBtn') {
                         if (target.style.backgroundColor && target.style.backgroundColor !== '') {
@@ -1535,10 +1419,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         console.log('🛡️ Prevented color override on drawer arrow button');
                     }
-                    
+
                     // Protect drawer content elements
                     if (target.classList.contains('drawer') ||
-                        target.classList.contains('drawer-header') || 
+                        target.classList.contains('drawer-header') ||
                         target.classList.contains('drawer-content') ||
                         target.classList.contains('drawer-section') ||
                         target.classList.contains('drawer-section-header') ||
@@ -1546,7 +1430,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         target.classList.contains('project-details') ||
                         target.classList.contains('task-details') ||
                         target.classList.contains('time-details')) {
-                        
+
                         if (target.style.backgroundColor && target.style.backgroundColor !== '') {
                             target.style.backgroundColor = '';
                         }
@@ -1561,13 +1445,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-        
+
         // Watch drawer arrow button
-        observer.observe(drawerArrowBtn, { 
-            attributes: true, 
-            attributeFilter: ['style'] 
+        observer.observe(drawerArrowBtn, {
+            attributes: true,
+            attributeFilter: ['style']
         });
-        
+
         // Watch all drawer content elements
         const allDrawerElements = [
             document.querySelector('.drawer'),
@@ -1580,16 +1464,16 @@ document.addEventListener('DOMContentLoaded', () => {
             ...document.querySelectorAll('.task-details'),
             ...document.querySelectorAll('.time-details')
         ];
-        
+
         allDrawerElements.forEach(element => {
             if (element) {
-                observer.observe(element, { 
-                    attributes: true, 
-                    attributeFilter: ['style'] 
+                observer.observe(element, {
+                    attributes: true,
+                    attributeFilter: ['style']
                 });
             }
         });
-        
+
         console.log('🛡️ Protection set up for all drawer elements');
     }
 
@@ -1622,28 +1506,28 @@ document.addEventListener('keydown', (e) => {
 function openModalWithAnimation(modalId, callback) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    
+
     modal.style.display = "flex";
     // Trigger animation after display is set
     setTimeout(() => {
-      modal.classList.remove('hide');
-      modal.classList.add('show');
-      if (callback) callback();
+        modal.classList.remove('hide');
+        modal.classList.add('show');
+        if (callback) callback();
     }, 10);
 }
 
 function closeModalWithAnimation(modalId, callback) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
-    
+
     modal.classList.remove('show');
     modal.classList.add('hide');
-    
+
     // Hide modal after animation completes
     setTimeout(() => {
-      modal.style.display = "none";
-      modal.classList.remove('hide');
-      if (callback) callback();
+        modal.style.display = "none";
+        modal.classList.remove('hide');
+        if (callback) callback();
     }, 300);
 }
 
@@ -1655,8 +1539,8 @@ function openReviewModal() {
     modal.style.display = "flex";
     // Trigger animation after display is set
     setTimeout(() => {
-      modal.classList.remove('hide');
-      modal.classList.add('show');
+        modal.classList.remove('hide');
+        modal.classList.add('show');
     }, 10);
 }
 
@@ -1664,11 +1548,11 @@ function closeReviewModal() {
     const modal = document.getElementById("reviewModal");
     modal.classList.remove('show');
     modal.classList.add('hide');
-    
+
     // Hide modal after animation completes
     setTimeout(() => {
-      modal.style.display = "none";
-      modal.classList.remove('hide');
+        modal.style.display = "none";
+        modal.classList.remove('hide');
     }, 300);
 }
 
@@ -1690,20 +1574,20 @@ function submitUserReview() {
             message: reviewText
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            showToast('✅ Feedback sent successfully!');
-            closeReviewModal();
-            document.getElementById('reviewInput').value = '';
-        } else {
-            // showToast('❌ Failed to send feedback: ' + data.message, 'error');
-        }
-    })
-    .catch(err => {
-        console.error('Feedback error:', err);
-        showToast('❌ Feedback error occurred.', 'error');
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('✅ Feedback sent successfully!');
+                closeReviewModal();
+                document.getElementById('reviewInput').value = '';
+            } else {
+                // showToast('❌ Failed to send feedback: ' + data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error('Feedback error:', err);
+            showToast('❌ Feedback error occurred.', 'error');
+        });
 }
 
 
@@ -1719,37 +1603,37 @@ function openInNewTab(url) {
 
 
 function logout() {
-  if (isTimerRunning) {
-    showToast("⛔ You cannot logout while the timer is running. Please finish your task first.", "error");
-    return;
-  }
+    if (isTimerRunning) {
+        showToast("⛔ You cannot logout while the timer is running. Please finish your task first.", "error");
+        return;
+    }
 
-  if (confirm("Are you sure you want to logout?")) {
-    sessionStorage.clear();
-    window.location.href = '/';
-  }
+    if (confirm("Are you sure you want to logout?")) {
+        sessionStorage.clear();
+        window.location.href = '/';
+    }
 }
 
 
 function openLogoutModal() {
-  if (isTimerRunning) {
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    const warning = lang === 'tr'
-      ? "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin."
-      : "⛔ You cannot logout while the timer is running. Please finish your task first.";
+    if (isTimerRunning) {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        const warning = lang === 'tr'
+            ? "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin."
+            : "⛔ You cannot logout while the timer is running. Please finish your task first.";
 
-    showToast(warning, "error");
-    return;
-  }
+        showToast(warning, "error");
+        return;
+    }
 
-  // ✅ Open modal with smooth animation
-  const modal = document.getElementById("logoutModal");
-  modal.style.display = "flex";
-  // Trigger animation after display is set
-  setTimeout(() => {
-    modal.classList.remove('hide');
-    modal.classList.add('show');
-  }, 10);
+    // ✅ Open modal with smooth animation
+    const modal = document.getElementById("logoutModal");
+    modal.style.display = "flex";
+    // Trigger animation after display is set
+    setTimeout(() => {
+        modal.classList.remove('hide');
+        modal.classList.add('show');
+    }, 10);
 }
 
 
@@ -1757,11 +1641,11 @@ function closeLogoutModal() {
     const modal = document.getElementById("logoutModal");
     modal.classList.remove('show');
     modal.classList.add('hide');
-    
+
     // Hide modal after animation completes
     setTimeout(() => {
-      modal.style.display = "none";
-      modal.classList.remove('hide');
+        modal.style.display = "none";
+        modal.classList.remove('hide');
     }, 300);
 }
 
@@ -1791,47 +1675,43 @@ function cancelIdleCountdown() {
 // Refresh styling every 5 minutes to ensure consistency
 setInterval(() => {
     console.log('🔄 Client.js: Periodic styling refresh...');
-    dynamicStyling.applyStylingFromAPI();
 }, 5 * 60 * 1000);
 
 // 🧪 Debug functions for testing API styling in browser console
-window.refreshStyling = function() {
+window.refreshStyling = function () {
     console.log('🧪 Manual styling refresh triggered...');
-    return dynamicStyling.applyStylingFromAPI();
 };
 
-window.testClientStyling = function() {
+window.testClientStyling = function () {
     console.log('🧪 Testing client styling integration...');
-    console.log('📊 Current dynamic styling manager:', dynamicStyling);
-    
+
     // Test button selectors
     const buttonSelectors = ['#startBtn', '#resetBtn', '.modal-btn', 'button'];
     buttonSelectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
         console.log(`🔍 Found ${elements.length} elements for selector: ${selector}`);
     });
-    
+
     // Refresh styling
-    return dynamicStyling.applyStylingFromAPI();
 };
 
-window.debugClientColors = function() {
+window.debugClientColors = function () {
     const root = document.documentElement;
     const style = getComputedStyle(root);
-    
+
     console.log('🎨 Current Client.js CSS Variables:');
     console.log('--primary-color:', style.getPropertyValue('--primary-color').trim());
     console.log('--secondary-color:', style.getPropertyValue('--secondary-color').trim());
     console.log('--background-color:', style.getPropertyValue('--background-color').trim());
     console.log('--button-color:', style.getPropertyValue('--button-color').trim());
     console.log('--text-color:', style.getPropertyValue('--text-color').trim());
-    
+
     // 🎨 NEW: Debug new color fields
     console.log('🎯 NEW Color Fields:');
     console.log('--header-color:', style.getPropertyValue('--header-color').trim());
     console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
     console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
-    
+
     // Check actual button colors
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
@@ -1874,12 +1754,11 @@ window.debugClientColors = function() {
 
 // 🎨 Enhanced setState function to maintain styling after state changes
 const originalSetState = setState;
-setState = function(state) {
+setState = function (state) {
     originalSetState(state);
-    
+
     // Re-apply styling after state change
     setTimeout(() => {
-        dynamicStyling.applyStylingFromAPI();
     }, 100);
 };
 
@@ -1887,56 +1766,37 @@ console.log('✅ Client.js: DDS Styling API integration completed');
 console.log('🧪 Debug functions available: refreshStyling(), testClientStyling(), debugClientColors()');
 
 // 🎨 NEW: Comprehensive function to test all API color fields
-window.testAllAPIColorFields = async function() {
+window.testAllAPIColorFields = async function () {
     console.log('🧪 Testing ALL API Color Fields...');
-    
+
     try {
-        const response = await fetch('/api/styling/proxy');
-        const data = await response.json();
-        
-        if (data.status === 'success' && data.data) {
-            const styling = data.data;
-            
-            console.log('🎨 API Color Fields Test Results:');
-            console.log('=======================================');
-            console.log('✅ Header Color:', styling['header-color'] || 'NOT FOUND');
-            console.log('✅ Footer Color:', styling['footer-color'] || 'NOT FOUND');
-            console.log('✅ Text Color:', styling.text_color || 'NOT FOUND');
-            console.log('✅ Background Color:', styling.background_color || 'NOT FOUND');
-            console.log('✅ Button Color:', styling.button_color || 'NOT FOUND');
-            console.log('✅ Button Text Color:', styling['button-text_color'] || 'NOT FOUND');
-            
-            // Test current CSS variables
-            const root = document.documentElement;
-            const style = getComputedStyle(root);
-            
-            console.log('\n🎨 Current CSS Variables:');
-            console.log('=======================================');
-            console.log('--header-color:', style.getPropertyValue('--header-color').trim());
-            console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
-            console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
-            console.log('--text-color:', style.getPropertyValue('--text-color').trim());
-            console.log('--background-color:', style.getPropertyValue('--background-color').trim());
-            console.log('--button-color:', style.getPropertyValue('--button-color').trim());
-            
-            // Apply fresh styling
-            console.log('\n🔄 Refreshing styling...');
-            await dynamicStyling.applyStylingFromAPI();
-            
-            console.log('✅ API Color Fields Test Complete!');
-            return styling;
-        }
+        // Since styling API is removed, we'll just test the CSS variables
+        const root = document.documentElement;
+        const style = getComputedStyle(root);
+
+        console.log('🎨 Current CSS Variables:');
+        console.log('=======================================');
+        console.log('--header-color:', style.getPropertyValue('--header-color').trim());
+        console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
+        console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
+        console.log('--text-color:', style.getPropertyValue('--text-color').trim());
+        console.log('--background-color:', style.getPropertyValue('--background-color').trim());
+        console.log('--button-color:', style.getPropertyValue('--button-color').trim());
+
+        console.log('✅ API Color Fields Test Complete!');
+        return true;
     } catch (error) {
         console.error('❌ API Color Fields Test Error:', error);
+        return false;
     }
 };
 
 console.log('🆕 New function available: testAllAPIColorFields()');
 
 // 🎨 Function to verify specific color field implementation
-window.verifyColorImplementation = function() {
+window.verifyColorImplementation = function () {
     console.log('🔍 Verifying Color Field Implementation...');
-    
+
     const colorTests = [
         {
             name: 'Header Elements',
@@ -1945,7 +1805,7 @@ window.verifyColorImplementation = function() {
             expectedVar: '--header-color'
         },
         {
-            name: 'Footer Elements', 
+            name: 'Footer Elements',
             selectors: ['footer', '.footer', '.bottom-footer'],
             property: 'background-color',
             expectedVar: '--footer-color'
@@ -1957,13 +1817,13 @@ window.verifyColorImplementation = function() {
             expectedVar: '--button-text-color'
         }
     ];
-    
+
     colorTests.forEach(test => {
         console.log(`\n🧪 Testing ${test.name}:`);
         test.selectors.forEach(selector => {
             const elements = document.querySelectorAll(selector);
             console.log(`  ${selector}: Found ${elements.length} elements`);
-            
+
             elements.forEach((element, index) => {
                 const style = getComputedStyle(element);
                 const value = style.getPropertyValue(test.property);
@@ -1971,16 +1831,16 @@ window.verifyColorImplementation = function() {
             });
         });
     });
-    
+
     console.log('\n✅ Color Implementation Verification Complete!');
 };
 
 console.log('🆕 New function available: verifyColorImplementation()');
 
 // 🔒 Additional function to force white header buttons
-window.forceWhiteHeaderButtons = function() {
+window.forceWhiteHeaderButtons = function () {
     console.log('🔒 Forcing white header button styling...');
-    
+
     const logoutBtn = document.getElementById('logout');
     if (logoutBtn) {
         logoutBtn.style.setProperty('background-color', 'white', 'important');
@@ -1997,11 +1857,6 @@ window.forceWhiteHeaderButtons = function() {
         console.log('✅ Language button forced to white');
     }
 
-    // Also call the preserve method
-    if (typeof dynamicStyling !== 'undefined' && dynamicStyling.preserveHeaderButtonStyling) {
-        dynamicStyling.preserveHeaderButtonStyling();
-    }
-
     console.log('🔒 White header button styling complete');
 };
 
@@ -2010,7 +1865,7 @@ console.log('🔒 Additional function: forceWhiteHeaderButtons()');
 // 🛡️ Protection against JavaScript-applied black backgrounds on navigation
 function preventNavigationBlackBackgrounds() {
     const navLinks = document.querySelectorAll('.nav-link');
-    
+
     navLinks.forEach(link => {
         // Override any inline styles that set black backgrounds
         const observer = new MutationObserver((mutations) => {
@@ -2024,14 +1879,14 @@ function preventNavigationBlackBackgrounds() {
                             .replace(/background-color:\s*black\s*!important;?/gi, '')
                             .replace(/background:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
                             .replace(/background:\s*black\s*!important;?/gi, '');
-                        
+
                         link.setAttribute('style', cleanStyle);
                         console.log('🛡️ Prevented black background on navigation link');
                     }
                 }
             });
         });
-        
+
         observer.observe(link, { attributes: true, attributeFilter: ['style'] });
     });
 }
