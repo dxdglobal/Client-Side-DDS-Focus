@@ -408,7 +408,7 @@ body {
 /* Center status circle */
 .radial-center-circle {
   position: absolute;
-  bottom: -15px;
+  bottom: -42px;
   left: 42%;
   transform: translateX(-50%);
   width: 100px;

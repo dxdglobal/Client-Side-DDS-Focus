@@ -326,6 +326,40 @@ async function handleAutoIdleSubmit() {
 
 
 document.getElementById('startBtn').addEventListener('click', function () {
+    
+    // 📹 Check if in MEETING mode
+    if (isMeetingMode) {
+        if (!isTimerRunning) {
+            meetingStartTime = Math.floor(Date.now() / 1000);
+            sessionStartTime = meetingStartTime;
+            
+            // Start meeting recording (independent of project/task)
+            fetch('/start_meeting_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    meeting_name: 'General Meeting'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    currentMeetingId = data.meeting_id;
+                    console.log('📹 Meeting recording started:', currentMeetingId);
+                    showToast('📹 Meeting recording started!', 'success');
+                }
+            })
+            .catch(console.error);
+            
+            startDailyLogsCapture();
+            startTimer();
+            setState('meeting');
+        }
+        return; // Exit early for meeting mode
+    }
+    
+    // 💼 WORK mode - requires task selection
     const taskSelect = document.getElementById('task');
     const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
     const taskId = taskSelect.value;
@@ -1275,6 +1309,92 @@ function handleBreak() {
     breakBtn.style.backgroundColor = 'gray';
 }
 
+// 🎯 New function to handle radial menu status changes
+let currentMeetingId = null;
+let meetingStartTime = null;
+let isMeetingMode = false;
+
+function setRadialStatus(status) {
+    const centerCircle = document.getElementById('radialCenterCircle');
+    const centerText = centerCircle.querySelector('.center-status-text');
+    
+    if (status === 'meeting') {
+        // 📹 MEETING: Just set the mode - START button will begin recording
+        if (centerText) {
+            centerText.innerHTML = 'AT<br>MEETING';
+        }
+        
+        // Set meeting mode flag (START button will handle actual recording)
+        isMeetingMode = true;
+        
+        // Set state to meeting (visual change only)
+        setState('meeting');
+        
+        console.log('📹 Meeting mode selected - Click START to begin recording');
+        
+    } else if (status === 'work') {
+        // 💼 WORK: Just set work mode - START button will begin recording
+        
+        // Disable meeting mode
+        isMeetingMode = false;
+        
+        // Stop meeting recording if active
+        if (currentMeetingId) {
+            const meetingDuration = Math.floor(Date.now() / 1000) - meetingStartTime;
+            fetch('/stop_meeting_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    duration: meetingDuration
+                })
+            }).catch(console.error);
+            currentMeetingId = null;
+            meetingStartTime = null;
+        }
+
+        // Change center circle back to WORK
+        if (centerText) {
+            centerText.innerHTML = 'AT<br>WORK';
+        }
+        
+        // Set state to work (visual change only)
+        setState('work');
+        
+        console.log('💼 Work mode selected - Select task and click START');
+        
+    } else if (status === 'break') {
+        // ☕ BREAK: Pause timer
+        
+        // Disable meeting mode
+        isMeetingMode = false;
+        
+        if (centerText) {
+            centerText.innerHTML = 'ON<br>BREAK';
+        }
+        
+        // Stop meeting recording if active
+        if (currentMeetingId) {
+            const meetingDuration = Math.floor(Date.now() / 1000) - meetingStartTime;
+            fetch('/stop_meeting_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    duration: meetingDuration
+                })
+            }).catch(console.error);
+            currentMeetingId = null;
+            meetingStartTime = null;
+        }
+        
+        // Pause timer during break
+        pauseTimer();
+        setState('break');
+        
+        console.log('☕ Break mode - Timer paused');
+    }
+}
 
 // Ripple effect on click
 function createRipple(event) {

@@ -1046,6 +1046,127 @@ def stop_screen_recording_api():
     return jsonify({"status": "success", "message": "Screen recording stopped."})
 
 
+# ============================================
+# 🎯 MEETING ROUTES (Independent of Project/Task)
+# ============================================
+
+meeting_recording_active = False
+meeting_recording_thread = None
+current_meeting_id = None
+
+@app.route('/start_meeting_recording', methods=['POST'])
+def start_meeting_recording_api():
+    """Start meeting recording without project/task dependency"""
+    global meeting_recording_active, meeting_recording_thread, current_meeting_id
+
+    data = request.get_json()
+    user_email = data.get("email")
+    meeting_name = data.get("meeting_name", "General Meeting")
+
+    if not user_email:
+        return jsonify({"status": "error", "message": "Missing email"}), 400
+
+    # Generate unique meeting ID
+    current_meeting_id = f"meeting_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    meeting_recording_active = True
+
+    # Start meeting screenshot capture
+    start_meeting_recording(user_email, current_meeting_id)
+
+    return jsonify({
+        "status": "success", 
+        "message": "Meeting recording started.",
+        "meeting_id": current_meeting_id
+    })
+
+
+def start_meeting_recording(email, meeting_id):
+    """Capture screenshots during meeting and upload to S3"""
+    def record():
+        global meeting_recording_active
+
+        # Get screenshot interval from configuration
+        screenshot_interval = config_manager.get_screenshot_interval()
+        print(f"🎥 Starting meeting screenshot capture (interval: {screenshot_interval}s)")
+        print(f"📹 Meeting ID: {meeting_id}")
+        
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]  # full screen
+
+            while meeting_recording_active:
+                try:
+                    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                    sct_img = sct.grab(monitor)
+
+                    if not PIL_AVAILABLE:
+                        logging.warning("⚠️ PIL not available, skipping screenshot processing")
+                        continue
+
+                    # Convert mss image to PIL image and save to bytes buffer
+                    img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
+                    
+                    # Save to bytes buffer
+                    import io
+                    img_buffer = io.BytesIO()
+                    img.save(img_buffer, format="WEBP")
+                    img_bytes = img_buffer.getvalue()
+
+                    print(f"📸 Meeting screenshot captured: {timestamp}.webp")
+
+                    # Upload meeting screenshot to S3
+                    from moduller.s3_uploader import upload_meeting_screenshot_direct
+                    result_url = upload_meeting_screenshot_direct(img_bytes, email, meeting_id, "webp")
+                    
+                    if result_url:
+                        print(f"☁️ Meeting screenshot uploaded to S3: {result_url}")
+                    else:
+                        print(f"❌ Failed to upload meeting screenshot to S3")
+
+                    time.sleep(screenshot_interval)
+                except Exception as e:
+                    print(f"❌ Meeting screenshot error: {e}")
+                    break
+
+    global meeting_recording_thread
+    meeting_recording_thread = threading.Thread(target=record, daemon=True)
+    meeting_recording_thread.start()
+
+
+@app.route('/stop_meeting_recording', methods=['POST'])
+def stop_meeting_recording_api():
+    """Stop meeting recording"""
+    global meeting_recording_active, meeting_recording_thread, current_meeting_id
+
+    data = request.get_json()
+    user_email = data.get("email")
+    meeting_duration = data.get("duration", 0)  # Duration in seconds
+
+    meeting_recording_active = False
+
+    if meeting_recording_thread:
+        meeting_recording_thread.join()
+        meeting_recording_thread = None
+
+    # Save meeting activity data to S3
+    if current_meeting_id and user_email:
+        meeting_data = {
+            "meeting_id": current_meeting_id,
+            "email": user_email,
+            "start_time": datetime.now().isoformat(),
+            "duration_seconds": meeting_duration,
+            "status": "completed"
+        }
+        
+        from moduller.s3_uploader import upload_meeting_activity_data
+        upload_meeting_activity_data(meeting_data, user_email, current_meeting_id)
+
+    return jsonify({
+        "status": "success", 
+        "message": "Meeting recording stopped.",
+        "meeting_id": current_meeting_id
+    })
+
+
 from flask import jsonify
 import os
 import json

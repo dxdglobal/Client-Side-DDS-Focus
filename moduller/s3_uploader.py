@@ -674,3 +674,159 @@ def upload_employee_logs_batch(employees_logs_data, report_date=None):
     
     logger.info("📊 Batch upload complete: %d employees processed", len(results))
     return results
+
+
+def upload_meeting_screenshot_direct(image_bytes, email, meeting_id=None, file_extension="webp"):
+    """
+    Upload meeting screenshot directly to S3 without project/task dependency
+    Structure: meeting_screenshots/{date}/{email}/{meeting_id}/{timestamp}.webp
+    
+    Args:
+        image_bytes: Raw image bytes (from PIL image.save() or similar)
+        email: User email
+        meeting_id: Optional meeting identifier (default: auto-generated)
+        file_extension: File extension (default: webp)
+    
+    Returns:
+        str: S3 URL if successful, None if failed
+    """
+    logger.info("📤 [upload_meeting_screenshot_direct] started")
+
+    # Get S3 credentials from configuration manager (same as screenshots)
+    s3_config = config_manager.get_s3_credentials()
+    access_key = s3_config.get("access_key")
+    secret_key = s3_config.get("secret_key")
+    bucket = s3_config.get("bucket_name", "ddsfocustime")
+    region = s3_config.get("region", "us-east-1")
+
+    logger.info("🔐 Using S3 config from configuration manager")
+    logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
+    logger.info("🌍 AWS_REGION: %s", region)
+
+    # Check if credentials are missing
+    if not all([access_key, secret_key, bucket, region]):
+        logger.error("❌ One or more AWS environment variables are missing.")
+        return None
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
+    safe_email = email.replace("@", "_at_")
+    
+    # Generate meeting ID if not provided
+    if not meeting_id:
+        meeting_id = f"meeting_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    safe_meeting_id = meeting_id.replace(" ", "_").replace("/", "_")
+    filename = f"{timestamp}.{file_extension}"
+    
+    # Structure: meeting_screenshots/{date}/{email}/{meeting_id}/{timestamp}.webp
+    s3_key = f"meeting_screenshots/{date_folder}/{safe_email}/{safe_meeting_id}/{filename}"
+
+    logger.info("👤 Email: %s", email)
+    logger.info("📹 Meeting ID: %s", meeting_id)
+    logger.info("☁️ S3 key: %s", s3_key)
+
+    try:
+        session = boto3.Session(
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region
+        )
+        s3 = session.client('s3')
+        
+        # Upload bytes directly to S3
+        s3.put_object(
+            Bucket=bucket,
+            Key=s3_key,
+            Body=image_bytes,
+            ContentType=f'image/{file_extension}'
+        )
+
+        url = f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
+        logger.info("✅ Meeting screenshot upload successful: %s", url)
+        return url
+    except Exception as e:
+        logger.error("❌ Meeting screenshot upload failed: %s", e)
+        return None
+
+
+def upload_meeting_activity_data(activity_data, email, meeting_id=None, file_extension="json"):
+    """
+    Upload meeting activity tracking data directly to S3
+    Structure: meeting_logs/{date}/{email}/{meeting_id}/activity_{timestamp}.json
+    
+    Args:
+        activity_data: Dictionary containing meeting activity data
+        email: User email
+        meeting_id: Optional meeting identifier
+        file_extension: File extension (default: "json")
+    
+    Returns:
+        str: S3 URL if successful, None if failed
+    """
+    logger.info("📤 [upload_meeting_activity_data] started")
+
+    # Get S3 credentials from configuration manager (same as screenshots)
+    s3_config = config_manager.get_s3_credentials()
+    access_key = s3_config.get("access_key")
+    secret_key = s3_config.get("secret_key")
+    bucket = s3_config.get("bucket_name", "ddsfocustime")
+    region = s3_config.get("region", "us-east-1")
+
+    logger.info("🔐 Using S3 config from configuration manager")
+    logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
+    logger.info("🌍 AWS_REGION: %s", region)
+
+    # Check if credentials are missing
+    if not all([access_key, secret_key, bucket, region]):
+        logger.error("❌ One or more AWS environment variables are missing.")
+        return None
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    date_folder = datetime.now().strftime("%Y-%m-%d")
+    safe_email = email.replace("@", "_at_")
+    
+    # Generate meeting ID if not provided
+    if not meeting_id:
+        meeting_id = f"meeting_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    safe_meeting_id = meeting_id.replace(" ", "_").replace("/", "_")
+    filename = f"activity_{timestamp}.{file_extension}"
+    
+    # Structure: meeting_logs/{date}/{email}/{meeting_id}/activity_{timestamp}.json
+    s3_key = f"meeting_logs/{date_folder}/{safe_email}/{safe_meeting_id}/{filename}"
+
+    logger.info("👤 Email: %s", email)
+    logger.info("📹 Meeting ID: %s", meeting_id)
+    logger.info("☁️ S3 key: %s", s3_key)
+
+    try:
+        # Convert activity data to JSON
+        if isinstance(activity_data, dict) or isinstance(activity_data, list):
+            activity_content = json.dumps(activity_data, indent=2, ensure_ascii=False)
+        else:
+            activity_content = str(activity_data)
+        
+        activity_bytes = activity_content.encode('utf-8')
+
+        session = boto3.Session(
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region
+        )
+        s3 = session.client('s3')
+        
+        # Upload activity data directly to S3
+        s3.put_object(
+            Bucket=bucket,
+            Key=s3_key,
+            Body=activity_bytes,
+            ContentType='application/json'
+        )
+
+        url = f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
+        logger.info("✅ Meeting activity data upload successful: %s", url)
+        return url
+    except Exception as e:
+        logger.error("❌ Meeting activity data upload failed: %s", e)
+        return None
