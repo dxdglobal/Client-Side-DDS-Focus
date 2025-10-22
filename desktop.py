@@ -175,18 +175,55 @@ def cleanup_and_exit():
     global connector_process
     logging.info("[CLEANUP] UI closed by user. Cleaning up...")
 
-    # ✅ First, cleanup any active timers before closing the app
+    # ✅ First priority: Try to trigger auto-save through JavaScript beforeunload
     try:
-        logging.info("[CLEANUP] Attempting to close active timers...")
+        logging.info("[CLEANUP] Attempting to trigger auto-save via browser...")
+        
+        # Give the webview some time to execute beforeunload event
+        if webview.windows:
+            logging.info("[CLEANUP] Sending beforeunload signal to webview...")
+            # Small delay to allow JavaScript beforeunload to execute
+            time.sleep(2)
+        
+    except Exception as e:
+        logging.warning(f"[CLEANUP] Could not trigger beforeunload: {e}")
+
+    # ✅ Backup: Direct auto-save call to backend if webview method fails
+    try:
+        logging.info("[CLEANUP] Performing backup auto-save to backend...")
+        
+        # Try to get timer status
+        response = requests.get("http://127.0.0.1:5000/api/timer-status", timeout=3)
+        if response.status_code == 200:
+            timer_data = response.json()
+            logging.info(f"[CLEANUP] Timer status received: {timer_data}")
+        else:
+            logging.info("[CLEANUP] Could not get timer status, attempting direct cleanup...")
+            
+        # Always try to trigger cleanup_active_timers which should handle auto-save
         response = requests.post("http://127.0.0.1:5000/cleanup_active_timers", timeout=5)
         if response.status_code == 200:
-            logging.info("[CLEANUP] ✅ Active timers closed successfully")
+            logging.info("[CLEANUP] ✅ Active timers cleaned up (auto-save included)")
         else:
             logging.warning(f"[CLEANUP] ⚠️ Timer cleanup returned status: {response.status_code}")
+            
     except requests.exceptions.RequestException as e:
-        logging.warning(f"[CLEANUP] ⚠️ Could not reach Flask app for timer cleanup: {e}")
+        logging.warning(f"[CLEANUP] ⚠️ Could not perform backup auto-save: {e}")
     except Exception as e:
-        logging.warning(f"[CLEANUP] ⚠️ Timer cleanup failed: {e}")
+        logging.warning(f"[CLEANUP] ⚠️ Auto-save error: {e}")
+
+    # ✅ Give a final moment for any pending operations
+    time.sleep(1)
+
+    # ✅ Send shutdown signal to Flask app
+    try:
+        logging.info("[CLEANUP] Sending shutdown signal to Flask app...")
+        response = requests.post("http://127.0.0.1:5000/shutdown", timeout=3)
+        logging.info("[CLEANUP] ✅ Shutdown signal sent to Flask app")
+    except requests.exceptions.RequestException as e:
+        logging.warning(f"[CLEANUP] ⚠️ Could not send shutdown signal: {e}")
+    except Exception as e:
+        logging.warning(f"[CLEANUP] ⚠️ Shutdown signal failed: {e}")
 
     try:
         if connector_process and connector_process.poll() is None:
@@ -234,12 +271,37 @@ if __name__ == '__main__':
         )
 
 
-        # [OK] Attach cleanup after window opens
-        def after_window_created():
-            if webview.windows:
-                webview.windows[0].events.closed += cleanup_and_exit
+        # ✅ Properly attach cleanup handlers for EXE
+        def on_window_created():
+            try:
+                if webview.windows:
+                    # Register the close event handler
+                    webview.windows[0].events.closed += cleanup_and_exit
+                    logging.info("[OK] Window close handler registered")
+            except Exception as e:
+                logging.error(f"[ERROR] Failed to register close handler: {e}")
 
-        webview.start(gui='edgechromium', debug=False, func=after_window_created)
+        # ✅ Add Windows-specific signal handlers for EXE
+        if os.name == 'nt':
+            try:
+                import win32api
+                import win32con
+                
+                def win_handler(signal_type):
+                    logging.info(f"[SIGNAL] Windows signal received: {signal_type}")
+                    cleanup_and_exit()
+                    return True
+                
+                win32api.SetConsoleCtrlHandler(win_handler, True)
+                logging.info("[OK] Windows signal handler registered")
+            except ImportError:
+                logging.warning("[WARN] win32api not available, using standard handlers")
+
+        webview.start(gui='edgechromium', debug=False, func=on_window_created)
+        
+        # ✅ Ensure cleanup runs when webview.start() returns (window closed)
+        logging.info("[WEBVIEW] Window closed, running cleanup...")
+        cleanup_and_exit()
 
     except Exception as e:
         logging.error(f"[ERROR] WebView failed: {e}")

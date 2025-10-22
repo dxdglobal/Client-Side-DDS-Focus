@@ -5,7 +5,7 @@ a = Analysis(
     ['desktop.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('themes.json', '.'), ('rules', 'rules'), ('data', 'data'), ('user_cache', 'user_cache'), ('dist/connector.exe', '.')],
+    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('themes.json', '.'), ('rules', 'rules'), ('data', 'data'), ('user_cache', 'user_cache'), ('dist\\connector.exe', '.')],
     hiddenimports=['webview', 'webview.platforms.edgechromium', 'requests', 'threading', 'signal', 'atexit', 'psutil'],
     hookspath=[],
     hooksconfig={},
