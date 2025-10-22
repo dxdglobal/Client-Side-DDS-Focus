@@ -87,12 +87,35 @@
         </div>
 
         <!-- Timer Block -->
+    <!-- Timer Block -->
         <div class="container floating">
-<div class="state-circle" id="stateCircle">
-  <div class="state-label" id="stateLabel">IDLE</div>
-</div>
-
-
+          
+          <!-- Radial Menu Design (Exact FocusRO Style) -->
+          <div class="radial-menu-container">
+            <!-- Background half circle with light green gradient -->
+            <div class="radial-bg-circle"></div>
+            
+            <!-- Center status circle -->
+            <div class="radial-center-circle" id="radialCenterCircle">
+              <span class="center-status-text">AT<br>WORK</span>
+            </div>
+            
+            <!-- Activity icons positioned inside the segments -->
+            <div class="activity-item item-break" onclick="setRadialStatus('break')">
+              <img src="./static/images/Break.png" alt="Break" class="activity-img" width="100px" height="auto"/>
+              <!-- <span class="item-label">Break</span> -->
+            </div>
+            
+            <div class="activity-item item-meeting" onclick="setRadialStatus('meeting')">
+              <img src="./static/images/Meeting.png" alt="Meeting" class="activity-img" width="100px" height="auto"/>
+              <!-- <span class="item-label">Meeting</span> -->
+            </div>
+            
+            <div class="activity-item item-work" onclick="setRadialStatus('work')">
+              <img src="./static/images/work.png" alt="Work" class="activity-img" width="100" height="auto"/>
+              <!-- <span class="item-label">Work</span> -->
+            </div>
+          </div>
 
           <div class="timer-display">
             <div class="timer-unit">

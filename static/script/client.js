@@ -933,24 +933,32 @@ function applyClientLanguage(lang) {
 
 
     const t = translations[lang];
-    document.querySelector("#work-animation p").textContent = t.welcome;
+    const workAnimationP = document.querySelector("#work-animation p");
+    if (workAnimationP) workAnimationP.textContent = t.welcome;
+    
     const stateCircle = document.getElementById("stateCircle");
     let currentState = "work";
 
-    if (stateCircle.classList.contains("idle")) currentState = "idle";
-    else if (stateCircle.classList.contains("break")) currentState = "break";
-    else if (stateCircle.classList.contains("meeting")) currentState = "meeting";
+    if (stateCircle) {
+        if (stateCircle.classList.contains("idle")) currentState = "idle";
+        else if (stateCircle.classList.contains("break")) currentState = "break";
+        else if (stateCircle.classList.contains("meeting")) currentState = "meeting";
+    }
 
-    document.getElementById("stateLabel").textContent = translations[lang][currentState] || currentState.toUpperCase();
+    const stateLabel = document.getElementById("stateLabel");
+    if (stateLabel) stateLabel.textContent = translations[lang][currentState] || currentState.toUpperCase();
 
-
-    document.querySelectorAll(".timer-label")[0].textContent = t.hrs;
-    document.querySelectorAll(".timer-label")[1].textContent = t.min;
-    document.querySelectorAll(".timer-label")[2].textContent = t.sec;
+    // Update timer labels
+    const timerLabels = document.querySelectorAll(".timer-label");
+    if (timerLabels[0]) timerLabels[0].textContent = t.hrs;
+    if (timerLabels[1]) timerLabels[1].textContent = t.min;
+    if (timerLabels[2]) timerLabels[2].textContent = t.sec;
 
     // Update button text
-    document.getElementById("startBtn").textContent = t.start;
-    document.getElementById("resetBtn").textContent = t.finish;
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    if (startBtn) startBtn.textContent = t.start;
+    if (resetBtn) resetBtn.textContent = t.finish;
 
     const idleModalTitle = document.getElementById("idleModalTitle");
     if (idleModalTitle) idleModalTitle.textContent = t.idleTitle;
