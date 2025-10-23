@@ -21,6 +21,9 @@ const translations = {
         hrs: "HRS",
         min: "MIN",
         sec: "SEC",
+        breakLabel: "Break",
+        meetingLabel: "Meeting",
+        workLabel: "Work",
         modalTitle: "📝 Task Completion",
         modalDesc: "Please describe what you have completed for this task:",
         submit: "Submit",
@@ -76,6 +79,9 @@ const translations = {
         hrs: "SA",
         min: "DK",
         sec: "SN",
+        breakLabel: "Mola",
+        meetingLabel: "Toplantı",
+        workLabel: "Çalışma",
         modalTitle: "📝 İş Tamamlandı",
         modalDesc: "Bu İş Emri için ne yaptığınızı açıklayın:",
         submit: "Gönder",
@@ -993,6 +999,14 @@ function applyClientLanguage(lang) {
     const resetBtn = document.getElementById("resetBtn");
     if (startBtn) startBtn.textContent = t.start;
     if (resetBtn) resetBtn.textContent = t.finish;
+
+    // Update activity labels (Break, Meeting, Work)
+    const breakLabel = document.getElementById("breakLabel");
+    const meetingLabel = document.getElementById("meetingLabel");
+    const workLabel = document.getElementById("workLabel");
+    if (breakLabel) breakLabel.textContent = t.breakLabel;
+    if (meetingLabel) meetingLabel.textContent = t.meetingLabel;
+    if (workLabel) workLabel.textContent = t.workLabel;
 
     const idleModalTitle = document.getElementById("idleModalTitle");
     if (idleModalTitle) idleModalTitle.textContent = t.idleTitle;
