@@ -24,6 +24,9 @@ const translations = {
         breakLabel: "Break",
         meetingLabel: "Meeting",
         workLabel: "Work",
+        atWork: "AT<br>WORK",
+        atMeeting: "AT<br>MEETING",
+        onBreak: "ON<br>BREAK",
         modalTitle: "📝 Task Completion",
         modalDesc: "Please describe what you have completed for this task:",
         submit: "Submit",
@@ -36,6 +39,9 @@ const translations = {
         modalTitle: "📝 Task Completion",
         modalDesc: "Please describe what you have completed for this task:",
         modalPlaceholder: "Type your task details here...",
+        meetingModalTitle: "📋 Meeting Notes",
+        meetingModalDesc: "Please describe what was discussed in the meeting:",
+        meetingModalPlaceholder: "Type your meeting notes here...",
         submit: "Submit",
         selectProject: "Select a Project",
         minWorkWarning: "⚠️ You must work at least 1 minute to finish a task.",
@@ -82,6 +88,9 @@ const translations = {
         breakLabel: "Mola",
         meetingLabel: "Toplantı",
         workLabel: "Çalışma",
+        atWork: "ÇALIŞMA<br>MODUNDA",
+        atMeeting: "TOPLANTI<br>MODUNDA",
+        onBreak: "MOLA<br>MODUNDA",
         modalTitle: "📝 İş Tamamlandı",
         modalDesc: "Bu İş Emri için ne yaptığınızı açıklayın:",
         submit: "Gönder",
@@ -94,6 +103,9 @@ const translations = {
         modalTitle: "📝 İş Emri Tamamlandı",
         modalDesc: "Bu iş emri için ne yaptığınızı açıklayın:",
         modalPlaceholder: "İş Emri detaylarını buraya yazın...",
+        meetingModalTitle: "📋 Toplantı Notları",
+        meetingModalDesc: "Toplantıda neler konuşuldu açıklayın:",
+        meetingModalPlaceholder: "Toplantı notlarınızı buraya yazın...",
         submit: "Gönder",
         selectProject: "Proje Seçin",
         logout: "Çıkış Yap",
@@ -173,7 +185,7 @@ let currentTaskId = null, sessionStartTime = null;
 let selectedProjectName = '', selectedTaskName = '', user = null;
 
 window.onload = function () {
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     applyClientLanguage(lang);
     const todayDateField = document.getElementById('todayDate');
     const today = new Date();
@@ -212,6 +224,9 @@ let idleCountdownInterval;
 
 setInterval(() => {
     if (!isTimerRunning) return;
+    
+    // 🎯 Skip idle detection for meetings
+    if (isMeetingMode) return;
 
     fetch('/check_idle_state')
         .then(res => res.json())
@@ -260,8 +275,8 @@ setInterval(() => {
 }, 10000);
 
 async function handleAutoIdleSubmit() {
-    stopScreenRecording();  // ✅ Yeh yahan hona chahiye, function ke andar nahi
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    stopScreenRecording();
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
 
     // ✅ Total idle = 3 minutes (180s) + modal display (5s)
     const totalIdleSeconds = 180;
@@ -280,6 +295,7 @@ async function handleAutoIdleSubmit() {
     const displayHours = Math.floor(hoursWorked);
     const displayMins = Math.floor((hoursWorked - displayHours) * 60);
 
+    // Work idle message (meetings won't trigger idle)
     const idleMsg = lang === 'tr'
         ? (minsWorked === 0
             ? `Kullanıcı 1 dakikadan az çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`
@@ -312,20 +328,20 @@ async function handleAutoIdleSubmit() {
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
                 end_time: adjustedEndTime,
-                start_time: sessionStartTime, // ✅ Include start time for server calculation
-                worked_duration: finalDurationWorked, // ✅ Actual worked seconds
-                worked_hours: parseFloat(hoursWorked.toFixed(2)), // ✅ Decimal hours for CRM
+                start_time: sessionStartTime,
+                worked_duration: finalDurationWorked,
+                worked_hours: parseFloat(hoursWorked.toFixed(2)),
                 note: idleMsg
             })
         });
 
         resetTimer();
         stopScreenRecording();
-        stopDailyLogsCapture(); // ✅ Stop daily logs capture
+        stopDailyLogsCapture();
         showToast('✅ Auto-saved due to idle', 'success');
+        
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
-        // showToast("❌ Auto-save failed", "error");
     }
 }
 
@@ -335,17 +351,39 @@ document.getElementById('startBtn').addEventListener('click', function () {
     
     // 📹 Check if in MEETING mode
     if (isMeetingMode) {
+        // 🔥 MEETINGS NOW REQUIRE PROJECT + TASK (same as work mode)
+        const taskSelect = document.getElementById('task');
+        const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
+        const taskId = taskSelect.value;
+
+        if (!taskId || taskId === "" || selectedTaskOption.disabled) {
+            showToast('⚠️ Please select a task for the meeting!', 'error');
+            return;
+        }
+
         if (!isTimerRunning) {
+            currentTaskId = taskId; // Store task ID for meeting
             meetingStartTime = Math.floor(Date.now() / 1000);
             sessionStartTime = meetingStartTime;
             
-            // Start meeting recording (independent of project/task)
+            selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
+            selectedTaskName = selectedTaskOption.textContent;
+            
+            // Update drawer with selected project and task
+            updateDrawerContent(selectedProjectName, selectedTaskName);
+            
+            // Note: /start_task_session will be called by startTimer() below
+            // No need to call it twice!
+            
+            // Start meeting recording with project/task info
             fetch('/start_meeting_recording', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: user.email,
-                    meeting_name: 'General Meeting'
+                    project: selectedProjectName,
+                    task: selectedTaskName,
+                    task_id: taskId
                 })
             })
             .then(res => res.json())
@@ -353,6 +391,8 @@ document.getElementById('startBtn').addEventListener('click', function () {
                 if (data.status === 'success') {
                     currentMeetingId = data.meeting_id;
                     console.log('📹 Meeting recording started:', currentMeetingId);
+                    console.log('📋 Project:', selectedProjectName);
+                    console.log('📋 Task:', selectedTaskName);
                     showToast('📹 Meeting recording started!', 'success');
                 }
             })
@@ -427,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('⚠️ Session too short, showing warning');
                 // resetTimer();
                 // stopScreenRecording();
-                const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+                const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
                 const message = translations[lang].minWorkWarning;
                 showToast(message, 'error');
                 return;
@@ -456,7 +496,8 @@ function startTimer() {
         email: user.email,
         staff_id: String(user.staffid),
         task_id: currentTaskId,
-        start_time: sessionStartTime
+        start_time: sessionStartTime,
+        is_meeting: isMeetingMode  // 🎯 Add meeting flag
     });
 
 
@@ -467,7 +508,8 @@ function startTimer() {
             email: user.email,
             staff_id: String(user.staffid),
             task_id: currentTaskId,
-            start_time: sessionStartTime  // 🔥 Already a number
+            start_time: sessionStartTime,  // 🔥 Already a number
+            is_meeting: isMeetingMode  // 🎯 Tell backend this is a meeting
 
 
         })
@@ -477,6 +519,7 @@ function startTimer() {
             console.log("📤 Sent start time:", sessionStartTime);
             console.log("📤 Sent task ID   :", currentTaskId);
             console.log("📤 Sent staff ID  :", user.staffid);
+            console.log("📤 Is meeting     :", isMeetingMode);
             console.log("📥 Server response:", data);
         })
         .catch(console.error);
@@ -492,7 +535,7 @@ function startTimer() {
     document.getElementById('startBtn').style.backgroundColor = 'gray';
     document.getElementById('project').disabled = true;
     document.getElementById('task').disabled = true;
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
 
     timerInterval = setInterval(updateTimerDisplay, 1000);
@@ -512,6 +555,7 @@ function resetTimer() {
     clearInterval(timerInterval);
     totalSeconds = 0;
     isTimerRunning = false;
+    capturedEndTime = null; // Reset captured end time
 
     // Reset display
     document.getElementById('hours').innerText = '00';
@@ -530,7 +574,7 @@ function resetTimer() {
 
     // Reset dropdowns
     projectSelect.selectedIndex = 0;
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const taskPlaceholder = lang === 'tr' ? '-- İş Emri Seçin --' : '-- Select a Task --';
     taskSelect.innerHTML = `<option disabled selected>${taskPlaceholder}</option>`;
 
@@ -550,7 +594,7 @@ function updateTimerDisplay() {
     // ✅ Live update Total Time Count with translation
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
 
     const labelMin = translations[lang].min || 'min';
     const labelSec = translations[lang].sec || 'sec';  // 👈 make sure `sec` exists in translations
@@ -621,7 +665,7 @@ function captureCurrentActivityLog() {
 
 function fetchAIProjects(user) {
     const projectSelect = document.getElementById('project');
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const t = {
         en: { loadingProjects: "Loading projects..." },
         tr: { loadingProjects: "Projeler yükleniyor..." }
@@ -637,7 +681,7 @@ function fetchAIProjects(user) {
         .then(data => {
             const projects = data.projects || [];
             projectSelect.innerHTML = '';
-            const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+            const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
             const t = {
                 en: { selectProject: "Select a Project" },
                 tr: { selectProject: "Proje Seçin" }
@@ -727,7 +771,23 @@ function fetchLoggedTaskTimes() {
 
 function openModal() {
     console.log('🎯 openModal() called');
-    // clearInterval(timerInterval); 
+    
+    // 🎯 CAPTURE END TIME RIGHT NOW (before resetting display!)
+    capturedEndTime = Math.floor(Date.now() / 1000);
+    console.log('🎯 End time captured at:', totalSeconds, 'seconds');
+    console.log('🎯 Captured end time (UNIX):', capturedEndTime);
+    
+    // ⏹️ STOP the timer and reset display to 00:00:00
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    totalSeconds = 0;
+    
+    // Reset timer display
+    document.getElementById('hours').innerText = '00';
+    document.getElementById('minutes').innerText = '00';
+    document.getElementById('seconds').innerText = '00';
+    console.log('⏹️ Timer stopped and display reset to 00:00:00');
+    
     const modal = document.getElementById('finishModal');
     console.log('📋 Modal element:', modal);
 
@@ -746,7 +806,28 @@ function openModal() {
         console.log('🎬 Modal animation classes applied');
     }, 10);
 
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const t = translations[lang];
+    
+    // Update modal content based on meeting mode
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const taskDetailInput = document.getElementById('taskDetailInput');
+    
+    if (isMeetingMode) {
+        // Meeting mode - show meeting notes
+        if (modalTitle) modalTitle.textContent = t.meetingModalTitle;
+        if (modalDesc) modalDesc.textContent = t.meetingModalDesc;
+        if (taskDetailInput) taskDetailInput.placeholder = t.meetingModalPlaceholder;
+        console.log('📋 Modal set to MEETING mode');
+    } else {
+        // Work mode - show task completion
+        if (modalTitle) modalTitle.textContent = t.modalTitle;
+        if (modalDesc) modalDesc.textContent = t.modalDesc;
+        if (taskDetailInput) taskDetailInput.placeholder = t.modalPlaceholder;
+        console.log('💼 Modal set to WORK mode');
+    }
+    
     const loggingInput = document.getElementById('loggingInput');
     if (loggingInput) {
         loggingInput.value = lang === 'tr' ? 'EVET' : 'YES';
@@ -777,7 +858,16 @@ async function submitTaskDetails() {
         return;
     }
 
-    const end_time_unix = Math.floor(Date.now() / 1000); // UNIX format
+    // 📋 Check if this is a meeting or work mode
+    if (isMeetingMode && currentMeetingId) {
+        // Meeting mode - save meeting notes
+        await submitMeetingNotes(detailText);
+        return;
+    }
+
+    // 💼 Work mode - continue with task completion
+    // 🎯 USE THE CAPTURED END TIME (from when Finish button was clicked)
+    const end_time_unix = capturedEndTime;
     const taskId = document.getElementById('task').value;
 
     // ✅ Calculate worked duration for manual submission
@@ -789,10 +879,10 @@ async function submitTaskDetails() {
     console.log("📤 Sending to /end_task_session:");
     console.log("📧 Email:", user.email);
     console.log("🆔 Task ID:", taskId);
-    console.log("🕐 End Time (UNIX):", end_time_unix);
+    console.log("🕐 End Time (UNIX) [CAPTURED]:", end_time_unix);
     console.log("⏱️ Worked Duration:", workedDuration, "seconds");
-    console.log("� Worked Hours:", workedHours.toFixed(2));
-    console.log("�📝 Note:", detailText);
+    console.log("📊 Worked Hours:", workedHours.toFixed(2));
+    console.log("📝 Note:", detailText);
 
     try {
         // ⚡ Close modal immediately for better UX
@@ -853,6 +943,121 @@ async function submitTaskDetails() {
 
 
 
+async function submitMeetingNotes(notes) {
+    console.log("=" + "=".repeat(79));
+    console.log("� submitMeetingNotes() FUNCTION CALLED!");
+    console.log("=" + "=".repeat(79));
+    console.log("📧 Email:", user.email);
+    console.log("👤 Staff ID:", user.staffid);
+    console.log("🆔 Meeting ID:", currentMeetingId);
+    console.log("📝 Notes:", notes);
+    console.log("🏳️ isMeetingMode:", isMeetingMode);
+    console.log("⏱️ meetingStartTime:", meetingStartTime);
+
+    if (!currentMeetingId) {
+        console.error("❌ ERROR: No currentMeetingId! Meeting was not started properly.");
+        showToast('❌ Error: Meeting was not started', 'error');
+        return;
+    }
+
+    if (!meetingStartTime) {
+        console.error("❌ ERROR: No meetingStartTime! Timer was not started.");
+        showToast('❌ Error: Meeting timer not started', 'error');
+        return;
+    }
+
+    try {
+        // 🎯 USE THE CAPTURED END TIME (from when Finish button was clicked)
+        const end_time_unix = capturedEndTime;
+        const meetingDuration = end_time_unix - meetingStartTime;
+        const workedHours = parseFloat((meetingDuration / 3600).toFixed(2));
+        
+        console.log("⏱️ USING CAPTURED END TIME:", end_time_unix);
+        console.log("⏱️ Meeting Duration:", meetingDuration, "seconds");
+        console.log("⏱️ Start Time:", meetingStartTime);
+        console.log("⏱️ Worked Hours:", workedHours);
+        
+        // Close modal immediately
+        closeModal();
+        
+        showToast('💾 Saving meeting to CRM...', 'info');
+
+        // 🚀 RUN ALL API CALLS IN PARALLEL (faster!)
+        console.log("� Running all API calls in parallel...");
+        
+        const [endSessionRes, stopMeetingRes] = await Promise.all([
+            // Call 1: Stop CRM timer
+            fetch('/end_task_session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    staff_id: String(user.staffid),
+                    task_id: currentTaskId,
+                    end_time: end_time_unix,  // Use captured time
+                    start_time: meetingStartTime,
+                    worked_duration: meetingDuration,
+                    worked_hours: workedHours,
+                    note: `Meetings Summary ${notes}`  // Add prefix to meeting notes
+                })
+            }),
+            
+            // Call 2: Stop meeting recording
+            fetch('/stop_meeting_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    duration: meetingDuration
+                })
+            })
+        ]);
+
+        if (endSessionRes.ok) {
+            const endResult = await endSessionRes.json();
+            console.log("✅ CRM timer stopped successfully:", endResult);
+        } else {
+            console.error("❌ Failed to stop CRM timer");
+        }
+
+        console.log("🛑 Meeting recording stopped");
+
+        // Stop screen recording
+        stopScreenRecording();
+        console.log("🛑 Screen recording stopped");
+        
+        // Stop daily logs capture
+        stopDailyLogsCapture();
+        console.log("🛑 Daily logs capture stopped");
+        
+        // Stop timer completely
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        console.log("⏹️ Timer stopped");
+
+        showToast('✅ Meeting completed and saved!');
+        
+        // Reset timer display and controls
+        resetTimer();
+        console.log("🔄 Timer reset");
+        
+        // Reset meeting mode
+        isMeetingMode = false;
+        currentMeetingId = null;
+        meetingStartTime = null;
+        capturedEndTime = null; // Reset captured time
+        
+        console.log("🏁 Meeting mode reset, switching to work mode");
+        
+        // Switch back to work mode
+        setRadialStatus('work');
+
+    } catch (error) {
+        console.error('❌ Error submitting meeting notes:', error);
+        showToast('❌ Error saving meeting notes', 'error');
+    }
+}
+
 async function sendTimesheetToBackend() {
     const payload = [
         {
@@ -907,7 +1112,7 @@ function syncAllUsers() {
 }
 
 function showLoader() {
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const messages = {
         en: '🔄 Syncing timesheets...Please wait',
         tr: '🔄 Zaman çizelgeleri senkronize ediliyor... Lütfen bekleyin'
@@ -1166,7 +1371,7 @@ window.addEventListener("beforeunload", async (event) => {
 
 
 async function uploadUsageLogToS3() {
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const taskSelect = document.getElementById('task');
     const taskName = taskSelect.options[taskSelect.selectedIndex]?.textContent;
 
@@ -1236,7 +1441,7 @@ function setState(state) {
     const stateCircle = document.getElementById('stateCircle');
     const stateLabel = document.getElementById('stateLabel');
     const statusText = document.getElementById('statusText');
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
 
     const config = stateConfig[state];
 
@@ -1327,15 +1532,18 @@ function handleBreak() {
 let currentMeetingId = null;
 let meetingStartTime = null;
 let isMeetingMode = false;
+let capturedEndTime = null; // 🎯 Store exact end time when Finish is clicked
 
 function setRadialStatus(status) {
     const centerCircle = document.getElementById('radialCenterCircle');
     const centerText = centerCircle.querySelector('.center-status-text');
+    const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const t = translations[lang];
     
     if (status === 'meeting') {
         // 📹 MEETING: Just set the mode - START button will begin recording
         if (centerText) {
-            centerText.innerHTML = 'AT<br>MEETING';
+            centerText.innerHTML = t.atMeeting;
         }
         
         // Set meeting mode flag (START button will handle actual recording)
@@ -1343,6 +1551,11 @@ function setRadialStatus(status) {
         
         // Set state to meeting (visual change only)
         setState('meeting');
+        
+        // Update drawer language
+        if (typeof applyClientLanguage === 'function') {
+            applyClientLanguage(lang);
+        }
         
         console.log('📹 Meeting mode selected - Click START to begin recording');
         
@@ -1369,11 +1582,16 @@ function setRadialStatus(status) {
 
         // Change center circle back to WORK
         if (centerText) {
-            centerText.innerHTML = 'AT<br>WORK';
+            centerText.innerHTML = t.atWork;
         }
         
         // Set state to work (visual change only)
         setState('work');
+        
+        // Update drawer language
+        if (typeof applyClientLanguage === 'function') {
+            applyClientLanguage(lang);
+        }
         
         console.log('💼 Work mode selected - Select task and click START');
         
@@ -1384,7 +1602,7 @@ function setRadialStatus(status) {
         isMeetingMode = false;
         
         if (centerText) {
-            centerText.innerHTML = 'ON<br>BREAK';
+            centerText.innerHTML = t.onBreak;
         }
         
         // Stop meeting recording if active
@@ -1759,7 +1977,7 @@ function logout() {
 
 function openLogoutModal() {
     if (isTimerRunning) {
-        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
         const warning = lang === 'tr'
             ? "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin."
             : "⛔ You cannot logout while the timer is running. Please finish your task first.";

@@ -1167,6 +1167,143 @@ def stop_meeting_recording_api():
     })
 
 
+@app.route('/save_meeting_notes', methods=['POST'])
+def save_meeting_notes():
+    """Save meeting notes to database - Shows in CRM logtracker"""
+    print("=" * 80)
+    print("🔔 /save_meeting_notes ENDPOINT CALLED!")
+    print("=" * 80)
+    try:
+        data = request.get_json()
+        print(f"📥 Received data: {data}")
+        
+        email = data.get("email")
+        staff_id = data.get("staff_id")
+        task_id = data.get("task_id")  # 🔥 Get task_id for meeting
+        meeting_notes = data.get("notes", "")
+        meeting_id = data.get("meeting_id")
+        duration = data.get("duration", 0)  # Duration in seconds
+        start_time_iso = data.get("start_time")  # ISO format
+        end_time_iso = data.get("end_time")  # ISO format
+        
+        print(f"📧 Email: {email}")
+        print(f"👤 Staff ID: {staff_id}")
+        print(f"📋 Task ID: {task_id}")
+        print(f"📝 Notes: {meeting_notes}")
+        print(f"🆔 Meeting ID: {meeting_id}")
+        print(f"⏱️ Duration: {duration}s")
+        print(f"🕐 Start Time: {start_time_iso}")
+        print(f"🕐 End Time: {end_time_iso}")
+        
+        if not email or not meeting_notes or not task_id:
+            return jsonify({"status": "error", "message": "Missing email, notes, or task_id"}), 400
+
+        # Get database connection
+        db_config = {
+            'host': os.getenv('DB_HOST'),
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'database': os.getenv('DB_NAME'),
+            'port': int(os.getenv('DB_PORT', 3306))
+        }
+        
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
+        
+        # Get staff_id from email if not provided
+        if not staff_id:
+            cursor.execute("SELECT staffid FROM tblstaff WHERE email = %s", (email,))
+            result = cursor.fetchone()
+            if result:
+                staff_id = result[0]
+            else:
+                logging.error(f"❌ Staff not found for email: {email}")
+                return jsonify({"status": "error", "message": "Staff not found"}), 404
+        
+        # Convert ISO time to datetime
+        from datetime import datetime
+        start_dt = datetime.fromisoformat(start_time_iso.replace('Z', '+00:00'))
+        
+        # Calculate end time
+        from datetime import timedelta
+        end_dt = start_dt + timedelta(seconds=duration)
+        
+        # Format times for MySQL
+        start_time_mysql = start_dt.strftime('%Y-%m-%d %H:%M:%S')
+        end_time_mysql = end_dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 🔥 Meetings now use the selected task_id (same as regular work)
+        logging.info(f"📋 Saving meeting WITH selected task")
+        logging.info(f"   Using task_id: {task_id}")
+        
+        # Insert into tbltaskstimers to show in CRM timesheet
+        # Works exactly like regular task submission but with MEETING prefix
+        insert_query = """
+            INSERT INTO tbltaskstimers 
+            (task_id, staff_id, start_time, end_time, note, hourly_rate)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        
+        # Format note as "MEETING: {notes}" to distinguish from regular work
+        formatted_note = f"📋 MEETING: {meeting_notes}"
+        
+        logging.info(f"📝 Inserting meeting timesheet:")
+        logging.info(f"   Task ID: {task_id} (meeting on this task)")
+        logging.info(f"   Staff ID: {staff_id}")
+        logging.info(f"   Start: {start_time_mysql}")
+        logging.info(f"   End: {end_time_mysql}")
+        logging.info(f"   Duration: {duration}s")
+        logging.info(f"   Note: {formatted_note[:100]}...")
+        
+        cursor.execute(insert_query, (
+            task_id,  # 🔥 Use actual task_id (same as regular work)
+            staff_id,
+            start_time_mysql,
+            end_time_mysql,
+            formatted_note,
+            0.00  # hourly_rate for meetings
+        ))
+        
+        connection.commit()
+        timesheet_id = cursor.lastrowid
+        
+        # Verify the insert was successful
+        cursor.execute("SELECT * FROM tbltaskstimers WHERE id = %s", (timesheet_id,))
+        inserted_record = cursor.fetchone()
+        
+        if inserted_record:
+            logging.info(f"✅ Meeting timesheet verified in database: ID {timesheet_id}")
+            logging.info(f"   Task: {task_id}, Staff: {staff_id}")
+            logging.info(f"   Time: {start_time_mysql} to {end_time_mysql}")
+            logging.info(f"   Note: {formatted_note[:50]}...")
+        else:
+            logging.error(f"❌ Failed to verify timesheet insert: ID {timesheet_id}")
+        
+        cursor.close()
+        connection.close()
+        
+        logging.info(f"✅ Meeting notes saved for {email}, meeting_id: {meeting_id}, timesheet_id: {timesheet_id}")
+        print(f"✅ SUCCESS! Timesheet ID: {timesheet_id}, Task ID: {task_id}")
+        
+        return jsonify({
+            "status": "success",
+            "message": "Meeting notes saved to timesheet successfully",
+            "meeting_id": meeting_id,
+            "timesheet_id": timesheet_id,
+            "task_id": task_id,
+            "note": formatted_note,
+            "info": "Meeting saved with selected project/task (works like regular work)"
+        })
+        
+    except Exception as e:
+        logging.error(f"❌ Error saving meeting notes: {str(e)}")
+        logging.error(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to save meeting notes: {str(e)}"
+        }), 500
+
+
 from flask import jsonify
 import os
 import json
@@ -1633,6 +1770,7 @@ def start_task_session():
     staff_id = data.get('staff_id')
     task_id = data.get('task_id')
     start_time = data.get('start_time')  # should be ISO 8601 string
+    is_meeting = data.get('is_meeting', False)  # 🎯 Check if this is a meeting
 
     # ✅ Get actual task name from database - with proper fallback
     task_name = f"Task_{task_id}"  # Default fallback before trying database
@@ -1718,13 +1856,17 @@ def start_task_session():
             cursor.execute(insert_query, (task_id, staff_id, start_time))
             connection.commit()
         
-        # ✅ Start system-level idle monitor
-        start_idle_monitor(
-            flask_server_url="http://127.0.0.1:5000",
-            email=email,
-            staff_id=staff_id,
-            task_id=task_id
-        )
+        # 🎯 Only start idle monitor for work mode, NOT for meetings
+        if not is_meeting:
+            start_idle_monitor(
+                flask_server_url="http://127.0.0.1:5000",
+                email=email,
+                staff_id=staff_id,
+                task_id=task_id
+            )
+            print("✅ Idle monitor started for work mode")
+        else:
+            print("🎯 Skipping idle monitor for meeting mode")
         
         # ✅ Start automatic logging when timer starts
         # start_logging()  # Disabled old tracker

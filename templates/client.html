@@ -98,6 +98,7 @@
             <!-- Center status circle -->
             <div class="radial-center-circle" id="radialCenterCircle">
               <span class="center-status-text">AT<br>WORK</span>
+              
             </div>
             
             <!-- Activity icons positioned inside the segments -->
@@ -818,8 +819,8 @@ function selectLanguage(langCode) {
         tr: 'Türkçe'
     };
 
-    // Fallback to English if langCode is invalid
-    if (!flags[langCode]) langCode = 'en';
+    // Fallback to Turkish if langCode is invalid
+    if (!flags[langCode]) langCode = 'tr';
 
     // ✨ Fade-out before changing content
     currentLanguage.style.opacity = 0;
@@ -874,7 +875,7 @@ const clientTranslations = {
 };
 
 function applyClientLanguage(langCode) {
-    const translation = clientTranslations[langCode] || clientTranslations.en;
+    const translation = clientTranslations[langCode] || clientTranslations.tr;
     
     // Update drawer project elements
     const drawerProjectName = document.getElementById('drawerProjectName');
