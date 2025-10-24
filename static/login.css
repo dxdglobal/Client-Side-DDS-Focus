@@ -514,12 +514,169 @@ input[type="submit"],
 
 /* Input Fields - Green Theme */
 .input-field {
-    border-color: #006039 !important;
+    border-color: #666 !important;
 }
 
 .input-field:focus {
-    border-color: #006039 !important;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
+    border-color: #666 !important;
+    box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.25) !important;
 }
 
+/* ============================================
+   🌙 DARK MODE STYLES - LOGIN PAGE
+   ============================================ */
+
+body.dark-mode {
+  --primary-color: #00a86b;
+  --secondary-color: #00a86b;
+  --background-color: #0a0a0a;
+  --button-color: #3f3f3f;
+  --text-color: #c1c1c1;
+  --header-color: #2f2f2f;
+  --footer-color: #2f2f2f;
+  --button-text-color: #ffffff;
+  --input-background: #2a2a2a;
+  --input-border: #363636;
+  --input-text: #c1c1c1;
+  
+  background-color: #0a0a0a;
+  color: #c1c1c1;
+}
+
+body.dark-mode .container {
+  background-color: #0a0a0a;
+}
+
+body.dark-mode .window-header {
+  background-color: #2f2f2f;
+  border-bottom: 2px solid #363636;
+}
+
+body.dark-mode .window-title {
+  color: #c1c1c1;
+}
+
+body.dark-mode .window-button {
+  background-color: #3f3f3f;
+  color: #fff;
+}
+
+body.dark-mode .window-button:hover {
+  background-color: #4f4f4f;
+}
+
+body.dark-mode .wave-bg {
+  background: linear-gradient(to bottom, #1a0a2e 0%, #0f051d 50%, #000000 100%);
+  box-shadow: 0 8px 32px rgba(26, 10, 46, 0.6), 0 4px 16px rgba(15, 5, 29, 0.4);
+}
+
+body.dark-mode .title,
+body.dark-mode .subtitle {
+  color: #c1c1c1;
+}
+
+body.dark-mode .input-field {
+  background-color: #01070e;
+  color: #c1c1c1;
+  border-color: #363636;
+}
+
+body.dark-mode .input-field:focus {
+  border-color: #00a86b;
+  box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.25);
+}
+
+body.dark-mode .save-password,
+body.dark-mode #rememberMeLabel {
+  color: #c1c1c1 !important;
+}
+
+body.dark-mode .forgot-password {
+  color: #c1c1c1 !important;
+}
+
+body.dark-mode .login-button,
+body.dark-mode #loginBtn {
+  background-color: #3f3f3f !important;
+  color: #fff !important;
+  border-color: #363636 !important;
+}
+
+body.dark-mode .login-button:hover,
+body.dark-mode #loginBtn:hover {
+  background-color: #4f4f4f !important;
+}
+
+body.dark-mode .guest-button {
+  background-color: #3f3f3f !important;
+  color: #fff !important;
+  border-color: #363636 !important;
+}
+
+body.dark-mode .guest-button:hover {
+  background-color: #4f4f4f !important;
+}
+
+body.dark-mode .language-selector select {
+  background-color: #3f3f3f;
+  color: #c1c1c1;
+  border: 1px solid #363636;
+}
+
+body.dark-mode .version {
+  color: #c1c1c1;
+}
+
+body.dark-mode button {
+  background-color: #3f3f3f !important;
+  color: #fff !important;
+}
+
+body.dark-mode button:hover {
+  background-color: #4f4f4f !important;
+}
+
+/* Smooth transition for theme changes */
+body,
+.container,
+.window-header,
+.wave-bg,
+.input-field,
+.login-button,
+.guest-button,
+button {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ============================================
+   🌓 THEME TOGGLE BUTTON STYLES
+   ============================================ */
+
+.theme-toggle-btn:hover {
+  transform: rotate(180deg);
+  opacity: 0.9;
+}
+
+.theme-toggle-btn svg {
+  transition: all 0.3s ease;
+}
+
+.sun-icon {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+
+.moon-icon {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(180deg) scale(0);
+}
+
+body.dark-mode .theme-toggle-btn {
+  background: #3f3f3f !important;
+  border-color: #363636 !important;
+}
+
+body.dark-mode .theme-toggle-btn:hover {
+  background: #4f4f4f !important;
+}
 
