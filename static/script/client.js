@@ -224,7 +224,7 @@ let idleCountdownInterval;
 
 setInterval(() => {
     if (!isTimerRunning) return;
-    
+
     // 🎯 Skip idle detection for meetings
     if (isMeetingMode) return;
 
@@ -339,7 +339,7 @@ async function handleAutoIdleSubmit() {
         stopScreenRecording();
         stopDailyLogsCapture();
         showToast('✅ Auto-saved due to idle', 'success');
-        
+
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
     }
@@ -348,7 +348,7 @@ async function handleAutoIdleSubmit() {
 
 
 document.getElementById('startBtn').addEventListener('click', function () {
-    
+
     // 📹 Check if in MEETING mode
     if (isMeetingMode) {
         // 🔥 MEETINGS NOW REQUIRE PROJECT + TASK (same as work mode)
@@ -365,16 +365,16 @@ document.getElementById('startBtn').addEventListener('click', function () {
             currentTaskId = taskId; // Store task ID for meeting
             meetingStartTime = Math.floor(Date.now() / 1000);
             sessionStartTime = meetingStartTime;
-            
+
             selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
             selectedTaskName = selectedTaskOption.textContent;
-            
+
             // Update drawer with selected project and task
             updateDrawerContent(selectedProjectName, selectedTaskName);
-            
+
             // Note: /start_task_session will be called by startTimer() below
             // No need to call it twice!
-            
+
             // Start meeting recording with project/task info
             fetch('/start_meeting_recording', {
                 method: 'POST',
@@ -386,25 +386,25 @@ document.getElementById('startBtn').addEventListener('click', function () {
                     task_id: taskId
                 })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    currentMeetingId = data.meeting_id;
-                    console.log('📹 Meeting recording started:', currentMeetingId);
-                    console.log('📋 Project:', selectedProjectName);
-                    console.log('📋 Task:', selectedTaskName);
-                    showToast('📹 Meeting recording started!', 'success');
-                }
-            })
-            .catch(console.error);
-            
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        currentMeetingId = data.meeting_id;
+                        console.log('📹 Meeting recording started:', currentMeetingId);
+                        console.log('📋 Project:', selectedProjectName);
+                        console.log('📋 Task:', selectedTaskName);
+                        showToast('📹 Meeting recording started!', 'success');
+                    }
+                })
+                .catch(console.error);
+
             startDailyLogsCapture();
             startTimer();
             setState('meeting');
         }
         return; // Exit early for meeting mode
     }
-    
+
     // 💼 WORK mode - requires task selection
     const taskSelect = document.getElementById('task');
     const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
@@ -602,6 +602,75 @@ function updateTimerDisplay() {
     document.getElementById('totaltimecount').innerText = `${mins} ${labelMin} ${secs} ${labelSec}`;
 }
 
+function completeAppReset() {
+    console.log('🔄 Complete app reset started');
+
+    // Stop all timers and intervals
+    clearInterval(timerInterval);
+    clearInterval(dailyLogsInterval);
+    isTimerRunning = false;
+    totalSeconds = 0;
+    capturedEndTime = null;
+
+    // Reset timer display to 00:00:00
+    document.getElementById('hours').innerText = '00';
+    document.getElementById('minutes').innerText = '00';
+    document.getElementById('seconds').innerText = '00';
+
+    // Reset total time count
+    document.getElementById('totaltimecount').innerText = `0 min 0 sec`;
+
+    // Enable and reset START button
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.style.backgroundColor = 'green';
+    }
+
+    // Enable and reset dropdowns
+    const projectSelect = document.getElementById('project');
+    const taskSelect = document.getElementById('task');
+    if (projectSelect) {
+        projectSelect.disabled = false;
+        projectSelect.selectedIndex = 0;
+    }
+    if (taskSelect) {
+        taskSelect.disabled = false;
+        const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        const taskPlaceholder = lang === 'tr' ? '-- İş Emri Seçin --' : '-- Select a Task --';
+        taskSelect.innerHTML = `<option disabled selected>${taskPlaceholder}</option>`;
+    }
+
+    // Reset logging input
+    const loggingInput = document.getElementById('loggingInput');
+    if (loggingInput) {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        loggingInput.value = lang === 'tr' ? 'HAYIR' : 'NO';
+    }
+
+    // Reset all modes and variables
+    isMeetingMode = false;
+    currentMeetingId = null;
+    meetingStartTime = null;
+    currentTaskId = null;
+    selectedProjectName = '';
+    selectedTaskName = '';
+
+    // Reset center status to work mode
+    const centerCircle = document.getElementById('radialCenterCircle');
+    const centerText = centerCircle?.querySelector('.center-status-text');
+    if (centerText) {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
+        const t = translations[lang];
+        centerText.innerHTML = t.atWork || 'AT<br>WORK';
+    }
+
+    // Reset state to idle/ready
+    setState('idle');
+
+    console.log('✅ Complete app reset finished - ready for new task');
+}
+
 
 function stopScreenRecording() {
     fetch('/stop_screen_recording', { method: 'POST' })
@@ -771,23 +840,23 @@ function fetchLoggedTaskTimes() {
 
 function openModal() {
     console.log('🎯 openModal() called');
-    
+
     // 🎯 CAPTURE END TIME RIGHT NOW (before resetting display!)
     capturedEndTime = Math.floor(Date.now() / 1000);
     console.log('🎯 End time captured at:', totalSeconds, 'seconds');
     console.log('🎯 Captured end time (UNIX):', capturedEndTime);
-    
+
     // ⏹️ STOP the timer and reset display to 00:00:00
     clearInterval(timerInterval);
     isTimerRunning = false;
     totalSeconds = 0;
-    
+
     // Reset timer display
     document.getElementById('hours').innerText = '00';
     document.getElementById('minutes').innerText = '00';
     document.getElementById('seconds').innerText = '00';
     console.log('⏹️ Timer stopped and display reset to 00:00:00');
-    
+
     const modal = document.getElementById('finishModal');
     console.log('📋 Modal element:', modal);
 
@@ -808,12 +877,12 @@ function openModal() {
 
     const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const t = translations[lang];
-    
+
     // Update modal content based on meeting mode
     const modalTitle = document.getElementById('modalTitle');
     const modalDesc = document.getElementById('modalDesc');
     const taskDetailInput = document.getElementById('taskDetailInput');
-    
+
     if (isMeetingMode) {
         // Meeting mode - show meeting notes
         if (modalTitle) modalTitle.textContent = t.meetingModalTitle;
@@ -827,7 +896,7 @@ function openModal() {
         if (taskDetailInput) taskDetailInput.placeholder = t.modalPlaceholder;
         console.log('💼 Modal set to WORK mode');
     }
-    
+
     const loggingInput = document.getElementById('loggingInput');
     if (loggingInput) {
         loggingInput.value = lang === 'tr' ? 'EVET' : 'YES';
@@ -887,7 +956,10 @@ async function submitTaskDetails() {
     try {
         // ⚡ Close modal immediately for better UX
         closeModal();
-        resetTimer();
+
+        // ✅ Complete app reset - makes everything ready for next task
+        completeAppReset();
+
         showToast('💾 Saving task details...', 'info');
 
         // ✅ Send complete time calculation data to backend
@@ -971,38 +1043,49 @@ async function submitMeetingNotes(notes) {
         const end_time_unix = capturedEndTime;
         const meetingDuration = end_time_unix - meetingStartTime;
         const workedHours = parseFloat((meetingDuration / 3600).toFixed(2));
-        
+
         console.log("⏱️ USING CAPTURED END TIME:", end_time_unix);
         console.log("⏱️ Meeting Duration:", meetingDuration, "seconds");
         console.log("⏱️ Start Time:", meetingStartTime);
         console.log("⏱️ Worked Hours:", workedHours);
-        
+
         // Close modal immediately
         closeModal();
-        
+
         showToast('💾 Saving meeting to CRM...', 'info');
 
-        // 🚀 RUN ALL API CALLS IN PARALLEL (faster!)
-        console.log("� Running all API calls in parallel...");
-        
-        const [endSessionRes, stopMeetingRes] = await Promise.all([
-            // Call 1: Stop CRM timer
-            fetch('/end_task_session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: user.email,
-                    staff_id: String(user.staffid),
-                    task_id: currentTaskId,
-                    end_time: end_time_unix,  // Use captured time
-                    start_time: meetingStartTime,
-                    worked_duration: meetingDuration,
-                    worked_hours: workedHours,
-                    note: `Meetings Summary ${notes}`  // Add prefix to meeting notes
-                })
-            }),
-            
-            // Call 2: Stop meeting recording
+        // ✅ PRIORITY 1: Save to CRM/timesheet IMMEDIATELY (most important)
+        const endSessionRes = await fetch('/end_task_session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: user.email,
+                staff_id: String(user.staffid),
+                task_id: currentTaskId,
+                end_time: end_time_unix,  // Use captured time
+                start_time: meetingStartTime,
+                worked_duration: meetingDuration,
+                worked_hours: workedHours,
+                note: `Meetings Summary ${notes}`  // Add prefix to meeting notes
+            })
+        });
+
+        if (endSessionRes.ok) {
+            const endResult = await endSessionRes.json();
+            console.log("✅ CRM timer stopped successfully:", endResult);
+            showToast('✅ Meeting completed and saved!');
+
+            // ✅ Complete app reset immediately after saving
+            completeAppReset();
+        } else {
+            console.error("❌ Failed to stop CRM timer");
+            showToast('❌ Error saving meeting', 'error');
+            return;
+        }
+
+        // ✅ PRIORITY 2: Do other operations in background (non-blocking)
+        Promise.all([
+            // Stop meeting recording (background)
             fetch('/stop_meeting_recording', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1010,47 +1093,26 @@ async function submitMeetingNotes(notes) {
                     email: user.email,
                     duration: meetingDuration
                 })
-            })
-        ]);
+            }).catch(err => console.warn('Meeting recording stop error:', err)),
 
-        if (endSessionRes.ok) {
-            const endResult = await endSessionRes.json();
-            console.log("✅ CRM timer stopped successfully:", endResult);
-        } else {
-            console.error("❌ Failed to stop CRM timer");
-        }
+            // Send timesheet (background)
+            sendTimesheetToBackend().catch(err => console.warn('Timesheet error:', err)),
 
-        console.log("🛑 Meeting recording stopped");
+            // Submit data files (background)
+            fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
 
-        // Stop screen recording
+            // Upload screenshots (background)
+            fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err))
+        ]).then(() => {
+            console.log('✅ All background operations completed');
+        }).catch(err => {
+            console.warn('⚠️ Some background operations failed:', err);
+        });
+
+        // Stop screen recording and daily logs (immediate)
         stopScreenRecording();
-        console.log("🛑 Screen recording stopped");
-        
-        // Stop daily logs capture
         stopDailyLogsCapture();
-        console.log("🛑 Daily logs capture stopped");
-        
-        // Stop timer completely
-        clearInterval(timerInterval);
-        isTimerRunning = false;
-        console.log("⏹️ Timer stopped");
-
-        showToast('✅ Meeting completed and saved!');
-        
-        // Reset timer display and controls
-        resetTimer();
-        console.log("🔄 Timer reset");
-        
-        // Reset meeting mode
-        isMeetingMode = false;
-        currentMeetingId = null;
-        meetingStartTime = null;
-        capturedEndTime = null; // Reset captured time
-        
-        console.log("🏁 Meeting mode reset, switching to work mode");
-        
-        // Switch back to work mode
-        setRadialStatus('work');
+        console.log("🛑 Screen recording and daily logs stopped");
 
     } catch (error) {
         console.error('❌ Error submitting meeting notes:', error);
@@ -1180,7 +1242,7 @@ function applyClientLanguage(lang) {
     const t = translations[lang];
     const workAnimationP = document.querySelector("#work-animation p");
     if (workAnimationP) workAnimationP.textContent = t.welcome;
-    
+
     const stateCircle = document.getElementById("stateCircle");
     let currentState = "work";
 
@@ -1539,32 +1601,32 @@ function setRadialStatus(status) {
     const centerText = centerCircle.querySelector('.center-status-text');
     const lang = sessionStorage.getItem('selectedLanguage') || 'tr';
     const t = translations[lang];
-    
+
     if (status === 'meeting') {
         // 📹 MEETING: Just set the mode - START button will begin recording
         if (centerText) {
             centerText.innerHTML = t.atMeeting;
         }
-        
+
         // Set meeting mode flag (START button will handle actual recording)
         isMeetingMode = true;
-        
+
         // Set state to meeting (visual change only)
         setState('meeting');
-        
+
         // Update drawer language
         if (typeof applyClientLanguage === 'function') {
             applyClientLanguage(lang);
         }
-        
+
         console.log('📹 Meeting mode selected - Click START to begin recording');
-        
+
     } else if (status === 'work') {
         // 💼 WORK: Just set work mode - START button will begin recording
-        
+
         // Disable meeting mode
         isMeetingMode = false;
-        
+
         // Stop meeting recording if active
         if (currentMeetingId) {
             const meetingDuration = Math.floor(Date.now() / 1000) - meetingStartTime;
@@ -1584,27 +1646,27 @@ function setRadialStatus(status) {
         if (centerText) {
             centerText.innerHTML = t.atWork;
         }
-        
+
         // Set state to work (visual change only)
         setState('work');
-        
+
         // Update drawer language
         if (typeof applyClientLanguage === 'function') {
             applyClientLanguage(lang);
         }
-        
+
         console.log('💼 Work mode selected - Select task and click START');
-        
+
     } else if (status === 'break') {
         // ☕ BREAK: Pause timer
-        
+
         // Disable meeting mode
         isMeetingMode = false;
-        
+
         if (centerText) {
             centerText.innerHTML = t.onBreak;
         }
-        
+
         // Stop meeting recording if active
         if (currentMeetingId) {
             const meetingDuration = Math.floor(Date.now() / 1000) - meetingStartTime;
@@ -1619,11 +1681,11 @@ function setRadialStatus(status) {
             currentMeetingId = null;
             meetingStartTime = null;
         }
-        
+
         // Pause timer during break
         pauseTimer();
         setState('break');
-        
+
         console.log('☕ Break mode - Timer paused');
     }
 }
