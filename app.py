@@ -1869,6 +1869,21 @@ def find_free_port():
             continue
     return 5000  # fallback
 
+@app.route("/api/search-task")
+def search_task():
+    task_name = request.args.get("task_name")
+    if not task_name:
+        return jsonify({"error": "Missing task_name parameter"}), 400
+
+    url = f"https://crm.deluxebilisim.com/api/tasks/search/{task_name}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/store_logout_time", methods=["POST"])
 def store_logout_time():
     data = request.get_json()

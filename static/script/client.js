@@ -708,7 +708,6 @@ function closeModal() {
     const modal = document.getElementById('finishModal');
     modal.classList.remove('show');
     modal.classList.add('hide');
-    
     // Hide modal after animation completes
     setTimeout(() => {
         modal.style.display = 'none';
@@ -716,7 +715,64 @@ function closeModal() {
     }, 300);
 }
 
+// Task Details Modal Logic
+function openTaskDetailsModal(taskName) {
+    const modal = document.getElementById('taskDetailsModal');
+    const body = document.getElementById('taskDetailsBody');
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    body.innerHTML = '<div>Yükleniyor...</div>';
 
+    fetch(`/api/search-task?task_name=${encodeURIComponent(taskName)}`, {
+        headers: {
+            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data || !data[0]) {
+            body.innerHTML = '<div>Görev bulunamadı.</div>';
+            return;
+        }
+        const task = data[0];
+        // Calculate remaining time
+        const dueDate = new Date(task.duedate);
+        const now = new Date();
+        const diffMs = dueDate - now;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        let remaining = '';
+        if (diffMs > 0) {
+            remaining = `${diffDays} gün, ${diffHours} saat, ${diffMinutes} dakika kaldı`;
+        } else {
+            remaining = 'Süre doldu';
+        }
+
+        // Customfields
+        let customFieldsHtml = '';
+        if (task.customfields && Array.isArray(task.customfields)) {
+            customFieldsHtml = '<ul>' + task.customfields.map(f => `<li><strong>${f.label}:</strong> ${f.value || ''}</li>`).join('') + '</ul>';
+        }
+
+        body.innerHTML = `
+          <div><strong>Görev Adı:</strong> ${task.name}</div>
+          <div><strong>Açıklama:</strong> ${task.description}</div>
+          <div><strong>Bitiş Tarihi:</strong> ${task.duedate}</div>
+          <div><strong>Kalan Süre:</strong> ${remaining}</div>
+          <div><strong>Notlar / Linkler:</strong> ${customFieldsHtml}</div>
+        `;
+    })
+    .catch(() => {
+        body.innerHTML = '<div>Görev detayları alınamadı.</div>';
+    });
+}
+
+function closeTaskDetailsModal() {
+    const modal = document.getElementById('taskDetailsModal');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+}
 
 async function submitTaskDetails() {
     const detailText = document.getElementById('taskDetailInput').value.trim();
@@ -1508,7 +1564,6 @@ function closeModalWithAnimation(modalId, callback) {
     }, 300);
 }
 
-
 // For Review Modal js  
 // === REVIEW MODAL CONTROL ===
 function openReviewModal() {
@@ -1667,7 +1722,7 @@ window.testClientStyling = function() {
         console.log(`🔍 Found ${elements.length} elements for selector: ${selector}`);
     });
     
-    // Refresh styling
+    // Refresh styling;
 };
 
 window.debugClientColors = function() {

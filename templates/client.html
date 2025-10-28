@@ -219,8 +219,8 @@
             <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
           </svg>
           <div class="project-details">
+            <!-- Only show the project name here per new requirement -->
             <div class="project-name" id="drawerProjectName">Proje Seçilmedi</div>
-            <div class="project-client" id="drawerClientName">Lütfen bir proje seçin</div>
           </div>
         </div>
       </div>
@@ -228,10 +228,10 @@
       <div class="drawer-section">
   
         <div class="drawer-item task-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
-          </svg>
-          <div class="task-details">
+          <div class="task-details" style="cursor:pointer" onclick="openTaskDetailsModal(document.getElementById('drawerTaskName').textContent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
+            </svg>
             <div class="task-name" id="drawerTaskName">No Task Selected</div>
             <div class="task-status" id="drawerTaskStatus">Lütfen çalışmaya başlamak için bir görev seçin</div>
           </div>
@@ -382,6 +382,24 @@
       font-family: monospace;
       font-size: 12px;
     }
+    /* Modal close button positioned top-right inside modal content */
+    .modal .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      z-index: 60;
+    }
+    /* Ensure modal content is positioned relative so close button sits correctly */
+    .modal .modal-content { position: relative; }
+    .task-meta { display:flex; gap:16px; margin-bottom:10px; font-size:14px; }
+    .task-desc { margin-top:8px; }
+    .modal .error { color: #d33; font-weight:600; }
   </style>
 
    <!-- Logout Confirmation Modal -->
@@ -426,6 +444,17 @@
       </div>
     </div>
   </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeTaskDetailsModal()">×</span>
+        <h2 id="taskDetailsTitle">Görev Detayları</h2>
+        <div id="taskDetailsBody">
+          <!-- Task details will be injected here -->
+        </div>
+      </div>
+    </div>
 
   <div id="reviewModal" class="modal-review">
     <div class="modal-content">
@@ -533,28 +562,22 @@ function showAbout() {
 // ====== DRAWER INFO UPDATE FUNCTIONS ======
 function updateDrawerProjectInfo() {
     const projectSelect = document.getElementById('project');
-    const clientInput = document.getElementById('clientNameInput');
     const drawerProjectName = document.getElementById('drawerProjectName');
-    const drawerClientName = document.getElementById('drawerClientName');
-    
-    if (projectSelect && projectSelect.selectedOptions.length > 0) {
-        const selectedProject = projectSelect.selectedOptions[0].text;
-        const clientName = clientInput ? clientInput.value : 'Unknown Client';
-        
-        // Get current language for translations
-        const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
-        const translation = clientTranslations[currentLang] || clientTranslations.en;
-        
-        drawerProjectName.textContent = selectedProject !== translation.selectProject ? selectedProject : translation.noProjectSelected;
-        drawerClientName.textContent = clientName || translation.pleaseSelectProject;
-    } else {
-        // Get current language for translations
-        const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
-        const translation = clientTranslations[currentLang] || clientTranslations.en;
-        
-        drawerProjectName.textContent = translation.noProjectSelected;
-        drawerClientName.textContent = translation.pleaseSelectProject;
-    }
+  // Only update the project name in the drawer (no client name)
+  if (projectSelect && projectSelect.selectedOptions.length > 0) {
+    const selectedProject = projectSelect.selectedOptions[0].text;
+
+    // Get current language for translations
+    const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const translation = clientTranslations[currentLang] || clientTranslations.en;
+
+    drawerProjectName.textContent = selectedProject !== translation.selectProject ? selectedProject : translation.noProjectSelected;
+  } else {
+    const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const translation = clientTranslations[currentLang] || clientTranslations.en;
+
+    drawerProjectName.textContent = translation.noProjectSelected;
+  }
 }
 
 function updateDrawerTaskInfo() {
@@ -880,7 +903,6 @@ function applyClientLanguage(langCode) {
     
     // Update drawer project elements
     const drawerProjectName = document.getElementById('drawerProjectName');
-    const drawerClientName = document.getElementById('drawerClientName');
     const drawerTaskStatus = document.getElementById('drawerTaskStatus');
     const drawerTotalTime = document.getElementById('drawerTotalTime');
     
@@ -888,11 +910,6 @@ function applyClientLanguage(langCode) {
     if (drawerProjectName && (drawerProjectName.textContent === 'No Project Selected' || 
                              drawerProjectName.textContent === 'Proje Seçilmedi')) {
         drawerProjectName.textContent = translation.noProjectSelected;
-    }
-    
-    if (drawerClientName && (drawerClientName.textContent === 'Please select a project' || 
-                            drawerClientName.textContent === 'Lütfen bir proje seçin')) {
-        drawerClientName.textContent = translation.pleaseSelectProject;
     }
     
     // Update task status text
@@ -1023,6 +1040,97 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Call initialize theme
         initializeClientTheme();
+
+    // ====== Task Details Modal: fetch and render task notes, due date and remaining time ======
+    async function openTaskDetailsModal(taskName) {
+      const modal = document.getElementById('taskDetailsModal');
+      const body = document.getElementById('taskDetailsBody');
+      const title = document.getElementById('taskDetailsTitle');
+
+      title.textContent = taskName || 'Görev Detayları';
+      body.innerHTML = '<p>Yükleniyor...</p>';
+      modal.style.display = 'flex';
+
+      try {
+        // obtain token from sessionStorage; if not present, set a hardcoded token automatically
+        let token = sessionStorage.getItem('authToken') || '';
+        if (!token) {
+          // Hardcoded token (inserted by frontend as requested)
+          token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o';
+          try {
+            sessionStorage.setItem('authToken', token);
+          } catch (e) {
+            console.warn('Could not persist authToken to sessionStorage:', e);
+          }
+        }
+
+        const url = '/api/search-task?task_name=' + encodeURIComponent(taskName);
+        const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+        const resp = await fetch(url, { headers });
+        const data = await resp.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const task = data[0];
+          const description = task.description || '';
+          const due = task.duedate || task.due_date || task.startdate || '';
+
+          let remainingText = 'N/A';
+          if (due) {
+            // Try to parse date (handles 'YYYY-MM-DD' and full timestamps)
+            const dueDate = new Date(due);
+            if (!isNaN(dueDate.getTime())) {
+              const now = new Date();
+              const diffMs = dueDate - now;
+              if (diffMs < 0) {
+                remainingText = 'Overdue';
+              } else {
+                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                remainingText = `${days}d ${hours}h ${mins}m`;
+              }
+            }
+          }
+
+          body.innerHTML = `
+            <div class="task-meta">
+              <div><strong>Due:</strong> ${due || 'N/A'}</div>
+              <div><strong>Remaining:</strong> ${remainingText}</div>
+            </div>
+            <div class="task-desc">${description}</div>
+          `;
+        } else if (data && data.error) {
+          body.innerHTML = `<p class="error">API Error: ${data.error}</p>`;
+        } else {
+          body.innerHTML = '<p>Görev bulunamadı.</p>';
+        }
+      } catch (err) {
+        console.error('Error fetching task details', err);
+        body.innerHTML = '<p class="error">A network error occurred while fetching task details.</p>';
+      }
+    }
+
+    function closeTaskDetailsModal() {
+      const modal = document.getElementById('taskDetailsModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Close task details modal when clicking outside content
+    document.addEventListener('click', function (event) {
+      const modal = document.getElementById('taskDetailsModal');
+      if (!modal) return;
+      if (modal.style.display === 'flex' && event.target === modal) {
+        closeTaskDetailsModal();
+      }
+    });
+
+    // Close with Escape key
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closeTaskDetailsModal();
+      }
+    });
 
     </script>
   
