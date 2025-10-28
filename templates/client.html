@@ -125,7 +125,11 @@
             <input type="text" class="form-control" id="todayDate" disabled />
           </div>
           <div class="form-group">
-            <label for="totaltimecount">Total Time Count</label>
+            <label for="loggedTime">Total Logged In Time</label>
+            <div id="loggedTime" class="form-control">00:00:00</div>
+          </div>
+          <div class="form-group">
+            <label for="totaltimecount">Total Task Time Count</label>
             <div id="totaltimecount" class="form-control">00:00</div>
           </div>
           <div class="form-group">
@@ -246,16 +250,21 @@
   </div>
 
   <!-- For Logout Modal  -->
-  <div id="logoutModal" class="modal">
-    <div class="modal-content">
-      <h2 id="logoutModalTitle" data-translatable="logoutTitle">🔒 Confirm Logout</h2>
-      <p id="logoutModalDesc" data-translatable="logoutDesc">Are you sure you want to log out from DDS-FocusPro?</p>
-      <div class="modal-buttons">
-        <button class="modal-btn cancel-btn" onclick="closeLogoutModal()" data-translatable="logoutCancel">Cancel</button>
-        <button class="modal-btn submit-btn" onclick="confirmLogout()" data-translatable="logoutConfirm">Logout</button>
+    <div id="logoutModal" class="modal">
+      <div class="modal-content">
+        <h2 id="logoutModalTitle" data-translatable="logoutTitle">🔒 Confirm Logout</h2>
+        <p id="logoutModalDesc" data-translatable="logoutDesc">
+          Are you sure you want to log out from DDS-FocusPro?
+        </p>
+        <div class="modal-buttons">
+          <button class="modal-btn cancel-btn" onclick="closeLogoutModal()" data-translatable="logoutCancel">Cancel</button>
+          <button class="modal-btn submit-btn" onclick="confirmLogout()" data-translatable="logoutConfirm">Logout</button>
+        </div>
       </div>
     </div>
-  </div>
+  </div> 
+
+  
 
   <!-- Configuration Panel Modal -->
   <div id="configModal" class="modal">
@@ -671,6 +680,25 @@ function updateConfigDisplay() {
     });
 }
 
+function updateLoggedTime() {
+  const loginTime = localStorage.getItem("loginTime");
+  if (!loginTime) return;
+
+  const loggedTimeElement = document.getElementById("loggedTime");
+  if (!loggedTimeElement) return;
+
+  const elapsed = Date.now() - parseInt(loginTime);
+  const totalSeconds = Math.floor(elapsed / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  loggedTimeElement.textContent = `${hours}h ${minutes}m ${seconds}s`;
+}
+
+setInterval(updateLoggedTime, 1000);
+updateLoggedTime();
+
 async function refreshConfiguration() {
     try {
         console.log('🔄 Configuration refresh requested - API disabled');
@@ -687,6 +715,62 @@ async function refreshConfiguration() {
     } catch (error) {
         console.error('❌ Configuration refresh error:', error);
     }
+}
+
+async function confirmLogout() {
+  console.log("🔥 Logout triggered");
+
+  const user = JSON.parse(sessionStorage.getItem('user'));
+  if (!user) {
+    console.warn("⚠️ No user in sessionStorage");
+    return;
+  }
+
+  const loginTime = new Date(localStorage.getItem("loginTime"));
+  const logoutTime = new Date();
+  const totalSeconds = Math.floor((logoutTime - loginTime) / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const total_duration = `${hours}h ${minutes}m ${seconds}s`;
+
+  const payload = {
+    email: user.email,
+    staff_id: user.staffid,
+    total_duration,
+    total_seconds: totalSeconds
+  };
+
+  try {
+    const response = await fetch("/api/store_logout_time", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    console.log("Logout API response:", result);
+
+    if (result.status === "success") {
+      console.log("✅ Logout logged successfully.");
+    } else {
+      console.error("❌ Logout failed:", result.message);
+    }
+  } catch (error) {
+    console.error("⚠️ Error while calling logout API:", error);
+  }
+
+  // Clear storage and redirect **after API call finishes**
+  localStorage.removeItem("loginTime");
+  sessionStorage.removeItem("user");
+
+  // Hide modal (optional)
+  closeLogoutModal();
+
+  // Small delay to ensure fetch finishes in some browsers
+  setTimeout(() => {
+    window.location.href = "/";
+  }, 150);
 }
 
 // Close drawer when clicking outside

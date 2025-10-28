@@ -276,6 +276,8 @@
         // ✅ Create daily log file automatically upon login
         await createDailyLogFile(user.email, user.staffid);
 
+        localStorage.setItem("loginTime", Date.now());
+
         // Redirect to client.html after successful login
         window.location.href = 'client';  // Fixed redirection to client.html
       } else {
