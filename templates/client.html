@@ -40,6 +40,12 @@
             <img id="profileImage" src="https://crm.deluxebilisim.com/assets/images/user_placeholder.png">
             <span id="displayUserName" style="margin-right: 10px;">Loading ...</span>
             
+            <!-- Theme Toggle Button -->
+            <button class="theme-toggle-client" id="themeToggleClient" onclick="toggleClientTheme()" aria-label="Toggle theme">
+              <span class="theme-icon sun-icon">☀️</span>
+              <span class="theme-icon moon-icon">🌙</span>
+            </button>
+            
             <!-- Language Dropdown -->
             <div class="language-dropdown">
               <button class="language-btn" onclick="toggleLanguageDropdown()">
@@ -972,6 +978,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('❌ Error sending shutdown beacon:', error);
             }
         });
+
+        // ✅ Theme Toggle Functionality for Client Page
+        function toggleClientTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button icon
+            updateClientThemeIcon(newTheme);
+            
+            console.log('Client theme changed to:', newTheme);
+        }
+
+        function updateClientThemeIcon(theme) {
+            const sunIcon = document.querySelector('.theme-toggle-client .sun-icon');
+            const moonIcon = document.querySelector('.theme-toggle-client .moon-icon');
+            
+            if (sunIcon && moonIcon) {
+                if (theme === 'dark') {
+                    sunIcon.style.setProperty('display', 'none', 'important');
+                    moonIcon.style.setProperty('display', 'block', 'important');
+                } else {
+                    sunIcon.style.setProperty('display', 'block', 'important');
+                    moonIcon.style.setProperty('display', 'none', 'important');
+                }
+            }
+        }
+
+        // Initialize theme on page load
+        function initializeClientTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            console.log('Initializing client theme:', savedTheme);
+            document.body.setAttribute('data-theme', savedTheme);
+            
+            // Wait a bit for DOM to be ready
+            setTimeout(() => {
+                updateClientThemeIcon(savedTheme);
+            }, 100);
+        }
+
+        // Call initialize theme
+        initializeClientTheme();
 
     </script>
   

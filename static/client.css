@@ -133,7 +133,167 @@
 }
 
 /* ============================================
-   🌐 GLOBAL STYLES
+   � DARK THEME OVERRIDES
+   ============================================ */
+body[data-theme="dark"] {
+  --background-color: #1a1a2e;
+  --text-color: #eaeaea;
+  --input-background: #16213e;
+  --input-text: #eaeaea;
+  --border-color: #0f3460;
+  --nav-background: #0f3460;
+  --drawer-background-color: #0f3460;
+  background-color: #1a1a2e !important;
+}
+
+body[data-theme="dark"] .container {
+  background-color: #1a1a2e !important;
+}
+
+body[data-theme="dark"] .header,
+body[data-theme="dark"] .nav-container {
+  background-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .main {
+  background-color: #1a1a2e !important;
+}
+
+body[data-theme="dark"] .header {
+  background-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .form-control {
+  background-color: #16213e !important;
+  color: #eaeaea !important;
+  border-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .form-group label {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .timer-value {
+  color: #eaeaea !important;
+  background-color: #16213e !important;
+}
+
+body[data-theme="dark"] .timer-label {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .drawer {
+  background-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .drawer-item {
+  background-color: #16213e !important;
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .project-name,
+body[data-theme="dark"] .task-name,
+body[data-theme="dark"] .current-time {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .project-client,
+body[data-theme="dark"] .task-status,
+body[data-theme="dark"] .total-time {
+  color: #b8b8b8 !important;
+}
+
+body[data-theme="dark"] .nav-container {
+  background-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .modal-content {
+  background-color: #16213e !important;
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .modal-content h2,
+body[data-theme="dark"] .modal-content p {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .modal-content textarea {
+  background-color: #1a1a2e !important;
+  color: #eaeaea !important;
+  border-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .language-dropdown-content {
+  background-color: #16213e !important;
+}
+
+body[data-theme="dark"] .language-option {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .language-option:hover {
+  background-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] #statusText {
+  color: #eaeaea !important;
+}
+
+body[data-theme="dark"] .state-label {
+  color: #ffffff !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body[data-theme="dark"] .drawer-header {
+  background-color: #0f3460 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body[data-theme="dark"] .drawer-arrow-btn {
+  background-color: #0f3460 !important;
+  border-color: #0f3460 !important;
+}
+
+body[data-theme="dark"] .drawer-arrow-btn .arrow-icon {
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .action-button {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body[data-theme="dark"] .start-button {
+  background-color: var(--submit-button-bg-color) !important;
+  color: var(--submit-button-text-color) !important;
+}
+
+body[data-theme="dark"] .reset-button {
+  background-color: #e67e22 !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] input[type="text"]:disabled,
+body[data-theme="dark"] input:disabled,
+body[data-theme="dark"] .form-control:disabled {
+  background-color: #0f3460 !important;
+  color: #b8b8b8 !important;
+  opacity: 0.7;
+}
+
+body[data-theme="dark"] #displayUserName {
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .container {
+  background-color: #1a1a2e !important;
+}
+
+body[data-theme="dark"] .state-circle {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   �🌐 GLOBAL STYLES
    ============================================ */
 
 * {
@@ -149,11 +309,20 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  height: 100vh;
+  background-color: var(--background-color);
 }
 
 .container {
   width: 100%;
   flex: 1;
+  background-color: var(--background-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ============================================
@@ -212,6 +381,75 @@ body {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
+}
+
+/* Theme Toggle Button for Client Page */
+.theme-toggle-client {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+  background-color: var(--background-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-right: 10px;
+}
+
+.theme-toggle-client:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-client .theme-icon {
+  transition: all 0.3s ease;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.theme-toggle-client .sun-icon {
+  display: block;
+}
+
+.theme-toggle-client .moon-icon {
+  display: none;
+}
+
+body[data-theme="dark"] .theme-toggle-client .sun-icon {
+  display: none;
+}
+
+body[data-theme="dark"] .theme-toggle-client .moon-icon {
+  display: block;
+}
+
+body[data-theme="dark"] .theme-toggle-client {
+  border-color: #eaeaea;
+  background-color: #16213e;
+}
+
+.theme-toggle-client svg {
+  color: var(--primary-color);
+  stroke: var(--primary-color);
+  fill: none;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle-client svg * {
+  stroke: var(--primary-color);
+}
+
+body[data-theme="dark"] .theme-toggle-client svg {
+  color: #eaeaea;
+  stroke: #eaeaea;
+}
+
+body[data-theme="dark"] .theme-toggle-client svg * {
+  stroke: #eaeaea;
 }
 
 /* ============================================
@@ -328,6 +566,8 @@ body {
   background-color: #fff;
   padding: 15px;
   height: auto;
+  flex: 1;
+  min-height: calc(100vh - 100px);
 }
 
 .grid-container {

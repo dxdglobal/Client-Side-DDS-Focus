@@ -340,6 +340,9 @@ class LoginStylingManager {
     }
 
     applyLoginButtonColors(buttonColor) {
+        // Always use green color for login buttons
+        const greenColor = '#006039';
+        
         // Comprehensive login button selectors
         const loginButtonSelectors = [
             '.login-button', '#loginBtn', '.guest-button',
@@ -351,14 +354,15 @@ class LoginStylingManager {
         loginButtonSelectors.forEach(selector => {
             const elements = document.querySelectorAll(selector);
             elements.forEach(element => {
-                element.style.setProperty('background-color', buttonColor, 'important');
-                element.style.setProperty('border-color', buttonColor, 'important');
-                element.style.setProperty('background', `linear-gradient(145deg, ${buttonColor}, ${this.darkenColor(buttonColor, 15)})`, 'important');
+                element.style.setProperty('background-color', greenColor, 'important');
+                element.style.setProperty('background', greenColor, 'important');
+                element.style.setProperty('border-color', greenColor, 'important');
+                element.style.setProperty('color', '#ffffff', 'important');
                 appliedCount++;
             });
         });
 
-        console.log(`🔴 Login: Applied button color to ${appliedCount} elements`);
+        console.log(`🔴 Login: Applied green button color to ${appliedCount} elements`);
     }
 
     applyLoginSpecificStyling(stylingData) {
@@ -889,3 +893,37 @@ if (document.readyState === 'loading') {
 }
 
 console.log('🛡️ Black background protection system loaded');
+
+// 🟢 Force green button colors on page load
+function forceGreenButtons() {
+    const greenColor = '#006039';
+    const whiteColor = '#ffffff';
+    
+    const loginButtons = document.querySelectorAll('.login-button, #loginBtn, .guest-button, button[type="submit"]');
+    
+    loginButtons.forEach(button => {
+        button.style.setProperty('background-color', greenColor, 'important');
+        button.style.setProperty('background', greenColor, 'important');
+        button.style.setProperty('border', 'none', 'important');
+        button.style.setProperty('color', whiteColor, 'important');
+    });
+    
+    console.log('🟢 Forced green color on', loginButtons.length, 'buttons');
+}
+
+// Apply immediately
+forceGreenButtons();
+
+// Apply after short delay
+setTimeout(forceGreenButtons, 100);
+setTimeout(forceGreenButtons, 500);
+setTimeout(forceGreenButtons, 1000);
+
+// Apply after DOM is fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', forceGreenButtons);
+} else {
+    forceGreenButtons();
+}
+
+console.log('🟢 Green button enforcement loaded');
