@@ -21,7 +21,7 @@ def create_required_folders():
 
 # Call folder creation
 create_required_folders()
-
+from urllib.parse import quote
 from flask_mail import Mail, Message
 from moduller.tracker import save_raw_program_log, logs_file, collect_program_usage, get_program_history_and_save, upload_program_data_to_s3
 # from moduller.tracker import auto_log_every_minute, start_logging, stop_logging, upload_logs_on_app_close  # Disabled old tracker
@@ -1875,13 +1875,39 @@ def search_task():
     if not task_name:
         return jsonify({"error": "Missing task_name parameter"}), 400
 
-    url = f"https://crm.deluxebilisim.com/api/tasks/search/{task_name}"
+    # Encode task name to handle spaces and special characters
+    encoded_task_name = quote(task_name)
+
+    url = f"https://crm.deluxebilisim.com/api/tasks/search/{encoded_task_name}"
+
+    # 🔒 Use correct header format
+    headers = {
+        "authtoken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o",  # replace with your actual token
+        "Accept": "application/json",
+    }
+
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        return jsonify(response.json())
+
+        # Handle non-JSON responses gracefully
+        try:
+            data = response.json()
+        except ValueError:
+            return jsonify({"error": "Invalid JSON response from external API"}), 502
+
+        return jsonify(data)
+
+    except requests.exceptions.HTTPError:
+        return jsonify({
+            "error": "HTTP error from external API",
+            "status_code": response.status_code,
+            "response": response.text
+        }), response.status_code
+
     except requests.exceptions.RequestException as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Request failed", "details": str(e)}), 500
+
 
 
 @app.route("/api/store_logout_time", methods=["POST"])
