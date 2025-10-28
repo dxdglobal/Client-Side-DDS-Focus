@@ -718,17 +718,25 @@ async function refreshConfiguration() {
 }
 
 async function confirmLogout() {
-  console.log("🔥 Logout triggered");
-
   const user = JSON.parse(sessionStorage.getItem('user'));
+  
   if (!user) {
-    console.warn("⚠️ No user in sessionStorage");
+    sessionStorage.clear();
+    window.location.href = '/';
     return;
   }
 
-  const loginTime = new Date(localStorage.getItem("loginTime"));
-  const logoutTime = new Date();
-  const totalSeconds = Math.floor((logoutTime - loginTime) / 1000);
+  const loginTime = localStorage.getItem("loginTime");
+  
+  if (!loginTime) {
+    sessionStorage.clear();
+    window.location.href = '/';
+    return;
+  }
+
+  const loginTimestamp = parseInt(loginTime);
+  const logoutTimestamp = Date.now();
+  const totalSeconds = Math.floor((logoutTimestamp - loginTimestamp) / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -749,28 +757,25 @@ async function confirmLogout() {
     });
 
     const result = await response.json();
-    console.log("Logout API response:", result);
 
-    if (result.status === "success") {
-      console.log("✅ Logout logged successfully.");
-    } else {
-      console.error("❌ Logout failed:", result.message);
+    if (result.status !== "success") {
+      console.error("Logout failed:", result.message);
     }
   } catch (error) {
-    console.error("⚠️ Error while calling logout API:", error);
+    console.error("Error while calling logout API:", error);
   }
 
-  // Clear storage and redirect **after API call finishes**
+  // Clear storage and redirect after API call finishes
   localStorage.removeItem("loginTime");
   sessionStorage.removeItem("user");
 
-  // Hide modal (optional)
+  // Hide modal
   closeLogoutModal();
 
   // Small delay to ensure fetch finishes in some browsers
   setTimeout(() => {
     window.location.href = "/";
-  }, 150);
+  }, 500);
 }
 
 // Close drawer when clicking outside

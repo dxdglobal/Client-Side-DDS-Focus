@@ -1626,10 +1626,8 @@ function closeLogoutModal() {
     }, 300);
 }
 
-function confirmLogout() {
-    sessionStorage.clear();
-    window.location.href = '/';
-}
+// ✅ confirmLogout() is defined in client.html inline script
+// DO NOT define it here - it will override the HTML version
 
 
 function closeIdleModal() {
