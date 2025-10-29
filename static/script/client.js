@@ -75,15 +75,28 @@ function fetchScreenshotInterval() {
     const intervalDiv = document.getElementById('screenshotInterval');
     if (!user || !intervalDiv) return;
     
-    fetch('/api/get-staff-screen-shot-time', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, staff_id: user.staffid })
-    })
+        let payload = {};
+        if (user.staffid) {
+            payload.staff_id = user.staffid;
+        } else if (user.email) {
+            payload.email = user.email;
+        }
+        fetch('/get_screenshot_time_interval', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
     .then(res => res.json())
     .then(data => {
-        if (data && data.interval) {
-            intervalDiv.textContent = `${data.interval} seconds`;
+        if (data && typeof data.screenshot_interval !== 'undefined') {
+            const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+            let minuteLabel;
+            if (lang === 'en') {
+                minuteLabel = data.screenshot_interval === 1 ? translations[lang].minute : translations[lang].minutes;
+            } else {
+                minuteLabel = translations[lang].dakika;
+            }
+            intervalDiv.textContent = `${data.screenshot_interval} ${minuteLabel}`;
         } else {
             intervalDiv.textContent = 'N/A';
         }
@@ -109,6 +122,8 @@ const translations = {
         idleTitle: "⏸️ You're Idle",
         idleDesc: "You've been inactive. Timer is paused.",
         min: "min", 
+        minute: "minute",
+        minutes: "minutes",
         today: "Today",
         work: "WORK",
         meeting: "MEETING",
@@ -167,6 +182,7 @@ const translations = {
         idle: "BOŞTA",
         break: "MOLA",
         min: "dk",
+        dakika: "dakika",
         meeting: "TOPLANTI",
         today: "Tarih",
         work: "ÇALIŞMA",
@@ -301,6 +317,8 @@ window.onload = function () {
 
         fetchAIProjects(user);
         saveUserProjectsToCache(user);
+        // Kullanıcı objesi dolduktan hemen sonra intervali çek
+        fetchScreenshotInterval();
     }
 
     setTimeout(() => {
