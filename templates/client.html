@@ -94,62 +94,74 @@
               <option disabled selected value="">-- Select a Task --</option>
             </select>
           </div>
-        </div>
-
-        <!-- Timer Block -->
-        <div class="container floating">
-<div class="state-circle" id="stateCircle">
-  <div class="state-label" id="stateLabel">IDLE</div>
-</div>
-
-
-
-          <div class="timer-display">
-            <div class="timer-unit">
-              <div class="timer-value" id="hours">00</div>
-              <div class="timer-label">HRS</div>
-            </div>
-            <div class="timer-unit">
-              <div class="timer-value" id="minutes">00</div>
-              <div class="timer-label">MIN</div>
-            </div>
-            <div class="timer-unit">
-              <div class="timer-value" id="seconds">00</div>
-              <div class="timer-label">SEC</div>
+          <!-- Work Timer -->
+          <div class="form-group">
+            <label data-translatable="workTime">Work Time</label>
+            <div class="timer-display" id="work-timer">
+              <div class="timer-unit">
+                <div class="timer-value" id="hours">00</div>
+                <div class="timer-label">HRS</div>
+              </div>
+              <div class="timer-unit">
+                <div class="timer-value" id="minutes">00</div>
+                <div class="timer-label">MIN</div>
+              </div>
+              <div class="timer-unit">
+                <div class="timer-value" id="seconds">00</div>
+                <div class="timer-label">SEC</div>
+              </div>
             </div>
           </div>
-<p id="statusText" style="text-align: center; color: #000; font-weight: bold; margin-top: 10px;"></p>
+        </div>
 
+        <!-- Control Block -->
+        <div class="container floating">
+          <div class="state-circle" id="stateCircle">
+            <div class="state-label" id="stateLabel">IDLE</div>
+          </div>
+          <p id="statusText" style="text-align: center; color: #000; font-weight: bold; margin-top: 10px;"></p>
           <div class="action-buttons">
             <button class="action-button start-button" id="startBtn" style="color: #fff;">START</button>
-        <!-- <button class="state-btn break" onclick="handleBreak()" id="breakBtn">☕ Break</button> -->
-
             <button class="action-button reset-button" id="resetBtn" style="background-color: orange;">Finish</button>
           </div>
         </div>
 
-        <!-- Misc Info -->
+        <!-- Misc Info & Meeting Timer -->
         <div>
           <div class="form-group">
-            <label for="todayDate">Today</label>
+            <label for="todayDate" data-translatable="today">Today</label>
             <input type="text" class="form-control" id="todayDate" disabled />
           </div>
           <div class="form-group">
             <label for="loggedTime" data-translatable="totalLogged">Total Logged In Time</label>
             <div id="loggedTime" class="form-control">00:00:00</div>
           </div>
+          <!-- Meeting Timer -->
           <div class="form-group">
-            <label for="totaltimecount" data-translatable="totalTask">Total Task Time Count</label>
-            <div id="totaltimecount" class="form-control">00:00</div>
+            <label data-translatable="meetingTime">Meeting Time</label>
+            <div class="timer-display" id="meeting-timer">
+              <div class="timer-unit">
+                <div class="timer-value" id="meeting-hours">00</div>
+                <div class="timer-label">HRS</div>
+              </div>
+              <div class="timer-unit">
+                <div class="timer-value" id="meeting-minutes">00</div>
+                <div class="timer-label">MIN</div>
+              </div>
+              <div class="timer-unit">
+                <div class="timer-value" id="meeting-seconds">00</div>
+                <div class="timer-label">SEC</div>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label for="loggingInput" data-translatable="screenRecording">Screen Recording</label>
             <input type="text" class="form-control" id="loggingInput" value="NO" disabled />
+          </div>
           <!-- Screenshot interval info -->
           <div class="form-group">
             <label for="screenshotInterval" data-translatable="screenshotInterval">Screenshot Interval</label>
             <div id="screenshotInterval" class="form-control">...</div>
-          </div>
           </div>
         </div>
       </div>

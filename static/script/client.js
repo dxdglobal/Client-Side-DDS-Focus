@@ -1,60 +1,45 @@
 // Çalışma/Toplantı mod yönetimi
 let currentMode = 'work'; // 'work' veya 'meeting'
 let meetingRecords = [];
+let workTimerPaused = false;
 
 function setMode(mode) {
-    // Eğer timer çalışıyorsa mod değiştirmeye izin verme
-    if (isTimerRunning) {
+    // Toplantı devam ederken çalışma moduna geçmeyi engelle
+    if (isMeetingTimerRunning && mode === 'work') {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
         const message = lang === 'tr' 
-            ? "⛔ Zamanlayıcı çalışırken mod değiştiremezsiniz. Lütfen önce görevi bitirin."
-            : "⛔ You cannot change mode while timer is running. Please finish your task first.";
+            ? "⛔ Lütfen önce toplantıyı bitirin."
+            : "⛔ Please finish the meeting first.";
         showToast(message, "error");
         return;
     }
-    
+
     currentMode = mode;
     const workBtn = document.getElementById('workModeBtn');
     const meetingBtn = document.getElementById('meetingModeBtn');
     
     if (mode === 'work') {
         workBtn.classList.add('active');
-        workBtn.style.background = '#006039';
-        workBtn.style.color = '#fff';
         meetingBtn.classList.remove('active');
-        meetingBtn.style.background = '#fff';
-        meetingBtn.style.color = '#006039';
         setState('work');
         
-        // Çalışma modunda dropdown'ları göster
-        document.getElementById('projectSection').style.display = 'block';
-        document.getElementById('taskSection').style.display = 'block';
-
-            // Eğer görev seçiliyse başlat butonunu enable et
-            const taskSelect = document.getElementById('task');
-            const startBtn = document.getElementById('startBtn');
-            if (taskSelect && startBtn) {
-                const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
-                if (taskSelect.value && !selectedTaskOption.disabled) {
-                    startBtn.disabled = false;
-                    startBtn.style.backgroundColor = 'green';
-                } else {
-                    startBtn.disabled = true;
-                    startBtn.style.backgroundColor = 'gray';
-                }
-            }
-    } else {
+        stopMeetingTimer();
+        if (workTimerPaused) {
+            resumeTimer();
+            workTimerPaused = false;
+        }
+    } else { // meeting mode
         meetingBtn.classList.add('active');
-        meetingBtn.style.background = '#006039';
-        meetingBtn.style.color = '#fff';
         workBtn.classList.remove('active');
-        workBtn.style.background = '#fff';
-        workBtn.style.color = '#006039';
         setState('meeting');
         
-        // Toplantı modunda dropdown'ları gizle
-        document.getElementById('projectSection').style.display = 'none';
-        document.getElementById('taskSection').style.display = 'none';
+        if (isTimerRunning) {
+            pauseTimer();
+            workTimerPaused = true;
+        }
+        startMeetingTimer();
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtn').style.backgroundColor = 'gray';
     }
 }
 
@@ -174,6 +159,8 @@ const translations = {
         workMode: "Work Mode",
         meetingMode: "Meeting Mode",
         totalLogged: "Total Time Logged",
+        workTime: "Work Time",
+        meetingTime: "Meeting Time",
         screenRecording: "Screen Recording",
         screenshotInterval: "Screenshot Interval"
     },
@@ -231,7 +218,9 @@ const translations = {
         selectMode: "Mod Seçin",
         workMode: "Çalışma Modu",
         meetingMode: "Toplantı Modu",
-        totalLogged: "Toplam Zaman",
+        totalLogged: "Toplam Oturum Süresi",
+        workTime: "Çalışma Süresi",
+        meetingTime: "Toplantı Süresi",
         screenRecording: "Ekran Kaydı",
         screenshotInterval: "Ekran Görüntüsü Aralığı"
     }
@@ -296,8 +285,45 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
 
 let timerInterval, totalSeconds = 0;
 let isTimerRunning = false;
+let meetingTimerInterval, meetingTotalSeconds = 0, isMeetingTimerRunning = false;
 let currentTaskId = null, sessionStartTime = null;
 let selectedProjectName = '', selectedTaskName = '', user = null;
+
+function startMeetingTimer() {
+    if (isMeetingTimerRunning) return;
+    isMeetingTimerRunning = true;
+    meetingTimerInterval = setInterval(updateMeetingTimerDisplay, 1000);
+}
+
+function stopMeetingTimer() {
+    clearInterval(meetingTimerInterval);
+    isMeetingTimerRunning = false;
+    meetingTotalSeconds = 0;
+    document.getElementById('meeting-hours').innerText = '00';
+    document.getElementById('meeting-minutes').innerText = '00';
+    document.getElementById('meeting-seconds').innerText = '00';
+}
+
+function pauseMeetingTimer() {
+    clearInterval(meetingTimerInterval);
+    isMeetingTimerRunning = false;
+}
+
+function updateMeetingTimerDisplay() {
+    meetingTotalSeconds++;
+    document.getElementById('meeting-hours').innerText = String(Math.floor(meetingTotalSeconds / 3600)).padStart(2, '0');
+    document.getElementById('meeting-minutes').innerText = String(Math.floor((meetingTotalSeconds % 3600) / 60)).padStart(2, '0');
+    document.getElementById('meeting-seconds').innerText = String(meetingTotalSeconds % 60).padStart(2, '0');
+}
+
+function resumeTimer() {
+    if (!isTimerRunning) {
+        isTimerRunning = true;
+        timerInterval = setInterval(updateTimerDisplay, 1000);
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtn').style.backgroundColor = 'gray';
+    }
+}
 
 window.onload = function () {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
@@ -396,8 +422,6 @@ async function handleAutoIdleSubmit() {
         ? `User worked for less than 1 minute and stayed idle for ${totalIdleSeconds} seconds.`
         : `User worked for ${minsWorked} minutes and stayed idle for ${totalIdleSeconds} seconds.`);
 
-    document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
-
     console.log("📤 Auto-submitting due to idle...");
     console.log({
         email: user.email,
@@ -485,21 +509,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            console.log('🔄 Reset button clicked');
-            console.log('⏱️ Total seconds:', totalSeconds);
-            
-            if (totalSeconds < 10) {
-                console.log('⚠️ Session too short, showing warning');
-                const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-                const message = translations[lang].minWorkWarning;
-                showToast(message, 'error');
-                return;
+            if (currentMode === 'meeting') {
+                pauseMeetingTimer();
+                openModal();
+            } else {
+                if (totalSeconds < 10) {
+                    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+                    const message = translations[lang].minWorkWarning;
+                    showToast(message, 'error');
+                    return;
+                }
+                openModal();
             }
-            
-            console.log('✅ Opening finish modal');
-            openModal();
         });
-        console.log('✅ Reset button event listener attached');
     } else {
         console.error('❌ resetBtn element not found!');
     }
@@ -583,7 +605,6 @@ function resetTimer() {
 
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
-    document.getElementById('totaltimecount').innerText = `0 min 0 sec`;
 }
 
 function updateTimerDisplay() {
@@ -592,15 +613,6 @@ function updateTimerDisplay() {
     document.getElementById('hours').innerText = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
     document.getElementById('minutes').innerText = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
     document.getElementById('seconds').innerText = String(totalSeconds % 60).padStart(2, '0');
-
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-
-    const labelMin = translations[lang].min || 'min';
-    const labelSec = translations[lang].sec || 'sec';
-
-    document.getElementById('totaltimecount').innerText = `${mins} ${labelMin} ${secs} ${labelSec}`;
 }
 
 function stopScreenRecording() {
@@ -815,6 +827,20 @@ async function submitTaskDetails() {
     const detailText = document.getElementById('taskDetailInput').value.trim();
     if (!detailText) {
         showToast('⚠️ Please enter details!', 'error');
+        return;
+    }
+
+    if (currentMode === 'meeting') {
+        stopMeetingTimer();
+        // Toplantı notlarını işle (örneğin, kaydet)
+        console.log("Meeting Notes:", detailText);
+        showToast('✅ Meeting notes saved!');
+
+        closeModal();
+        document.getElementById('taskDetailInput').value = '';
+        
+        // Çalışma moduna geri dön ve sayacı devam ettir
+        setMode('work');
         return;
     }
 
@@ -1034,8 +1060,10 @@ function applyClientLanguage(lang) {
     // Labels
     const labelMap = {
         client: t.client,
+        today: t.today,
         totalLogged: t.totalLogged,
-        totalTask: t.total,
+        workTime: t.workTime,
+        meetingTime: t.meetingTime,
         screenRecording: t.screenRecording,
         screenshotInterval: t.screenshotInterval
     };
@@ -1876,3 +1904,11 @@ function preventNavigationBlackBackgrounds() {
 document.addEventListener('DOMContentLoaded', preventNavigationBlackBackgrounds);
 
 // End of client.js
+// Zamanı yerelleştirilmiş formatta güncelleyen fonksiyon ve interval
+function updateLoggedTime() {
+    const loggedTimeElem = document.getElementById('totalLoggedTime');
+    if (!loggedTimeElem) return;
+    const now = new Date();
+    loggedTimeElem.textContent = now.toLocaleTimeString();
+}
+setInterval(updateLoggedTime, 1000);
