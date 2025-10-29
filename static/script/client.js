@@ -862,11 +862,11 @@ async function sendTimesheetToBackend(meetings = []) {
         showToast("✅ Timesheet sent!");
 
         // Send email after timesheet submission
-        await fetch('/send_timesheet_email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email, timesheet: payload })
-        });
+        // await fetch('/send_timesheet_email', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ email: user.email, timesheet: payload })
+        // });
         console.log("📧 Email sent for timesheet.");
     } catch (error) {
         console.error("❌ Error sending timesheet or email:", error);

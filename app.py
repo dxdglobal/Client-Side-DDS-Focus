@@ -1224,20 +1224,18 @@ def insert_user_timesheet():
 
 
 
-@app.route("/send_timesheet_email", methods=["POST"])
+@app.route("/get_screenshot_time_interval", methods=["POST"])
 def get_staff():
-    # Get query params from frontend (either staff_id or email)
-    staff_id = request.args.get("staff_id")
-    email = request.args.get("email")
-
-    if not staff_id and not email:
-        return jsonify({"status": "error", "message": "Please provide either staff_id or email"}), 400
-
     try:
+        req = request.get_json() or {}
+        staff_id = req.get("staff_id")
+        email = req.get("email")
+
+        if not staff_id and not email:
+            return jsonify({"status": "error", "message": "Please provide either staff_id or email"}), 400
+
         # External API URL
         url = "https://dxdtime.ddsolutions.io/api/sync-staffs"
-
-        # Fetch full data
         response = requests.get(url)
         if response.status_code != 200:
             return jsonify({"status": "error", "message": "Failed to fetch data from remote API"}), 500
@@ -1259,7 +1257,6 @@ def get_staff():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 
 
