@@ -1224,7 +1224,7 @@ def insert_user_timesheet():
 
 
 
-@app.route("/send_timesheet_email", methods=["GET"])
+@app.route("/send_timesheet_email", methods=["POST"])
 def get_staff():
     # Get query params from frontend (either staff_id or email)
     staff_id = request.args.get("staff_id")
