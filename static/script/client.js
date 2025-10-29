@@ -829,7 +829,7 @@ async function submitTaskDetails() {
 }
 
 async function sendTimesheetToBackend(meetings = []) {
-    const payload = [
+    const payload =[
         {
             task_id: currentMode === 'meeting' ? 'meeting' : document.getElementById('task').value,
             start_time: "10:00:00",
@@ -842,6 +842,7 @@ async function sendTimesheetToBackend(meetings = []) {
         }
     ];
     try {
+        console.log("Final payload before sending:", payload, JSON.stringify(payload));
         const res = await fetch('/insert_user_timesheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -855,7 +856,7 @@ async function sendTimesheetToBackend(meetings = []) {
         await fetch('/send_timesheet_email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email, timesheet: payload[0] })
+            body: JSON.stringify({ email: user.email, timesheet: payload })
         });
         console.log("📧 Email sent for timesheet.");
     } catch (error) {

@@ -965,15 +965,155 @@ def save_task_detail_json():
 
 
 @app.route('/insert_user_timesheet', methods=['POST'])
+# def insert_user_timesheet():
+#     # Remove local imports since they're now at the top
+#     try:
+#         req = request.get_json()
+#         print("RAW DATA:", request.data)
+#         print("IS JSON:", request.is_json)
+#         print("PARSED JSON:", req)
+        
+#         # Debug: Log the type and content of the request
+#         logging.info(f"Request type: {type(req)}, Content: {req}")
+        
+#         # Handle if request is a list (take the first item if it's a dict)
+#         if isinstance(req, list):
+#             req = req[0] 
+#         elif isinstance(req, list):
+#             if len(req) > 0 and isinstance(req[0], dict):
+#                 req = req[0]
+#             else:
+#                 return jsonify({'error': 'Invalid request format'}), 400
+#         elif not isinstance(req, dict):
+#             return jsonify({'error': 'Request must be JSON object'}), 400
+            
+#         email = req.get('email')
+#         if not email:
+#             return jsonify({'error': 'Missing email'}), 400
+#     except Exception as e:
+#         logging.error(f"Error processing request: {e}")
+#         return jsonify({'error': 'Invalid JSON data'}), 400
+
+
+
+#     BASE_DIR = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.abspath(".")
+#     DATA_FOLDER = os.path.join(BASE_DIR, "data")
+
+#     # Ensure folder exists
+#     os.makedirs(DATA_FOLDER, exist_ok=True)
+
+#     # Now define your filename properly
+#     # Match data filename
+#     filename = os.path.join(DATA_FOLDER, email.replace("@", "_at_").replace(".", "_") + ".json")
+    
+#     # Better error handling for missing file
+#     if not os.path.exists(filename):
+#         print(f"⚠️ No data file found for user {email} at {filename}")
+#         logging.warning(f"No data file found for user {email} at {filename}")
+#         return jsonify({
+#             'status': 'no_data', 
+#             'message': 'No task data found for this user. Please log some tasks first.',
+#             'expected_file': filename
+#         }), 200  # Changed from 404 to 200 for better frontend handling
+
+#     try:
+#         with open(filename, "r", encoding="utf-8") as f:
+#             entries = json.load(f)
+
+#         if not entries:
+#             return jsonify({'status': 'empty', 'message': 'No entries to insert.'}), 200
+
+#         # Add connection error handling
+#         try:
+#             connection = pymysql.connect(
+#                 host=DB_HOST,
+#                 user=DB_USER,
+#                 password=DB_PASSWORD,
+#                 database=DB_NAME,
+#                 port=DB_PORT,
+#                 charset='utf8mb4',
+#                 cursorclass=pymysql.cursors.DictCursor
+#             )
+#         except pymysql.Error as db_error:
+#             print(f"❌ Database connection failed: {db_error}")
+#             logging.error(f"Database connection failed: {db_error}")
+#             return jsonify({'error': f'Database connection failed: {str(db_error)}'}), 500
+
+#         inserted = 0
+#         skipped = 0
+#         errors = 0
+#         with connection.cursor() as cursor:
+#             for i, entry in enumerate(entries):
+#                 try:
+#                     # Validate required fields
+#                     required_fields = ["task_id", "staff_id", "start_time", "end_time", "note"]
+#                     missing_fields = [field for field in required_fields if field not in entry]
+                    
+#                     if missing_fields:
+#                         print(f"⚠️ Entry {i+1} missing fields: {missing_fields}")
+#                         errors += 1
+#                         continue
+                        
+#                     task_id = entry["task_id"]
+#                     staff_id = entry["staff_id"]
+#                     start_time = entry["start_time"]
+#                     end_time = entry["end_time"]
+#                     note = entry["note"]
+#                     hourly_rate = entry.get("hourly_rate")
+                    
+#                     print(f"📝 Processing entry {i+1}: Task {task_id}, Staff {staff_id}")
+
+#                     #  Safe duplicate check using BINARY
+#                     check_query = """
+#                         SELECT id FROM tbltaskstimers
+#                         WHERE task_id = %s AND staff_id = %s AND start_time = %s AND end_time = %s
+#                         AND BINARY note = BINARY %s
+#                         LIMIT 1
+#                     """
+#                     cursor.execute(check_query, (task_id, staff_id, start_time, end_time, note))
+#                     if cursor.fetchone():
+#                         print(f"⏩ Skipping duplicate entry: Task {task_id}")
+#                         skipped += 1
+#                         continue  # skip if already inserted
+
+#                     insert_query = """
+#                         INSERT INTO tbltaskstimers (task_id, staff_id, start_time, end_time, note, hourly_rate)
+#                         VALUES (%s, %s, %s, %s, %s, %s)
+#                     """
+#                     cursor.execute(insert_query, (task_id, staff_id, start_time, end_time, note, hourly_rate))
+#                     print(f"✅ Inserted: Task {task_id} / Staff {staff_id}")
+#                     inserted += 1
+                    
+#                 except Exception as entry_error:
+#                     print(f"❌ Error processing entry {i+1}: {entry_error}")
+#                     errors += 1
+#                     continue
+
+#             connection.commit()
+
+#         return jsonify({
+#             'status': 'success', 
+#             'inserted': inserted,
+#             'skipped': skipped,
+#             'errors': errors,
+#             'total_processed': len(entries)
+#         })
+
+#     except Exception as e:
+#         print(f"❌ Error during insert: {str(e)}")
+#         traceback.print_exc()  # Print full stack trace
+#         return jsonify({'error': str(e)}), 500
+
+
 def insert_user_timesheet():
-    # Remove local imports since they're now at the top
     try:
         req = request.get_json()
-        
-        # Debug: Log the type and content of the request
+        print("RAW DATA:", request.data)
+        print("IS JSON:", request.is_json)
+        print("PARSED JSON:", req)
         logging.info(f"Request type: {type(req)}, Content: {req}")
-        
-        # Handle if request is a list (take the first item if it's a dict)
+
+        # ✅ Handle both object and list JSON
         if isinstance(req, list):
             if len(req) > 0 and isinstance(req[0], dict):
                 req = req[0]
@@ -981,35 +1121,29 @@ def insert_user_timesheet():
                 return jsonify({'error': 'Invalid request format'}), 400
         elif not isinstance(req, dict):
             return jsonify({'error': 'Request must be JSON object'}), 400
-            
+
         email = req.get('email')
         if not email:
             return jsonify({'error': 'Missing email'}), 400
+
     except Exception as e:
         logging.error(f"Error processing request: {e}")
-        return jsonify({'error': 'Invalid JSON data'}), 400
+        return jsonify({'error': 'Invalid JSON data', 'details': str(e)}), 400
 
-
-
+    # ✅ Construct the data folder
     BASE_DIR = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.abspath(".")
     DATA_FOLDER = os.path.join(BASE_DIR, "data")
-
-    # Ensure folder exists
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
-    # Now define your filename properly
-    # Match data filename
     filename = os.path.join(DATA_FOLDER, email.replace("@", "_at_").replace(".", "_") + ".json")
-    
-    # Better error handling for missing file
+
     if not os.path.exists(filename):
-        print(f"⚠️ No data file found for user {email} at {filename}")
         logging.warning(f"No data file found for user {email} at {filename}")
         return jsonify({
-            'status': 'no_data', 
+            'status': 'no_data',
             'message': 'No task data found for this user. Please log some tasks first.',
             'expected_file': filename
-        }), 200  # Changed from 404 to 200 for better frontend handling
+        }), 200
 
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -1018,21 +1152,16 @@ def insert_user_timesheet():
         if not entries:
             return jsonify({'status': 'empty', 'message': 'No entries to insert.'}), 200
 
-        # Add connection error handling
-        try:
-            connection = pymysql.connect(
-                host=DB_HOST,
-                user=DB_USER,
-                password=DB_PASSWORD,
-                database=DB_NAME,
-                port=DB_PORT,
-                charset='utf8mb4',
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.Error as db_error:
-            print(f"❌ Database connection failed: {db_error}")
-            logging.error(f"Database connection failed: {db_error}")
-            return jsonify({'error': f'Database connection failed: {str(db_error)}'}), 500
+        # ✅ Connect to DB
+        connection = pymysql.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            port=DB_PORT,
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
 
         inserted = 0
         skipped = 0
@@ -1040,25 +1169,20 @@ def insert_user_timesheet():
         with connection.cursor() as cursor:
             for i, entry in enumerate(entries):
                 try:
-                    # Validate required fields
                     required_fields = ["task_id", "staff_id", "start_time", "end_time", "note"]
                     missing_fields = [field for field in required_fields if field not in entry]
-                    
                     if missing_fields:
                         print(f"⚠️ Entry {i+1} missing fields: {missing_fields}")
                         errors += 1
                         continue
-                        
+
                     task_id = entry["task_id"]
                     staff_id = entry["staff_id"]
                     start_time = entry["start_time"]
                     end_time = entry["end_time"]
                     note = entry["note"]
                     hourly_rate = entry.get("hourly_rate")
-                    
-                    print(f"📝 Processing entry {i+1}: Task {task_id}, Staff {staff_id}")
 
-                    #  Safe duplicate check using BINARY
                     check_query = """
                         SELECT id FROM tbltaskstimers
                         WHERE task_id = %s AND staff_id = %s AND start_time = %s AND end_time = %s
@@ -1069,16 +1193,15 @@ def insert_user_timesheet():
                     if cursor.fetchone():
                         print(f"⏩ Skipping duplicate entry: Task {task_id}")
                         skipped += 1
-                        continue  # skip if already inserted
+                        continue
 
                     insert_query = """
                         INSERT INTO tbltaskstimers (task_id, staff_id, start_time, end_time, note, hourly_rate)
                         VALUES (%s, %s, %s, %s, %s, %s)
                     """
                     cursor.execute(insert_query, (task_id, staff_id, start_time, end_time, note, hourly_rate))
-                    print(f"✅ Inserted: Task {task_id} / Staff {staff_id}")
                     inserted += 1
-                    
+
                 except Exception as entry_error:
                     print(f"❌ Error processing entry {i+1}: {entry_error}")
                     errors += 1
@@ -1087,17 +1210,55 @@ def insert_user_timesheet():
             connection.commit()
 
         return jsonify({
-            'status': 'success', 
+            'status': 'success',
             'inserted': inserted,
             'skipped': skipped,
             'errors': errors,
             'total_processed': len(entries)
-        })
+        }), 200
 
     except Exception as e:
         print(f"❌ Error during insert: {str(e)}")
-        traceback.print_exc()  # Print full stack trace
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+
+@app.route("/send_timesheet_email", methods=["GET"])
+def get_staff():
+    # Get query params from frontend (either staff_id or email)
+    staff_id = request.args.get("staff_id")
+    email = request.args.get("email")
+
+    if not staff_id and not email:
+        return jsonify({"status": "error", "message": "Please provide either staff_id or email"}), 400
+
+    try:
+        # External API URL
+        url = "https://dxdtime.ddsolutions.io/api/sync-staffs"
+
+        # Fetch full data
+        response = requests.get(url)
+        if response.status_code != 200:
+            return jsonify({"status": "error", "message": "Failed to fetch data from remote API"}), 500
+
+        data = response.json().get("data", [])
+
+        # Filter matching staff
+        matched_staff = None
+        for staff in data:
+            if (staff_id and str(staff.get("staff_id")) == str(staff_id)) or \
+               (email and staff.get("email") == email):
+                matched_staff = staff
+                break
+
+        if not matched_staff:
+            return jsonify({"status": "error", "message": "No matching staff found"}), 404
+
+        return jsonify(matched_staff), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 
