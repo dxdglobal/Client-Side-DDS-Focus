@@ -93,8 +93,11 @@ function fetchScreenshotInterval() {
             let minuteLabel;
             if (lang === 'en') {
                 minuteLabel = data.screenshot_interval === 1 ? translations[lang].minute : translations[lang].minutes;
-            } else {
+            } else if (lang === 'tr') {
                 minuteLabel = translations[lang].dakika;
+            } else {
+                // Diğer diller için varsayılan olarak İngilizce kullan
+                minuteLabel = data.screenshot_interval === 1 ? translations['en'].minute : translations['en'].minutes;
             }
             intervalDiv.textContent = `${data.screenshot_interval} ${minuteLabel}`;
         } else {
@@ -299,6 +302,16 @@ let selectedProjectName = '', selectedTaskName = '', user = null;
 window.onload = function () {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     applyClientLanguage(lang);
+    // Dil değiştirme dropdown'unu dinle
+    const langDropdown = document.getElementById('languageDropdown');
+    if (langDropdown) {
+        langDropdown.addEventListener('change', function() {
+            const selectedLang = langDropdown.value;
+            sessionStorage.setItem('selectedLanguage', selectedLang);
+            applyClientLanguage(selectedLang);
+            fetchScreenshotInterval();
+        });
+    }
     const todayDateField = document.getElementById('todayDate');
     const today = new Date();
     todayDateField.value = today.toLocaleDateString('en-CA');    
@@ -1031,6 +1044,9 @@ function applyClientLanguage(lang) {
         const key = label.getAttribute('data-translatable');
         if (labelMap[key]) label.textContent = labelMap[key];
     });
+
+    // Screenshot Interval birimini de güncelle
+    fetchScreenshotInterval();
 
     // Dropdown placeholders
     const projectDropdown = document.getElementById("project");
