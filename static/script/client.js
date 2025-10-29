@@ -1,8 +1,89 @@
+// Çalışma/Toplantı mod yönetimi
+let currentMode = 'work'; // 'work' veya 'meeting'
+let meetingRecords = [];
+
+function setMode(mode) {
+    // Eğer timer çalışıyorsa mod değiştirmeye izin verme
+    if (isTimerRunning) {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        const message = lang === 'tr' 
+            ? "⛔ Zamanlayıcı çalışırken mod değiştiremezsiniz. Lütfen önce görevi bitirin."
+            : "⛔ You cannot change mode while timer is running. Please finish your task first.";
+        showToast(message, "error");
+        return;
+    }
+    
+    currentMode = mode;
+    const workBtn = document.getElementById('workModeBtn');
+    const meetingBtn = document.getElementById('meetingModeBtn');
+    
+    if (mode === 'work') {
+        workBtn.classList.add('active');
+        workBtn.style.background = '#006039';
+        workBtn.style.color = '#fff';
+        meetingBtn.classList.remove('active');
+        meetingBtn.style.background = '#fff';
+        meetingBtn.style.color = '#006039';
+        setState('work');
+        
+        // Çalışma modunda dropdown'ları göster
+        document.getElementById('projectSection').style.display = 'block';
+        document.getElementById('taskSection').style.display = 'block';
+    } else {
+        meetingBtn.classList.add('active');
+        meetingBtn.style.background = '#006039';
+        meetingBtn.style.color = '#fff';
+        workBtn.classList.remove('active');
+        workBtn.style.background = '#fff';
+        workBtn.style.color = '#006039';
+        setState('meeting');
+        
+        // Toplantı modunda dropdown'ları gizle
+        document.getElementById('projectSection').style.display = 'none';
+        document.getElementById('taskSection').style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const workBtn = document.getElementById('workModeBtn');
+    const meetingBtn = document.getElementById('meetingModeBtn');
+    if (workBtn && meetingBtn) {
+        workBtn.addEventListener('click', () => setMode('work'));
+        meetingBtn.addEventListener('click', () => setMode('meeting'));
+    }
+
+    // Screenshot interval fetch
+    fetchScreenshotInterval();
+});
+
+// Screenshot interval fetch and display
+function fetchScreenshotInterval() {
+    const intervalDiv = document.getElementById('screenshotInterval');
+    if (!user || !intervalDiv) return;
+    
+    fetch('/api/get-staff-screen-shot-time', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, staff_id: user.staffid })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data && data.interval) {
+            intervalDiv.textContent = `${data.interval} seconds`;
+        } else {
+            intervalDiv.textContent = 'N/A';
+        }
+    })
+    .catch(() => {
+        intervalDiv.textContent = 'N/A';
+    });
+}
+
 let isStartInProgress = false;
 let isSubmitInProgress = false;
 let isResetInProgress = false;
 let idleTriggerTime = 0;
-let idleTimeout = 5;  // modal stays 5 seconds before sending auto-note
+let idleTimeout = 5;
 
 // 🎨 DDS Styling API Integration for Client Page
 const translations = {
@@ -12,28 +93,29 @@ const translations = {
         total: "Total Time Count",
         loadingTasks: "Loading tasks...",
         idleTitle: "⏸️ You're Idle",
-        idleDesc: "You’ve been inactive. Timer is paused.",
+        idleDesc: "You've been inactive. Timer is paused.",
         min: "min", 
         today: "Today",
         work: "WORK",
+        meeting: "MEETING",
         start: "START",
         finish: "Finish",
         hrs: "HRS",
         min: "MIN",
         sec: "SEC",
         modalTitle: "📝 Task Completion",
+        meetingModalTitle: "📝 Meeting Completion",
         modalDesc: "Please describe what you have completed for this task:",
+        meetingModalDesc: "Please describe what was discussed in this meeting:",
         submit: "Submit",
         selectTask: "-- Select a Task --",
         loadingProjects: "Loading projects...",
         user: "User",
         project: "Project",
         task: "Task",
-        client: "Client",
-        modalTitle: "📝 Task Completion",
-        modalDesc: "Please describe what you have completed for this task:",
+        client: "Staff",
         modalPlaceholder: "Type your task details here...",
-        submit: "Submit",
+        meetingModalPlaceholder: "Type your meeting notes here...",
         selectProject: "Select a Project",
         minWorkWarning: "⚠️ You must work at least 1 minute to finish a task.",
         logout: "Logout",
@@ -55,7 +137,13 @@ const translations = {
             meeting: "In a MEETING – Stay connected and engaged 👥"
         },
         navFeedback: "FEEDBACK",
-        rememberMe: "Remember Me"
+        rememberMe: "Remember Me",
+        selectMode: "Select Mode",
+        workMode: "Work Mode",
+        meetingMode: "Meeting Mode",
+        totalLogged: "Total Time Logged",
+        screenRecording: "Screen Recording",
+        screenshotInterval: "Screenshot Interval"
     },
     tr: {
         welcome: "Hoş geldin...",
@@ -64,20 +152,19 @@ const translations = {
         minWorkWarning: "⚠️ Bir görevi bitirmek için en az 1 dakika çalışmalısınız.",
         idle: "BOŞTA",
         break: "MOLA",
-        min: "dk", // or "dakika" if preferred
+        min: "dk",
         meeting: "TOPLANTI",
         today: "Tarih",
         work: "ÇALIŞMA",
-        loadingTasks: "Görevler yükleniyor...",
-        idleTitle: "⏸️ Boştasınız",
-        idleDesc: "Bir süredir işlem yapılmadı. Sayaç duraklatıldı.",
         start: "BAŞLAT",
         finish: "Bitir",
         hrs: "SA",
         min: "DK",
         sec: "SN",
         modalTitle: "📝 İş Tamamlandı",
+        meetingModalTitle: "📝 Toplantı Tamamlandı",
         modalDesc: "Bu İş Emri için ne yaptığınızı açıklayın:",
+        meetingModalDesc: "Bu toplantıda neler konuşulduğunu açıklayın:",
         submit: "Gönder",
         selectTask: "-- İş Emri Seçin --",
         loadingProjects: "Projeler yükleniyor...",
@@ -85,10 +172,8 @@ const translations = {
         project: "Proje",
         task: "İş Emri",
         client: "Personel",
-        modalTitle: "📝 İş Emri Tamamlandı",
-        modalDesc: "Bu iş emri için ne yaptığınızı açıklayın:",
         modalPlaceholder: "İş Emri detaylarını buraya yazın...",
-        submit: "Gönder",
+        meetingModalPlaceholder: "Toplantı notlarını buraya yazın...",
         selectProject: "Proje Seçin",
         logout: "Çıkış Yap",
         logoutTitle: "🔒 Çıkış Onayı",
@@ -109,62 +194,77 @@ const translations = {
             idle: " ",
             meeting: "Şu anda TOPLANTIDASINIZ – İletişimde ve odaklı kalın 👥"
         },
-        rememberMe: "Beni Hatırla"
+        rememberMe: "Beni Hatırla",
+        selectMode: "Mod Seçin",
+        workMode: "Çalışma Modu",
+        meetingMode: "Toplantı Modu",
+        totalLogged: "Toplam Zaman",
+        screenRecording: "Ekran Kaydı",
+        screenshotInterval: "Ekran Görüntüsü Aralığı"
     }
 };
 
-
-
 function showToast(message, type = 'success') {
-                Toastify({
-                    text: message,
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: type === 'error' ? "#e74c3c" : "#27ae60",
-                    close: true
-                }).showToast();
-            }
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: type === 'error' ? "#e74c3c" : "#27ae60",
+        close: true
+    }).showToast();
+}
 
-            function logout() {
-                sessionStorage.clear();
-                window.location.href = '/';
-            }
+function logout() {
+    sessionStorage.clear();
+    window.location.href = '/';
+}
 
-            function updateDrawerContent(projectName, taskName) {
-                // Update project details
-                const drawerProjectName = document.getElementById('drawerProjectName');
-                const drawerProjectDesc = document.getElementById('drawerProjectDesc');
-                
-                if (drawerProjectName) {
-                    drawerProjectName.textContent = projectName || 'No Project Selected';
-                }
-                if (drawerProjectDesc) {
-                    drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
-                }
-                
-                // Update task details
-                const drawerTaskName = document.getElementById('drawerTaskName');
-                const drawerTaskDesc = document.getElementById('drawerTaskDesc');
-                
-                if (drawerTaskName) {
-                    drawerTaskName.textContent = taskName || 'No Task Selected';
-                }
-                if (drawerTaskDesc) {
-                    drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
-                }
-                
-                // Update session info
-                const drawerSessionStart = document.getElementById('drawerSessionStart');
-                if (drawerSessionStart) {
-                    drawerSessionStart.textContent = new Date().toLocaleTimeString();
-                }
+function updateDrawerContent(projectName, taskName, isMeeting = false) {
+    const drawerProjectName = document.getElementById('drawerProjectName');
+    const drawerProjectDesc = document.getElementById('drawerProjectDesc');
+    
+    if (drawerProjectName) {
+        if (isMeeting) {
+            drawerProjectName.textContent = 'Meeting Session';
+            if (drawerProjectDesc) {
+                drawerProjectDesc.textContent = 'Currently in a meeting';
             }
+        } else {
+            drawerProjectName.textContent = projectName || 'No Project Selected';
+            if (drawerProjectDesc) {
+                drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
+            }
+        }
+    }
+    
+    const drawerTaskName = document.getElementById('drawerTaskName');
+    const drawerTaskDesc = document.getElementById('drawerTaskDesc');
+    
+    if (drawerTaskName) {
+        if (isMeeting) {
+            drawerTaskName.textContent = 'Meeting';
+            if (drawerTaskDesc) {
+                drawerTaskDesc.textContent = 'Meeting in progress';
+            }
+        } else {
+            drawerTaskName.textContent = taskName || 'No Task Selected';
+            if (drawerTaskDesc) {
+                drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
+            }
+        }
+    }
+    
+    const drawerSessionStart = document.getElementById('drawerSessionStart');
+    if (drawerSessionStart) {
+        drawerSessionStart.textContent = new Date().toLocaleTimeString();
+    }
+}
 
-            let timerInterval, totalSeconds = 0;
-            let isTimerRunning = false;
-            let currentTaskId = null, sessionStartTime = null;
-            let selectedProjectName = '', selectedTaskName = '', user = null;
+let timerInterval, totalSeconds = 0;
+let isTimerRunning = false;
+let currentTaskId = null, sessionStartTime = null;
+let selectedProjectName = '', selectedTaskName = '', user = null;
 
 window.onload = function () {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
@@ -173,39 +273,34 @@ window.onload = function () {
     const today = new Date();
     todayDateField.value = today.toLocaleDateString('en-CA');    
 
-
     user = JSON.parse(sessionStorage.getItem('user'));
     if (user) {
         document.getElementById('displayUserName').innerText = user.firstName;
         document.getElementById('clientNameInput').value = user.firstName;
-        // document.getElementById('profileImage').src = `https://crm.deluxebilisim.com/uploads/staff_profile_images/${user.staffid}/small_${user.profileImage}`;
         const profileImg = document.getElementById('profileImage');
         const imgUrl = `https://crm.deluxebilisim.com/uploads/staff_profile_images/${user.staffid}/small_${user.profileImage}`;
         profileImg.src = imgUrl;
         profileImg.onerror = function () {
-            this.onerror = null; // prevent infinite loop
-            this.src = "../static/images/user_placeholder.png"; // Local fallback
+            this.onerror = null;
+            this.src = "../static/images/user_placeholder.png";
         };
 
         fetchAIProjects(user);
         saveUserProjectsToCache(user);
     }
 
-    // 🎨 Re-apply styling after DOM setup
     setTimeout(() => {
         console.log('🔄 Client.js: Re-applying styling after DOM setup...');
     }, 1000);
 };
 
-
-
-
-
-
 let idleCountdownInterval;
 
 setInterval(() => {
     if (!isTimerRunning) return;
+    
+    // Toplantı modunda idle kontrolü yapma
+    if (currentMode === 'meeting') return;
 
     fetch('/check_idle_state')
         .then(res => res.json())
@@ -223,30 +318,14 @@ setInterval(() => {
 
                 if (idleModal && countdownText && counterSpan) {
                     idleModal.style.display = 'flex';
-
-
-
-
-
-                   idleModal.style.display = 'flex';
-
                     const idleContent = idleModal.querySelector(".modal-content");
                     idleContent.classList.remove('idle-shake');
                     void idleContent.offsetWidth;
                     idleContent.classList.add('idle-shake');
 
-                    // ⏱️ Directly call auto submit without countdown
                     setTimeout(() => {
                         handleAutoIdleSubmit();
-                    }, 5000);  // Keep 5s visual delay if needed
-
-
-
-
-
-
-
-
+                    }, 5000);
                 }
             }
         })
@@ -254,17 +333,16 @@ setInterval(() => {
 }, 10000);
 
 async function handleAutoIdleSubmit() {
-    stopScreenRecording();  // ✅ Yeh yahan hona chahiye, function ke andar nahi
+    stopScreenRecording();
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
 
-    // ✅ Total idle = 5 minutes (300s) + modal display (5s)
     const totalIdleSeconds = 180;
-
     const actualEndTime = Math.floor(idleTriggerTime / 1000);
     const adjustedEndTime = actualEndTime - totalIdleSeconds;
     const durationWorked = adjustedEndTime - sessionStartTime;
 
     const minsWorked = durationWorked >= 60 ? Math.floor(durationWorked / 60) : 0;
+    const secsWorked = durationWorked % 60;
     const idleMsg = lang === 'tr'
     ? (minsWorked === 0
         ? `Kullanıcı 1 dakikadan az çalıştı ve ${totalIdleSeconds} saniye boşta kaldı.`
@@ -273,11 +351,7 @@ async function handleAutoIdleSubmit() {
         ? `User worked for less than 1 minute and stayed idle for ${totalIdleSeconds} seconds.`
         : `User worked for ${minsWorked} minutes and stayed idle for ${totalIdleSeconds} seconds.`);
 
-
-    // 👇 ADD THIS LINE
-const secsWorked = durationWorked % 60;
-document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
-
+    document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
 
     console.log("📤 Auto-submitting due to idle...");
     console.log({
@@ -303,35 +377,38 @@ document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
 
         resetTimer();
         stopScreenRecording();
-        stopDailyLogsCapture(); // ✅ Stop daily logs capture
+        stopDailyLogsCapture();
         showToast('✅ Auto-saved due to idle', 'success');
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
-        // showToast("❌ Auto-save failed", "error");
     }
 }
 
-
-
 document.getElementById('startBtn').addEventListener('click', function () {
-    const taskSelect = document.getElementById('task');
-    const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
-    const taskId = taskSelect.value;
+    // Çalışma modunda task seçimini kontrol et
+    if (currentMode === 'work') {
+        const taskSelect = document.getElementById('task');
+        const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
+        const taskId = taskSelect.value;
 
-    if (!taskId || taskId === "" || selectedTaskOption.disabled) {
-        showToast('⚠️ Please select a task first!', 'error');
-        return;
+        if (!taskId || taskId === "" || selectedTaskOption.disabled) {
+            showToast('⚠️ Please select a task first!', 'error');
+            return;
+        }
+        currentTaskId = taskId;
+        selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
+        selectedTaskName = selectedTaskOption.textContent;
+    } else {
+        // Toplantı modunda
+        currentTaskId = 'meeting';
+        selectedProjectName = 'Meeting';
+        selectedTaskName = 'Meeting Session';
     }
 
     if (!isTimerRunning) {
-        currentTaskId = taskId;
-        sessionStartTime = Math.floor(Date.now() / 1000);  // ✅ UNIX timestamp
+        sessionStartTime = Math.floor(Date.now() / 1000);
 
-        selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
-        selectedTaskName = selectedTaskOption.textContent;
-
-        // Update drawer content with selected project and task
-        updateDrawerContent(selectedProjectName, selectedTaskName);
+        updateDrawerContent(selectedProjectName, selectedTaskName, currentMode === 'meeting');
 
         fetch('/start_screen_recording', {
             method: 'POST',
@@ -343,27 +420,15 @@ document.getElementById('startBtn').addEventListener('click', function () {
             })
         }).catch(console.error);
 
-        // ✅ Start automatic daily logs capture
         startDailyLogsCapture();
-
         startTimer();
-
-        // ✅ Automatically update stateCircle to WORK
-        setState('work');
+        setState(currentMode === 'meeting' ? 'meeting' : 'work');
         
-        // 🎨 Re-apply button styling after state change
         setTimeout(() => {
         }, 500);
     }
 });
 
-
-
-
-
-
-
-// Reset button event listener with error checking
 document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
@@ -373,8 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (totalSeconds < 10) {
                 console.log('⚠️ Session too short, showing warning');
-                // resetTimer();
-                // stopScreenRecording();
                 const lang = sessionStorage.getItem('selectedLanguage') || 'en';
                 const message = translations[lang].minWorkWarning;
                 showToast(message, 'error');
@@ -390,36 +453,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// let sessionStartTime;
 function startTimer() {
-    // clearInterval(timerInterval);
     sessionStartTime = Math.floor(Date.now() / 1000);
-    const unixStart = Math.floor(sessionStartTime / 1000);
-    // console.log("⏱️ Session Start Timestamp:", sessionStartTime);
-
-
-
-    console.log("📤 Sending to /start_task_session:");
-    console.log({
-        email: user.email,
-        staff_id: String(user.staffid),
-        task_id: currentTaskId,
-        start_time: sessionStartTime
-    });
-
-
-    fetch('/start_task_session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    
+    if (currentMode === 'work') {
+        console.log("📤 Sending to /start_task_session:");
+        console.log({
             email: user.email,
             staff_id: String(user.staffid),
             task_id: currentTaskId,
-            start_time: sessionStartTime  // 🔥 Already a number
+            start_time: sessionStartTime
+        });
 
-
+        fetch('/start_task_session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: user.email,
+                staff_id: String(user.staffid),
+                task_id: currentTaskId,
+                start_time: sessionStartTime
+            })
         })
-    })
         .then(res => res.json())
         .then(data => {
             console.log("📤 Sent start time:", sessionStartTime);
@@ -428,25 +483,23 @@ function startTimer() {
             console.log("📥 Server response:", data);
         })
         .catch(console.error);
-
-
-
-
-
+    }
 
     isTimerRunning = true;
     document.getElementById('startBtn').disabled = true;
-
     document.getElementById('startBtn').style.backgroundColor = 'gray';
-    document.getElementById('project').disabled = true;
-    document.getElementById('task').disabled = true;
+    
+    // Sadece çalışma modunda dropdown'ları disable et
+    if (currentMode === 'work') {
+        document.getElementById('project').disabled = true;
+        document.getElementById('task').disabled = true;
+    }
+    
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
 
     timerInterval = setInterval(updateTimerDisplay, 1000);
 }
-
-
 
 function pauseTimer() {
     console.log("Timer paused, seconds was:", totalSeconds);
@@ -461,32 +514,25 @@ function resetTimer() {
     totalSeconds = 0;
     isTimerRunning = false;
 
-    // Reset display
     document.getElementById('hours').innerText = '00';
     document.getElementById('minutes').innerText = '00';
     document.getElementById('seconds').innerText = '00';
 
-    // ✅ Reactivate the Start button
     document.getElementById('startBtn').disabled = false;
     document.getElementById('startBtn').style.backgroundColor = 'green';
 
-    // Enable dropdowns again
-    const projectSelect = document.getElementById('project');
-    const taskSelect = document.getElementById('task');
-    projectSelect.disabled = false;
-    taskSelect.disabled = false;
+    // Sadece çalışma modunda dropdown'ları enable et
+    if (currentMode === 'work') {
+        const projectSelect = document.getElementById('project');
+        const taskSelect = document.getElementById('task');
+        projectSelect.disabled = false;
+        taskSelect.disabled = false;
+    }
 
-    // Reset dropdowns
-    projectSelect.selectedIndex = 0;
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    const taskPlaceholder = lang === 'tr' ? '-- İş Emri Seçin --' : '-- Select a Task --';
-    taskSelect.innerHTML = `<option disabled selected>${taskPlaceholder}</option>`;
-
-    // Logging input reset
     document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
     document.getElementById('totaltimecount').innerText = `0 min 0 sec`;
 }
-
 
 function updateTimerDisplay() {
     totalSeconds++;
@@ -495,39 +541,32 @@ function updateTimerDisplay() {
     document.getElementById('minutes').innerText = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
     document.getElementById('seconds').innerText = String(totalSeconds % 60).padStart(2, '0');
 
-    // ✅ Live update Total Time Count with translation
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
 
     const labelMin = translations[lang].min || 'min';
-    const labelSec = translations[lang].sec || 'sec';  // 👈 make sure `sec` exists in translations
+    const labelSec = translations[lang].sec || 'sec';
 
     document.getElementById('totaltimecount').innerText = `${mins} ${labelMin} ${secs} ${labelSec}`;
 }
 
-
 function stopScreenRecording() {
     fetch('/stop_screen_recording', { method: 'POST' })
         .then(res => res.json())
-        // .then(data => console.log("🛑 Recording stopped:", data))
         .catch(console.error);
-        
 }
 
-// ✅ Daily logs capture functions
 let dailyLogsInterval;
 
 function startDailyLogsCapture() {
     console.log("📋 Starting automatic daily logs capture...");
     
-    // Capture initial log when work starts
     captureCurrentActivityLog();
     
-    // Set interval to capture logs every 60 seconds (1 minute)
     dailyLogsInterval = setInterval(() => {
         captureCurrentActivityLog();
-    }, 60000); // 60 seconds
+    }, 60000);
 }
 
 function stopDailyLogsCapture() {
@@ -549,7 +588,7 @@ function captureCurrentActivityLog() {
         project_name: selectedProjectName,
         task_name: selectedTaskName,
         timestamp: currentTime,
-        activity_type: isTimerRunning ? 'working' : 'idle',
+        activity_type: isTimerRunning ? (currentMode === 'meeting' ? 'meeting' : 'working') : 'idle',
         timer_seconds: totalSeconds
     };
     
@@ -591,8 +630,8 @@ function fetchAIProjects(user) {
                 tr: { selectProject: "Proje Seçin" }
             };
             const defaultOption = new Option(t[lang].selectProject, '');
-
             projectSelect.appendChild(defaultOption);
+            
             const uniqueProjects = [];
             const seenKeys = new Set();
 
@@ -607,14 +646,13 @@ function fetchAIProjects(user) {
                 const option = new Option(project.name || project.projectname || 'Unnamed Project', project.id);
                 projectSelect.appendChild(option);
             });
-
-            // showToast(`✅ Found ${projects.length} projects`);
         })
         .catch(error => {
             console.error(error);
             showToast('❌ Error loading projects', 'error');
         });
 }
+
 function loadTasksForProject() {
     const projectId = document.getElementById('project').value;
     const taskSelect = document.getElementById('task');
@@ -629,7 +667,7 @@ function loadTasksForProject() {
 
     taskSelect.innerHTML = `<option disabled selected>${loadingTasksText}</option>`;
 
-    fetch(`/get_tasks/${projectId}`)  // or /get_active_tasks if you're using status=2 only
+    fetch(`/get_tasks/${projectId}`)
         .then(response => response.json())
         .then(data => {
             taskSelect.innerHTML = '';
@@ -644,7 +682,6 @@ function loadTasksForProject() {
                 taskSelect.appendChild(option);
             });
 
-            // ✅ Print task details in console
             console.log(`📋 Loaded ${tasks.length} tasks for project ${projectId}:`);
             tasks.forEach(task => {
                 console.log(`🧾 [Task] ID: ${task.id} | Name: ${task.name} | Status: ${task.status}`);
@@ -668,14 +705,12 @@ function fetchLoggedTaskTimes() {
     fetch(`/get_task_time_summary/${user.email}`)
         .then(res => res.json())
         .then(data => {
-            // console.log("🕒 Task time summary:", data.summary);
         })
         .catch(err => console.error("❌ Error loading task times:", err));
 }
 
 function openModal() {
     console.log('🎯 openModal() called');
-    // clearInterval(timerInterval); 
     const modal = document.getElementById('finishModal');
     console.log('📋 Modal element:', modal);
     
@@ -684,17 +719,27 @@ function openModal() {
         return;
     }
     
+    // Modal içeriğini moda göre güncelle
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    if (currentMode === 'meeting') {
+        document.getElementById('modalTitle').textContent = translations[lang].meetingModalTitle;
+        document.getElementById('modalDesc').textContent = translations[lang].meetingModalDesc;
+        document.getElementById('taskDetailInput').placeholder = translations[lang].meetingModalPlaceholder;
+    } else {
+        document.getElementById('modalTitle').textContent = translations[lang].modalTitle;
+        document.getElementById('modalDesc').textContent = translations[lang].modalDesc;
+        document.getElementById('taskDetailInput').placeholder = translations[lang].modalPlaceholder;
+    }
+    
     modal.style.display = 'flex';
     console.log('👁️ Modal display set to flex');
     
-    // Trigger animation after display is set
     setTimeout(() => {
         modal.classList.remove('hide');
         modal.classList.add('show');
         console.log('🎬 Modal animation classes applied');
     }, 10);
     
-    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     const loggingInput = document.getElementById('loggingInput');
     if (loggingInput) {
         loggingInput.value = lang === 'tr' ? 'EVET' : 'YES';
@@ -708,174 +753,129 @@ function closeModal() {
     const modal = document.getElementById('finishModal');
     modal.classList.remove('show');
     modal.classList.add('hide');
-    // Hide modal after animation completes
     setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.remove('hide');
     }, 300);
 }
 
-// Task Details Modal Logic
-function openTaskDetailsModal(taskName) {
-    const modal = document.getElementById('taskDetailsModal');
-    const body = document.getElementById('taskDetailsBody');
-    modal.style.display = 'flex';
-    modal.classList.add('show');
-    body.innerHTML = '<div>Yükleniyor...</div>';
-
-    fetch(`/api/search-task?task_name=${encodeURIComponent(taskName)}`, {
-        headers: {
-            'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o'
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data || !data[0]) {
-            body.innerHTML = '<div>Görev bulunamadı.</div>';
-            return;
-        }
-        const task = data[0];
-        // Calculate remaining time
-        const dueDate = new Date(task.duedate);
-        const now = new Date();
-        const diffMs = dueDate - now;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        let remaining = '';
-        if (diffMs > 0) {
-            remaining = `${diffDays} gün, ${diffHours} saat, ${diffMinutes} dakika kaldı`;
-        } else {
-            remaining = 'Süre doldu';
-        }
-
-        // Customfields
-        let customFieldsHtml = '';
-        if (task.customfields && Array.isArray(task.customfields)) {
-            customFieldsHtml = '<ul>' + task.customfields.map(f => `<li><strong>${f.label}:</strong> ${f.value || ''}</li>`).join('') + '</ul>';
-        }
-
-        body.innerHTML = `
-          <div><strong>Görev Adı:</strong> ${task.name}</div>
-          <div><strong>Açıklama:</strong> ${task.description}</div>
-          <div><strong>Bitiş Tarihi:</strong> ${task.duedate}</div>
-          <div><strong>Kalan Süre:</strong> ${remaining}</div>
-          <div><strong>Notlar / Linkler:</strong> ${customFieldsHtml}</div>
-        `;
-    })
-    .catch(() => {
-        body.innerHTML = '<div>Görev detayları alınamadı.</div>';
-    });
-}
-
-function closeTaskDetailsModal() {
-    const modal = document.getElementById('taskDetailsModal');
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-}
-
 async function submitTaskDetails() {
     const detailText = document.getElementById('taskDetailInput').value.trim();
     if (!detailText) {
-        showToast('⚠️ Please enter task details!', 'error');
+        showToast('⚠️ Please enter details!', 'error');
         return;
     }
 
-    const end_time_unix = Math.floor(Date.now() / 1000); // UNIX format
-    const taskId = document.getElementById('task').value;
+    const end_time_unix = Math.floor(Date.now() / 1000);
 
-    console.log("📤 Sending to /end_task_session:");
-    console.log("📧 Email:", user.email);
-    console.log("🆔 Task ID:", taskId);
-    console.log("🕐 End Time (UNIX):", end_time_unix);
-    console.log("📝 Note:", detailText);
+    let meetings = [];
+    if (currentMode === 'meeting') {
+        meetings.push({ duration_seconds: totalSeconds, notes: detailText });
+    }
 
     try {
-        // ⚡ Close modal immediately for better UX
         closeModal();
         resetTimer();
-        showToast('💾 Saving task details...', 'info');
+        showToast('💾 Saving details...', 'info');
 
-        // First, send the critical task completion data
-        const saveRes = await fetch('/end_task_session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: user.email,
-                staff_id: String(user.staffid),
-                task_id: taskId,
-                end_time: end_time_unix,
-                note: detailText
-            })
-        });
-
-        if (saveRes.ok) {
-            showToast('✅ Task details saved!');
-            
-            // ⚡ Send timesheet data first, then other operations in background
-            await sendTimesheetToBackend();
-            
-            // Show loader for background operations
-            showLoader();
-
-            // ⚡ Run these operations in parallel instead of sequentially
-            Promise.all([
-                fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
-                fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
-                uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
-            ]).then(() => {
-                hideLoader();
-                console.log('✅ All background operations completed');
-            }).catch(err => {
-                console.warn('⚠️ Some background operations failed:', err);
-                hideLoader();
+        if (currentMode === 'work') {
+            // Çalışma modunda normal task kaydı
+            const saveRes = await fetch('/end_task_session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    staff_id: String(user.staffid),
+                    task_id: currentTaskId,
+                    end_time: end_time_unix,
+                    note: detailText
+                })
             });
-            
-        } else {
-            const saveJson = await saveRes.json();
-            showToast('❌ Failed to save task details', 'error');
-            console.error('Save error:', saveJson);
+
+            if (saveRes.ok) {
+                showToast('✅ Details saved!');
+            } else {
+                const saveJson = await saveRes.json();
+                showToast('❌ Failed to save details', 'error');
+                console.error('Save error:', saveJson);
+            }
         }
 
+        // Her iki modda da timesheet ve meeting bilgilerini gönder
+        await sendTimesheetToBackend(meetings);
+        
+        // Meeting bilgilerini store_logout_time endpoint'ine de gönder
+        if (currentMode === 'meeting') {
+            await sendMeetingToLogoutTime(meetings);
+        }
+
+        showLoader();
+        Promise.all([
+            fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
+            fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
+            uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
+        ]).then(() => {
+            hideLoader();
+            console.log('✅ All background operations completed');
+        }).catch(err => {
+            console.warn('⚠️ Some background operations failed:', err);
+            hideLoader();
+        });
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
-        showToast('❌ Error saving task details', 'error');
+        showToast('❌ Error saving details', 'error');
         hideLoader();
     }
 }
 
-
-
-async function sendTimesheetToBackend() {
+async function sendTimesheetToBackend(meetings = []) {
     const payload = [
         {
-            task_id: document.getElementById('task').value,
-            start_time: "10:00:00", // 👈 yeh tum calculate ya assign kar sakte ho
-            end_time: "12:00:00",   // 👈 current time use bhi kar sakte ho
+            task_id: currentMode === 'meeting' ? 'meeting' : document.getElementById('task').value,
+            start_time: "10:00:00",
+            end_time: "12:00:00",
             staff_id: String(user.staffid),
             hourly_rate: "5.00",
-            note: document.getElementById('taskDetailInput').value.trim()
+            note: document.getElementById('taskDetailInput').value.trim(),
+            meetings: meetings.length > 0 ? meetings : undefined
         }
     ];
-
     try {
         const res = await fetch('/insert_user_timesheet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
         const result = await res.json();
-        console.log("✅ Server response:", result);
+        console.log("✅ Timesheet sent:", result);
         showToast("✅ Timesheet sent!");
     } catch (error) {
         console.error("❌ Error sending timesheet:", error);
-        // showToast("❌ Failed to send!", "error");
     }
 }
 
+async function sendMeetingToLogoutTime(meetings = []) {
+    try {
+        const payload = {
+            email: user.email,
+            staff_id: String(user.staffid),
+            total_duration: formatTime(totalSeconds),
+            total_seconds: totalSeconds,
+            meetings: meetings
+        };
 
-
+        const res = await fetch('/api/store_logout_time', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await res.json();
+        console.log("✅ Meeting sent to logout time:", result);
+    } catch (error) {
+        console.error("❌ Error sending meeting to logout time:", error);
+    }
+}
 
 function formatTime(seconds) {
     const hrs = Math.floor(seconds / 3600);
@@ -895,7 +895,6 @@ function syncAllUsers() {
         })
         .catch(err => {
             console.error(err);
-            // showToast('❌ Failed to sync all users', 'error');
         });
 }
 
@@ -913,107 +912,97 @@ ${messages[lang]}
     document.getElementById('syncLoader').style.display = 'flex';
 }
 
-
 function hideLoader() {
     document.getElementById('syncLoader').style.display = 'none';
-
-
-
-
-
 }
-
 
 window.addEventListener('DOMContentLoaded', () => {
     const animationBox = document.getElementById('work-animation');
-    const gifImg = animationBox.querySelector('img');
+    if (animationBox) {
+        const gifImg = animationBox.querySelector('img');
+        const gifs = [
+            "https://media.tenor.com/bnYAs3wmjdYAAAAM/keyboard-type.gif",
+            "https://i.gifer.com/embedded/download/11gv.gif",
+            "https://www.icegif.com/wp-content/uploads/icegif-1850.gif",
+            "https://www.icegif.com/wp-content/uploads/icegif-1852.gif",
+            "https://gifdb.com/images/high/jabril-typing-with-toes-y859gmgutpzs3aqj.webp",
+            "https://i.gifer.com/embedded/download/Cdm.gif",
+            "https://i.gifer.com/embedded/download/So5.gif",
+            "https://i.gifer.com/embedded/download/3XJG.gif",
+            "https://i.gifer.com/embedded/download/3ev.gif",
+            "https://i.gifer.com/embedded/download/Dx.gif",
+            "https://i.gifer.com/embedded/download/2IN3.gif"
+        ];
 
-    const gifs = [
-        "https://media.tenor.com/bnYAs3wmjdYAAAAM/keyboard-type.gif",
-        "https://i.gifer.com/embedded/download/11gv.gif",
-        "https://www.icegif.com/wp-content/uploads/icegif-1850.gif",
-        "https://www.icegif.com/wp-content/uploads/icegif-1852.gif",
+        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+        gifImg.src = randomGif;
 
-        "https://gifdb.com/images/high/jabril-typing-with-toes-y859gmgutpzs3aqj.webp",
+        animationBox.classList.add('show');
+        animationBox.style.display = 'block';
 
-        "https://i.gifer.com/embedded/download/Cdm.gif",
-        "https://i.gifer.com/embedded/download/So5.gif",
-        "https://i.gifer.com/embedded/download/3XJG.gif",
-        "https://i.gifer.com/embedded/download/3ev.gif",
-        "https://i.gifer.com/embedded/download/Dx.gif",
-        "https://i.gifer.com/embedded/download/2IN3.gif"
-    ];
-
-    const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
-    gifImg.src = randomGif;
-
-    animationBox.classList.add('show');
-    animationBox.style.display = 'block';
-
-    setTimeout(() => {
-        animationBox.classList.remove('show');
         setTimeout(() => {
-            animationBox.style.display = 'none';
-        }, 1000);
-    }, 20000);
+            animationBox.classList.remove('show');
+            setTimeout(() => {
+                animationBox.style.display = 'none';
+            }, 1000);
+        }, 20000);
+    }
 });
 
-
-
 function applyClientLanguage(lang) {
-
-
-
-
     const t = translations[lang];
-    document.querySelector("#work-animation p").textContent = t.welcome;
+    
+    // State circle ve label
     const stateCircle = document.getElementById("stateCircle");
     let currentState = "work";
-
     if (stateCircle.classList.contains("idle")) currentState = "idle";
     else if (stateCircle.classList.contains("break")) currentState = "break";
     else if (stateCircle.classList.contains("meeting")) currentState = "meeting";
 
     document.getElementById("stateLabel").textContent = translations[lang][currentState] || currentState.toUpperCase();
 
-
+    // Timer labels
     document.querySelectorAll(".timer-label")[0].textContent = t.hrs;
     document.querySelectorAll(".timer-label")[1].textContent = t.min;
     document.querySelectorAll(".timer-label")[2].textContent = t.sec;
 
-    // Update button text
+    // Buttons
     document.getElementById("startBtn").textContent = t.start;
     document.getElementById("resetBtn").textContent = t.finish;
 
+    // Mode selection buttons
+    document.getElementById("workModeBtn").textContent = t.workMode;
+    document.getElementById("meetingModeBtn").textContent = t.meetingMode;
+
+    // Modal texts
     const idleModalTitle = document.getElementById("idleModalTitle");
     if (idleModalTitle) idleModalTitle.textContent = t.idleTitle;
 
     const idleModalDesc = document.getElementById("idleModalDesc");
     if (idleModalDesc) idleModalDesc.textContent = t.idleDesc;
 
-    // Safely update labels
-    const allLabels = document.querySelectorAll('label');
-    allLabels.forEach(label => {
-        const htmlFor = label.getAttribute('for');
-        if (htmlFor === 'loggingInput') label.textContent = t.logging;
-        if (htmlFor === 'totaltimecount') label.textContent = t.total;
-        if (htmlFor === 'todayDate') label.textContent = t.today;
-        if (htmlFor === "clientNameInput") label.textContent = t.client;
-        if (htmlFor === "project") label.textContent = t.project;
-        if (htmlFor === "task") label.textContent = t.task;
-        if (htmlFor === "loggingInput") label.textContent = t.logging;
-        if (htmlFor === "totaltimecount") label.textContent = t.total;
-        if (htmlFor === "todayDate") label.textContent = t.today;
+    // Labels
+    const labelMap = {
+        client: t.client,
+        totalLogged: t.totalLogged,
+        totalTask: t.total,
+        screenRecording: t.screenRecording,
+        screenshotInterval: t.screenshotInterval
+    };
+    
+    document.querySelectorAll('label[data-translatable]').forEach(label => {
+        const key = label.getAttribute('data-translatable');
+        if (labelMap[key]) label.textContent = labelMap[key];
     });
 
-    // Update dropdown placeholders
+    // Dropdown placeholders
     const projectDropdown = document.getElementById("project");
-    if (projectDropdown.options.length > 0) {
+    if (projectDropdown && projectDropdown.options.length > 0) {
         projectDropdown.options[0].textContent = t.selectProject;
     }
 
     const taskDropdown = document.getElementById("task");
-    if (taskDropdown.options.length > 0) {
+    if (taskDropdown && taskDropdown.options.length > 0) {
         taskDropdown.options[0].textContent = t.selectTask;
     }
 
@@ -1022,72 +1011,44 @@ function applyClientLanguage(lang) {
     document.getElementById('modalDesc').textContent = t.modalDesc;
     document.getElementById('modalSubmitBtn').textContent = t.submit;
     document.getElementById('taskDetailInput').placeholder = t.modalPlaceholder;
+    
+    // Logout modal
     document.getElementById("logout").textContent = t.logout;
-
     if (document.getElementById("logoutModalTitle"))
-    document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
-
+        document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
     if (document.getElementById("logoutModalDesc"))
-    document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
-
+        document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
     if (document.getElementById("logoutConfirmBtn"))
-    document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
-
+        document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
     if (document.getElementById("logoutCancelBtn"))
-    document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
+        document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
 
-
+    // Review modal
     const reviewModalTitle = document.getElementById("reviewModalTitle");
     if (reviewModalTitle) reviewModalTitle.textContent = t.feedbackTitle;
-
     const reviewModalDesc = document.getElementById("reviewModalDesc");
     if (reviewModalDesc) reviewModalDesc.textContent = t.feedbackDesc;
-
     const reviewInput = document.getElementById("reviewInput");
     if (reviewInput) reviewInput.placeholder = t.feedbackPlaceholder;
-
     const reviewSubmitBtn = document.getElementById("reviewSubmitBtn");
     if (reviewSubmitBtn) reviewSubmitBtn.textContent = t.feedbackSubmit;
 
-
+    // Navigation
     if (document.getElementById("navDashboard"))
         document.getElementById("navDashboard").textContent = t.navDashboard;
-
-        if (document.getElementById("navHelp"))
+    if (document.getElementById("navHelp"))
         document.getElementById("navHelp").textContent = t.navHelp;
-
-        if (document.getElementById("navSettings"))
+    if (document.getElementById("navSettings"))
         document.getElementById("navSettings").textContent = t.navSettings;
-
-        if (document.getElementById("navFeedback"))
+    if (document.getElementById("navFeedback"))
         document.getElementById("navFeedback").textContent = t.navFeedback;
 
-if (document.getElementById("rememberMeLabel")) {
-document.getElementById("rememberMeLabel").textContent = t.rememberMe;
-}
+    // Remember me
+    if (document.getElementById("rememberMeLabel")) {
+        document.getElementById("rememberMeLabel").textContent = t.rememberMe;
+    }
 
-if (document.getElementById("logoutModalTitle")) {
-document.getElementById("logoutModalTitle").textContent = t.logoutTitle;
-}
-
-if (document.getElementById("logoutModalDesc")) {
-document.getElementById("logoutModalDesc").textContent = t.logoutDesc;
-}
-
-if (document.getElementById("logoutCancelBtn")) {
-document.getElementById("logoutCancelBtn").textContent = t.logoutCancel;
-}
-
-if (document.getElementById("logoutConfirmBtn")) {
-document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
-}
-
-
-
-
-
-
-
+    // Logging input
     const loggingInput = document.getElementById('loggingInput');
     if (loggingInput) {
         const currentVal = loggingInput.value.toUpperCase();
@@ -1099,15 +1060,12 @@ document.getElementById("logoutConfirmBtn").textContent = t.logoutConfirm;
     }
 }
 
-
-
-// ✅ Inject into <script> block of client.html or external JS file
 window.addEventListener("load", () => {
     if (isTimerRunning) {
         console.log("🛑 App loaded: Auto-stopping timer");
         resetTimer();
         stopScreenRecording();
-        stopDailyLogsCapture(); // ✅ Stop daily logs capture
+        stopDailyLogsCapture();
     }
 });
 
@@ -1119,33 +1077,43 @@ window.addEventListener("beforeunload", async (event) => {
         const end_time_unix = Math.floor(Date.now() / 1000);
 
         try {
-            await fetch('/end_task_session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: user.email,
-                    staff_id: String(user.staffid),
-                    task_id: currentTaskId,
-                    end_time: end_time_unix,
-                    note: detailText
-                })
-            });
+            if (currentMode === 'work') {
+                await fetch('/end_task_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        staff_id: String(user.staffid),
+                        task_id: currentTaskId,
+                        end_time: end_time_unix,
+                        note: detailText
+                    })
+                });
+            } else {
+                // Meeting modunda ise meeting bilgilerini gönder
+                const meetings = [{ duration_seconds: totalSeconds, notes: detailText }];
+                await sendMeetingToLogoutTime(meetings);
+            }
         } catch (err) {
             console.error("❌ Failed to save task before exit:", err);
         }
 
         resetTimer();
         stopScreenRecording();
-        stopDailyLogsCapture(); // ✅ Stop daily logs capture
+        stopDailyLogsCapture();
     }
 });
 
-
-
 async function uploadUsageLogToS3() {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    const taskSelect = document.getElementById('task');
-    const taskName = taskSelect.options[taskSelect.selectedIndex]?.textContent;
+    let taskName = '';
+    
+    if (currentMode === 'work') {
+        const taskSelect = document.getElementById('task');
+        taskName = taskSelect.options[taskSelect.selectedIndex]?.textContent;
+    } else {
+        taskName = 'Meeting Session';
+    }
 
     if (!taskName || !user?.email) {
         showToast(lang === 'tr' ? "⚠️ Lütfen görev seçin!" : "⚠️ Please select a task!", "error");
@@ -1165,11 +1133,6 @@ async function uploadUsageLogToS3() {
         const data = await res.json();
         if (data.success) {
             console.log("📤 AI Summary:", data.summary);
-            // showToast("✅ AI summary created and uploaded!");
-
-            // OPTIONAL: Show inside alert/modal
-            // alert(`🧠 AI Summary:\n\n${data.summary}`);
-
         } else {
             showToast("❌ Failed: " + data.message, 'error');
         }
@@ -1179,33 +1142,22 @@ async function uploadUsageLogToS3() {
     }
 }
 
-       
-
-const stateCircle = document.getElementById('stateCircle');
-const stateLabel = document.getElementById('stateLabel');
-const statusText = document.getElementById('statusText');
-// const particlesContainer = document.getElementById('particles');
-
 const stateConfig = {
     work: {
         label: 'WORK',
         message: 'Currently in WORK mode - Stay focused and productive! 💪',
-        // particles: false
     },
     idle: {
         label: 'IDLE',
         message: 'Taking a moment to breathe - Ready when you are! 🌟',
-        // particles: false
     },
     break: {
         label: 'BREAK',
         message: 'Break time! Recharge and come back stronger ☕',
-        // particles: false
     },
     meeting: {
         label: 'MEETING',
         message: 'In a meeting - Collaborating and connecting! 👥',
-        // particles: false
     }
 };
 
@@ -1217,27 +1169,22 @@ function setState(state) {
 
     const config = stateConfig[state];
 
-    // ✅ Safety check
     if (!stateCircle || !stateLabel) {
         console.warn("⛔ Missing stateCircle or stateLabel in DOM");
         return;
     }
 
-    // ✅ Update visual class
     stateCircle.className = 'state-circle';
     stateCircle.classList.add(state);
 
-    // ✅ State label: translated if available
     const translatedLabel = translations?.[lang]?.[state] || config.label;
     stateLabel.textContent = translatedLabel;
 
-    // ✅ Status message: translated if available
     if (statusText) {
         const message = translations?.[lang]?.statusText?.[state] || config.message;
         statusText.textContent = message;
     }
 
-    // ✅ Button handling
     const startBtn = document.getElementById('startBtn');
     const breakBtn = document.getElementById('breakBtn');
 
@@ -1262,7 +1209,6 @@ function setState(state) {
         if (breakBtn) breakBtn.style.backgroundColor = '#007bff';
     }
 
-    // ✅ Small animation pulse
     stateCircle.style.transform = 'scale(0.95)';
     setTimeout(() => {
         stateCircle.style.transform = '';
@@ -1270,7 +1216,42 @@ function setState(state) {
 }
 
 
+// HTML'e eklenmesi gereken mode selection butonları için CSS
+const modeSelectionCSS = `
+<style>
+.mode-selection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
 
+.mode-btn {
+    padding: 12px 24px;
+    border: 2px solid #006039;
+    background: white;
+    color: #006039;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.mode-btn.active {
+    background: #006039;
+    color: white;
+}
+
+.mode-btn:hover:not(.active) {
+    background: #f0f0f0;
+}
+</style>
+`;
+
+// CSS'i document head'e ekle
+document.head.insertAdjacentHTML('beforeend', modeSelectionCSS);
+
+console.log('✅ Enhanced client.js with meeting mode functionality loaded');
 let demoInterval;
 function startDemo() {
     const states = ['work', 'idle', 'break', 'meeting'];
@@ -1288,20 +1269,15 @@ function stopDemo() {
     }
 }
 
-
-
 function handleBreak() {
-    pauseTimer();        // ⏸️ Timer stop karo
-    setState('break');   // ☕ Status circle break kar do
+    pauseTimer();
+    setState('break');
 
-    // ✅ Immediately disable Break button
     const breakBtn = document.getElementById('breakBtn');
     breakBtn.disabled = true;
     breakBtn.style.backgroundColor = 'gray';
 }
 
-      
-            // Ripple effect on click
 function createRipple(event) {
     const button = event.currentTarget;
     const ripple = document.createElement('span');
@@ -1322,7 +1298,6 @@ function createRipple(event) {
     }, 600);
 }
 
-            // Navigation functionality
 function handleNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const navItems = document.querySelectorAll('.nav-item');
@@ -1331,20 +1306,14 @@ function handleNavigation() {
         link.addEventListener('click', (e) => {
             e.preventDefault();
 
-            // Remove active class from all items
             navItems.forEach(item => item.classList.remove('active'));
-
-            // Add active class to clicked item
             navItems[index].classList.add('active');
 
-            // Create ripple effect
             createRipple(e);
 
-            // Simulate page change with a subtle animation
             const page = link.dataset.page;
             console.log(`Navigating to: ${page}`);
 
-            // Add a slight shake animation to show interaction
             link.style.animation = 'none';
             setTimeout(() => {
                 link.style.animation = '';
@@ -1353,15 +1322,13 @@ function handleNavigation() {
     });
 }
 
-            // Smooth hover effects with mousemove
 function addAdvancedHoverEffects() {
     const navLinks = document.querySelectorAll('.nav-link');
 
     navLinks.forEach(link => {
-        // Skip animation for the feedback link
         const navText = link.querySelector('.nav-text');
         if (navText && navText.id === 'navFeedback') {
-            return; // Skip this link
+            return;
         }
 
         link.addEventListener('mouseenter', () => {
@@ -1388,13 +1355,10 @@ function addAdvancedHoverEffects() {
     });
 }
 
-            // Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', () => {
     handleNavigation();
-    // createParticles();
     addAdvancedHoverEffects();
     
-    // Reset any transforms on the feedback link
     const feedbackLink = document.querySelector('.nav-link:has(#navFeedback)') || 
                         document.getElementById('navFeedback')?.closest('.nav-link');
     if (feedbackLink) {
@@ -1402,17 +1366,14 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackLink.style.transition = 'none';
     }
 
-    // Reset drawer arrow button colors and styles
     const drawerArrowBtn = document.getElementById('drawerArrowBtn');
     if (drawerArrowBtn) {
-        // Remove any inline styles that might override CSS
         drawerArrowBtn.style.backgroundColor = '';
         drawerArrowBtn.style.borderColor = '';
         drawerArrowBtn.style.borderRadius = '';
         console.log('🔄 Drawer arrow button colors reset to CSS defaults');
     }
 
-    // Reset drawer content elements background colors
     const drawerElements = [
         document.querySelector('.drawer'),
         document.querySelector('.drawer-header'),
@@ -1434,15 +1395,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     console.log('🔄 Drawer content background colors reset to CSS defaults');
 
-    // Set up protection against style changes to drawer elements
     if (drawerArrowBtn) {
-        // Create a mutation observer to watch for style changes
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     const target = mutation.target;
                     
-                    // Protect drawer arrow button
                     if (target.id === 'drawerArrowBtn') {
                         if (target.style.backgroundColor && target.style.backgroundColor !== '') {
                             target.style.backgroundColor = '';
@@ -1453,7 +1411,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log('🛡️ Prevented color override on drawer arrow button');
                     }
                     
-                    // Protect drawer content elements
                     if (target.classList.contains('drawer') ||
                         target.classList.contains('drawer-header') || 
                         target.classList.contains('drawer-content') ||
@@ -1479,13 +1436,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
-        // Watch drawer arrow button
         observer.observe(drawerArrowBtn, { 
             attributes: true, 
             attributeFilter: ['style'] 
         });
         
-        // Watch all drawer content elements
         const allDrawerElements = [
             document.querySelector('.drawer'),
             document.querySelector('.drawer-header'),
@@ -1510,7 +1465,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🛡️ Protection set up for all drawer elements');
     }
 
-    // Add a subtle entrance animation to the container
     const container = document.querySelector('.nav-container');
     setTimeout(() => {
         container.style.transform = 'scale(1)';
@@ -1518,7 +1472,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-// Add keyboard navigation
 document.addEventListener('keydown', (e) => {
     const activeItem = document.querySelector('.nav-item.active');
     const navItems = Array.from(document.querySelectorAll('.nav-item'));
@@ -1535,13 +1488,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// === MODAL ANIMATION UTILITIES ===
 function openModalWithAnimation(modalId, callback) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     
     modal.style.display = "flex";
-    // Trigger animation after display is set
     setTimeout(() => {
       modal.classList.remove('hide');
       modal.classList.add('show');
@@ -1556,7 +1507,6 @@ function closeModalWithAnimation(modalId, callback) {
     modal.classList.remove('show');
     modal.classList.add('hide');
     
-    // Hide modal after animation completes
     setTimeout(() => {
       modal.style.display = "none";
       modal.classList.remove('hide');
@@ -1564,12 +1514,9 @@ function closeModalWithAnimation(modalId, callback) {
     }, 300);
 }
 
-// For Review Modal js  
-// === REVIEW MODAL CONTROL ===
 function openReviewModal() {
     const modal = document.getElementById("reviewModal");
     modal.style.display = "flex";
-    // Trigger animation after display is set
     setTimeout(() => {
       modal.classList.remove('hide');
       modal.classList.add('show');
@@ -1581,7 +1528,6 @@ function closeReviewModal() {
     modal.classList.remove('show');
     modal.classList.add('hide');
     
-    // Hide modal after animation completes
     setTimeout(() => {
       modal.style.display = "none";
       modal.classList.remove('hide');
@@ -1613,7 +1559,6 @@ function submitUserReview() {
             closeReviewModal();
             document.getElementById('reviewInput').value = '';
         } else {
-            // showToast('❌ Failed to send feedback: ' + data.message, 'error');
         }
     })
     .catch(err => {
@@ -1622,30 +1567,13 @@ function submitUserReview() {
     });
 }
 
-
 function openInNewTab(url) {
     try {
-        // Works in browser or will call default system browser from PyWebview
         window.open(url, '_blank');
     } catch (err) {
         console.error("❌ Failed to open new tab:", err);
     }
 }
-
-
-
-function logout() {
-  if (isTimerRunning) {
-    showToast("⛔ You cannot logout while the timer is running. Please finish your task first.", "error");
-    return;
-  }
-
-  if (confirm("Are you sure you want to logout?")) {
-    sessionStorage.clear();
-    window.location.href = '/';
-  }
-}
-
 
 function openLogoutModal() {
   if (isTimerRunning) {
@@ -1658,56 +1586,43 @@ function openLogoutModal() {
     return;
   }
 
-  // ✅ Open modal with smooth animation
   const modal = document.getElementById("logoutModal");
   modal.style.display = "flex";
-  // Trigger animation after display is set
   setTimeout(() => {
     modal.classList.remove('hide');
     modal.classList.add('show');
   }, 10);
 }
 
-
 function closeLogoutModal() {
     const modal = document.getElementById("logoutModal");
     modal.classList.remove('show');
     modal.classList.add('hide');
     
-    // Hide modal after animation completes
     setTimeout(() => {
       modal.style.display = "none";
       modal.classList.remove('hide');
     }, 300);
 }
 
-// ✅ confirmLogout() is defined in client.html inline script
-// DO NOT define it here - it will override the HTML version
-
-
 function closeIdleModal() {
-    // const idleModal = document.getElementById("idleModal");
-    // idleModal.style.display = 'none';
 }
 
 function cancelIdleCountdown() {
-    clearInterval(idleCountdownInterval);      // 🛑 Stop the countdown
-    closeIdleModal();                          // ❌ Close the modal
+    clearInterval(idleCountdownInterval);
+    closeIdleModal();
 
-    sessionStartTime = Math.floor(Date.now() / 1000);  // ✅ Reset session start timestamp
+    sessionStartTime = Math.floor(Date.now() / 1000);
 
-    startTimer();                              // ▶️ Resume timer
-    setState('work');                          // 🔄 Change UI back to "work"
+    startTimer();
+    setState('work');
     showToast("⏱️ Countdown canceled. Back to work!", "success");
 }
 
-// 🎨 DDS Styling API Integration - Periodic Refresh & Debug Functions
-// Refresh styling every 5 minutes to ensure consistency
 setInterval(() => {
     console.log('🔄 Client.js: Periodic styling refresh...');
 }, 5 * 60 * 1000);
 
-// 🧪 Debug functions for testing API styling in browser console
 window.refreshStyling = function() {
     console.log('🧪 Manual styling refresh triggered...');
 };
@@ -1715,14 +1630,11 @@ window.refreshStyling = function() {
 window.testClientStyling = function() {
     console.log('🧪 Testing client styling integration...');
     
-    // Test button selectors
     const buttonSelectors = ['#startBtn', '#resetBtn', '.modal-btn', 'button'];
     buttonSelectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
         console.log(`🔍 Found ${elements.length} elements for selector: ${selector}`);
     });
-    
-    // Refresh styling;
 };
 
 window.debugClientColors = function() {
@@ -1736,13 +1648,11 @@ window.debugClientColors = function() {
     console.log('--button-color:', style.getPropertyValue('--button-color').trim());
     console.log('--text-color:', style.getPropertyValue('--text-color').trim());
     
-    // 🎨 NEW: Debug new color fields
     console.log('🎯 NEW Color Fields:');
     console.log('--header-color:', style.getPropertyValue('--header-color').trim());
     console.log('--footer-color:', style.getPropertyValue('--footer-color').trim());
     console.log('--button-text-color:', style.getPropertyValue('--button-text-color').trim());
     
-    // Check actual button colors
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
         const btnStyle = getComputedStyle(startBtn);
@@ -1751,7 +1661,6 @@ window.debugClientColors = function() {
         console.log('🔴 Start Button Border:', btnStyle.borderColor);
     }
 
-    // Check header button colors
     const logoutBtn = document.getElementById('logout');
     if (logoutBtn) {
         const logoutStyle = getComputedStyle(logoutBtn);
@@ -1768,7 +1677,6 @@ window.debugClientColors = function() {
         console.log('🌐 Language Button Border:', langStyle.borderColor);
     }
 
-    // 🎨 NEW: Check header and footer elements
     const headerElements = document.querySelectorAll('header, .header, .window-header');
     headerElements.forEach((header, index) => {
         const headerStyle = getComputedStyle(header);
@@ -1782,12 +1690,10 @@ window.debugClientColors = function() {
     });
 };
 
-// 🎨 Enhanced setState function to maintain styling after state changes
 const originalSetState = setState;
 setState = function(state) {
     originalSetState(state);
     
-    // Re-apply styling after state change
     setTimeout(() => {
     }, 100);
 };
@@ -1795,12 +1701,10 @@ setState = function(state) {
 console.log('✅ Client.js: DDS Styling API integration completed');
 console.log('🧪 Debug functions available: refreshStyling(), testClientStyling(), debugClientColors()');
 
-// 🎨 NEW: Comprehensive function to test all API color fields
 window.testAllAPIColorFields = async function() {
     console.log('🧪 Testing ALL API Color Fields...');
     
     try {
-        // Since styling API is removed, we'll just test the CSS variables
         const root = document.documentElement;
         const style = getComputedStyle(root);
         
@@ -1823,7 +1727,6 @@ window.testAllAPIColorFields = async function() {
 
 console.log('🆕 New function available: testAllAPIColorFields()');
 
-// 🎨 Function to verify specific color field implementation
 window.verifyColorImplementation = function() {
     console.log('🔍 Verifying Color Field Implementation...');
     
@@ -1867,7 +1770,6 @@ window.verifyColorImplementation = function() {
 
 console.log('🆕 New function available: verifyColorImplementation()');
 
-// 🔒 Additional function to force white header buttons
 window.forceWhiteHeaderButtons = function() {
     console.log('🔒 Forcing white header button styling...');
     
@@ -1892,18 +1794,15 @@ window.forceWhiteHeaderButtons = function() {
 
 console.log('🔒 Additional function: forceWhiteHeaderButtons()');
 
-// 🛡️ Protection against JavaScript-applied black backgrounds on navigation
 function preventNavigationBlackBackgrounds() {
     const navLinks = document.querySelectorAll('.nav-link');
     
     navLinks.forEach(link => {
-        // Override any inline styles that set black backgrounds
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                     const style = link.getAttribute('style');
                     if (style && (style.includes('rgb(0, 0, 0)') || style.includes('background-color: black') || style.includes('background: black'))) {
-                        // Remove the black background and keep other styles
                         const cleanStyle = style
                             .replace(/background-color:\s*rgb\(0,\s*0,\s*0\)\s*!important;?/gi, '')
                             .replace(/background-color:\s*black\s*!important;?/gi, '')
@@ -1921,8 +1820,6 @@ function preventNavigationBlackBackgrounds() {
     });
 }
 
-// Initialize protection when DOM is ready
 document.addEventListener('DOMContentLoaded', preventNavigationBlackBackgrounds);
 
-
-
+// End of client.js

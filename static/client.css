@@ -1182,6 +1182,17 @@ cubic-bezier(0.25, 0.8, 0.25, 1);
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
+/* Constrain Task Details modal so very long content scrolls inside the modal
+   without growing the entire page. Keep other modals unchanged. */
+#taskDetailsModal .modal-content {
+  max-height: 70vh; /* limit height to viewport fraction */
+  overflow-y: auto; /* enable vertical scrolling when content is long */
+  width: 600px; /* slightly wider for readability */
+  max-width: 95%;
+  text-align: left; /* content is typically left-aligned */
+  padding: 18px; /* a touch more padding for readability */
+}
+
 .modal.show .modal-content,
 .modal-review.show .modal-content {
   transform: scale(1) translateY(0);
