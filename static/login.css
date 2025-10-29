@@ -100,7 +100,7 @@
 }
 
 /* ============================================
-   � DARK THEME OVERRIDES
+   🌙 DARK THEME OVERRIDES
    ============================================ */
 body[data-theme="dark"] {
   --background-color: #1a1a2e;
@@ -158,7 +158,47 @@ body[data-theme="dark"] .window-button {
 }
 
 /* ============================================
-   � LOGIN STYLES - API COLORS ONLY
+/* ============================================
+   🌊 ENHANCED GRADIENT BACKGROUND
+   ============================================ */
+
+/* Light Theme Gradient - İlk Hali */
+body[data-theme="light"] .container {
+    background: #ffffff;
+}
+
+body[data-theme="light"] .wave-bg {
+    background-color: #003366;
+}
+
+/* Dark Theme Gradient - Geliştirilmiş Hali */
+body[data-theme="dark"] .container {
+    background: linear-gradient(
+        135deg,
+        #0a1a2e 0%,
+        #0f2540 15%,
+        #142b4d 30%,
+        #1a3660 50%,
+        #214275 70%,
+        #2a508a 85%,
+        #1a1a2e 100%
+    );
+}
+
+body[data-theme="dark"] .wave-bg {
+    background: linear-gradient(
+        135deg,
+        #0a1a2e 0%,
+        #0f2540 25%,
+        #142b4d 50%,
+        #1a3660 75%,
+        #214275 90%,
+        transparent 100%
+    );
+}
+
+/* ============================================
+   🎨 LOGIN STYLES - API COLORS ONLY
    ============================================ */
     
 body {
@@ -197,6 +237,19 @@ body[data-theme="light"] #loginBtn {
     padding: 20px;
     box-sizing: border-box;
     background-color: #ffffff;
+    transition: all 0.5s ease-in-out;
+}
+
+.wave-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40% !important;
+    background-color: #003366;
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    z-index: 0;
+    transition: all 0.5s ease-in-out;
 }
 
 .window-header {
@@ -242,17 +295,6 @@ body[data-theme="light"] #loginBtn {
     cursor: pointer;
     background-color: #006039;
     color: #ffff;
-}
-
-.wave-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 40% !important;
-    background-color: #003366;
-    border-radius: 0 0 50% 50% / 0 0 100% 100%;
-    z-index: 0;
 }
 
 .logo {
@@ -671,5 +713,3 @@ input[type="submit"],
     border-color: #006039 !important;
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
 }
-
-

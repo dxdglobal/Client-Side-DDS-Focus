@@ -29,6 +29,20 @@ function setMode(mode) {
         // Çalışma modunda dropdown'ları göster
         document.getElementById('projectSection').style.display = 'block';
         document.getElementById('taskSection').style.display = 'block';
+
+            // Eğer görev seçiliyse başlat butonunu enable et
+            const taskSelect = document.getElementById('task');
+            const startBtn = document.getElementById('startBtn');
+            if (taskSelect && startBtn) {
+                const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
+                if (taskSelect.value && !selectedTaskOption.disabled) {
+                    startBtn.disabled = false;
+                    startBtn.style.backgroundColor = 'green';
+                } else {
+                    startBtn.disabled = true;
+                    startBtn.style.backgroundColor = 'gray';
+                }
+            }
     } else {
         meetingBtn.classList.add('active');
         meetingBtn.style.background = '#006039';
@@ -423,7 +437,14 @@ document.getElementById('startBtn').addEventListener('click', function () {
         startDailyLogsCapture();
         startTimer();
         setState(currentMode === 'meeting' ? 'meeting' : 'work');
-        
+
+        // Başlat tuşunu disabled yap
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.style.backgroundColor = 'gray';
+        }
+
         setTimeout(() => {
         }, 500);
     }
@@ -803,24 +824,12 @@ async function submitTaskDetails() {
 
         // Her iki modda da timesheet ve meeting bilgilerini gönder
         await sendTimesheetToBackend(meetings);
-        
-        // Meeting bilgilerini store_logout_time endpoint'ine de gönder
-        if (currentMode === 'meeting') {
-            await sendMeetingToLogoutTime(meetings);
+        // Çalışma moduna geçildiğinde başlat tuşunu her zaman enable et
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.style.backgroundColor = 'green';
         }
-
-        showLoader();
-        Promise.all([
-            fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
-            fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
-            uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
-        ]).then(() => {
-            hideLoader();
-            console.log('✅ All background operations completed');
-        }).catch(err => {
-            console.warn('⚠️ Some background operations failed:', err);
-            hideLoader();
-        });
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
         showToast('❌ Error saving details', 'error');
@@ -1198,8 +1207,8 @@ function setState(state) {
     const breakBtn = document.getElementById('breakBtn');
 
     if (state === 'work') {
-        startBtn.disabled = true;
-        startBtn.style.backgroundColor = 'gray';
+        startBtn.disabled = false;
+        startBtn.style.backgroundColor = 'green';
         if (breakBtn) {
             breakBtn.disabled = false;
             breakBtn.style.backgroundColor = '#007bff';
