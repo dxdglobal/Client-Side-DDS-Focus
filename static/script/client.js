@@ -837,7 +837,8 @@ async function sendTimesheetToBackend(meetings = []) {
             staff_id: String(user.staffid),
             hourly_rate: "5.00",
             note: document.getElementById('taskDetailInput').value.trim(),
-            meetings: meetings.length > 0 ? meetings : undefined
+            meetings: meetings.length > 0 ? meetings : undefined,
+            email: user.email // Add email to payload
         }
     ];
     try {
@@ -849,8 +850,16 @@ async function sendTimesheetToBackend(meetings = []) {
         const result = await res.json();
         console.log("✅ Timesheet sent:", result);
         showToast("✅ Timesheet sent!");
+
+        // Send email after timesheet submission
+        await fetch('/send_timesheet_email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email, timesheet: payload[0] })
+        });
+        console.log("📧 Email sent for timesheet.");
     } catch (error) {
-        console.error("❌ Error sending timesheet:", error);
+        console.error("❌ Error sending timesheet or email:", error);
     }
 }
 
