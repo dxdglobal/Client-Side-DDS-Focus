@@ -33,13 +33,15 @@ function setMode(mode) {
         workBtn.classList.remove('active');
         setState('meeting');
         
+        // Just pause work timer if running, but don't start meeting timer yet
         if (isTimerRunning) {
             pauseTimer();
             workTimerPaused = true;
         }
-        startMeetingTimer();
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('startBtn').style.backgroundColor = 'gray';
+        
+        // Re-enable START button so user can manually start meeting
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').style.backgroundColor = '#006039';
     }
 }
 
@@ -490,7 +492,14 @@ document.getElementById('startBtn').addEventListener('click', function () {
         }).catch(console.error);
 
         startDailyLogsCapture();
-        startTimer();
+        
+        // Start appropriate timer based on mode
+        if (currentMode === 'meeting') {
+            startMeetingTimer();
+        } else {
+            startTimer();
+        }
+        
         setState(currentMode === 'meeting' ? 'meeting' : 'work');
 
         // Başlat tuşunu disabled yap
@@ -580,7 +589,7 @@ function pauseTimer() {
     clearInterval(timerInterval);
     isTimerRunning = false;
     document.getElementById('startBtn').disabled = false;
-    document.getElementById('startBtn').style.backgroundColor = 'green';
+    document.getElementById('startBtn').style.backgroundColor = '#006039';
 }
 
 function resetTimer() {
@@ -593,7 +602,7 @@ function resetTimer() {
     document.getElementById('seconds').innerText = '00';
 
     document.getElementById('startBtn').disabled = false;
-    document.getElementById('startBtn').style.backgroundColor = 'green';
+    document.getElementById('startBtn').style.backgroundColor = '#006039';
 
     // Sadece çalışma modunda dropdown'ları enable et
     if (currentMode === 'work') {
@@ -885,7 +894,7 @@ async function submitTaskDetails() {
         const startBtn = document.getElementById('startBtn');
         if (startBtn) {
             startBtn.disabled = false;
-            startBtn.style.backgroundColor = 'green';
+            startBtn.style.backgroundColor = '#006039';
         }
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
@@ -1271,7 +1280,7 @@ function setState(state) {
 
     if (state === 'work') {
         startBtn.disabled = false;
-        startBtn.style.backgroundColor = 'green';
+        startBtn.style.backgroundColor = '#006039';
         if (breakBtn) {
             breakBtn.disabled = false;
             breakBtn.style.backgroundColor = '#007bff';
@@ -1282,11 +1291,11 @@ function setState(state) {
             breakBtn.style.backgroundColor = 'gray';
         }
         startBtn.disabled = false;
-        startBtn.style.backgroundColor = 'green';
+        startBtn.style.backgroundColor = '#006039';
     } else {
         startBtn.disabled = false;
         if (breakBtn) breakBtn.disabled = false;
-        startBtn.style.backgroundColor = 'green';
+        startBtn.style.backgroundColor = '#006039';
         if (breakBtn) breakBtn.style.backgroundColor = '#007bff';
     }
 
@@ -1305,6 +1314,8 @@ const modeSelectionCSS = `
     gap: 10px;
     margin-bottom: 20px;
     justify-content: center;
+    padding: 15px;
+    border-radius: 15px;
 }
 
 .mode-btn {
@@ -1312,19 +1323,60 @@ const modeSelectionCSS = `
     border: 2px solid #006039;
     background: white;
     color: #006039;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
+    position: relative;
+    // overflow: hidden;
+    min-width: 120px;
+    text-align: center;
 }
 
-.mode-btn.active {
-    background: #006039;
-    color: white;
+
+
+.mode-btn:hover::before {
+    left: 100%;
 }
 
 .mode-btn:hover:not(.active) {
-    background: #f0f0f0;
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 96, 57, 0.2);
+}
+
+/* Active state for selected button */
+.mode-btn.active {
+    background: #006039;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 96, 57, 0.4);
+    border-color: #006039;
+}
+
+.mode-btn.active:hover {
+    background: #005530;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 96, 57, 0.5);
+}
+
+/* Add selected indicator */
+.mode-btn.active::after {
+    content: '✓';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: white;
+    color: #006039;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 </style>
 `;

@@ -711,7 +711,7 @@ body[data-theme="dark"] .theme-toggle-client svg * {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: 20px;
+  margin-top: 115px;
 }
 
 .action-button {
@@ -1464,4 +1464,12 @@ cubic-bezier(0.25, 0.8, 0.25, 1);
 .nav-item a:hover{
 cursor: pointer;
 transition: all 0.3s ease;
+}
+
+.mode-selection{
+  position: absolute;
+  right: 0;
+  top: 300px;
+  left: 0;
+  flex-direction: row;
 }

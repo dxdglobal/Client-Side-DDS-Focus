@@ -470,7 +470,7 @@ body[data-theme="light"] #loginBtn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 2px solid var(--primary-color);
+    border: 0px solid var(--primary-color);
     background-color: var(--background-color);
     cursor: pointer;
     display: flex;
