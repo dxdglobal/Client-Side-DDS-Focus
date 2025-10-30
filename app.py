@@ -2,6 +2,7 @@
 import os
 import sys
 import io
+sys.stdout.reconfigure(line_buffering=True)
 
 try:
     if sys.stdout:
@@ -1644,27 +1645,48 @@ def check_idle_state():
 def end_task_session():
     # Remove local import since it's now at the top
     data = request.get_json()
+    print("✅ Received end_task_session data:", data)
+    sys.stdout.write(f"✅ Received end_task_session data: {data}\n")
+    sys.stdout.flush() 
     email = data.get("email")
     staff_id = data.get("staff_id")
     task_id = data.get("task_id")
     end_time = int(data.get("end_time"))
     note = data.get("note", "").lower()
     meetings = data.get("meetings", [])
-    if meetings and isinstance(meetings, list):
-        meeting_notes = "Meeting Notes:\n" + "\n".join(
-            [f"- {m.get('notes', 'No details')}" for m in meetings if isinstance(m, dict)]
-        )
-    else:
-        meeting_notes = "Meeting Notes:\n- No meetings today"
+    # # Dummy meeting data
+    # meetings = [
+    #     {"notes": "Discussed project progress and next sprint goals.", "duration": "45 minutes"},
+    #     {"notes": "Client feedback review and design adjustments.", "duration": "30 minutes"},
+    #     {"notes": "Internal QA session for latest module.", "duration": "60 minutes"}
+    # ]
 
-    # ✅ Combine both task and meeting notes
-    note = f"{note}\n\n{meeting_notes}"
+    # 📝 Format meeting notes with newline separation
+    if meetings and isinstance(meetings, list):
+        meeting_lines = [
+            f"- {m.get('notes', 'No details')} ({m.get('duration', 'N/A')})"
+            for m in meetings if isinstance(m, dict)
+        ]
+        meeting_notes = "\nMeeting Notes:\n" + "\n".join(meeting_lines)
+    else:
+        meeting_notes = "\nMeeting Notes:\n- No meetings today"
+
+    # ✅ Always add meeting notes on a new line after task note
+    if note:
+        note = f"{note}\n\n{meeting_notes}"
+    else:
+        note = meeting_notes
+
+    print("📝 Final Combined Note:\n", note)
 
     # ✅ If idle note detected, minus 180 seconds
     if "idle" in note or "boşta" in note:
         print("⏳ Idle session detected, subtracting 180 seconds from end_time")
         end_time -= 180
-    note = data.get("note")
+
+    # ❌ REMOVE this line (overwrites your combined note)
+    # note = data.get("note")
+
 
     if not all([email, staff_id, task_id, end_time, note]):
         return jsonify({"error": "Missing required fields"}), 400
