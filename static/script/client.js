@@ -297,7 +297,8 @@ document.getElementById('totaltimecount').innerText = `${minsWorked} min`;
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
                 end_time: adjustedEndTime,
-                note: idleMsg
+                note: idleMsg,
+                is_meeting: document.getElementById("stateCircle").classList.contains("meeting")
             })
         });
 
@@ -805,7 +806,8 @@ async function submitTaskDetails() {
                 staff_id: String(user.staffid),
                 task_id: taskId,
                 end_time: end_time_unix,
-                note: detailText
+                note: detailText,
+                is_meeting: document.getElementById("stateCircle").classList.contains("meeting")
             })
         });
 
@@ -1127,7 +1129,8 @@ window.addEventListener("beforeunload", async (event) => {
                     staff_id: String(user.staffid),
                     task_id: currentTaskId,
                     end_time: end_time_unix,
-                    note: detailText
+                    note: detailText,
+                    is_meeting: document.getElementById("stateCircle").classList.contains("meeting")
                 })
             });
         } catch (err) {
