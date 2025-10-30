@@ -442,7 +442,11 @@ async function handleAutoIdleSubmit() {
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
                 end_time: adjustedEndTime,
-                note: idleMsg
+                note: idleMsg,
+                is_meeting: document.getElementById("stateCircle").classList.contains("meeting"),
+                meetings: document.getElementById("stateCircle").classList.contains("meeting") 
+                    ? [{ duration_seconds: meetingTotalSeconds, notes: idleMsg }] 
+                    : undefined
             })
         });
 
@@ -862,7 +866,7 @@ async function submitTaskDetails() {
 
     let meetings = [];
     if (currentMode === 'meeting') {
-        meetings.push({ duration_seconds: totalSeconds, notes: detailText });
+        meetings.push({ duration_seconds: meetingTotalSeconds, notes: detailText });
     }
 
     try {
@@ -871,32 +875,74 @@ async function submitTaskDetails() {
         showToast('💾 Saving details...', 'info');
 
         if (currentMode === 'work') {
-            // Çalışma modunda normal task kaydı
+            // Work mode - normal task save
             const saveRes = await fetch('/end_task_session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: user.email,
                     staff_id: String(user.staffid),
-                    task_id: currentTaskId,
+                    task_id: taskId,
                     end_time: end_time_unix,
                     note: detailText,
+                    is_meeting: false,
+                    meetings: undefined
+                })
+            });
+
+            if (saveRes.ok) {
+                showToast('✅ Task details saved!');
+                
+                // Send timesheet data first, then other operations in background
+                await sendTimesheetToBackend();
+                
+                // Show loader for background operations
+                showLoader();
+
+                // Run these operations in parallel
+                Promise.all([
+                    fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
+                    fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
+                    uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
+                ]).then(() => {
+                    hideLoader();
+                    console.log('✅ All background operations completed');
+                }).catch(err => {
+                    console.warn('⚠️ Some background operations failed:', err);
+                    hideLoader();
+                });
+            } else {
+                const saveJson = await saveRes.json();
+                showToast('❌ Failed to save details', 'error');
+                console.error('❌ Save response:', saveJson);
+            }
+        } else {
+            // Meeting mode - save meeting session
+            const saveRes = await fetch('/end_task_session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    staff_id: String(user.staffid),
+                    task_id: taskId,
+                    end_time: end_time_unix,
+                    note: detailText,
+                    is_meeting: true,
                     meetings: meetings.length > 0 ? meetings : undefined
                 })
             });
 
             if (saveRes.ok) {
-                showToast('✅ Details saved!');
+                showToast('✅ Meeting details saved!');
+                await sendTimesheetToBackend(meetings);
             } else {
                 const saveJson = await saveRes.json();
-                showToast('❌ Failed to save details', 'error');
-                console.error('Save error:', saveJson);
+                showToast('❌ Failed to save meeting details', 'error');
+                console.error('❌ Save response:', saveJson);
             }
         }
 
-        // Her iki modda da timesheet ve meeting bilgilerini gönder
-        await sendTimesheetToBackend(meetings);
-        // Çalışma moduna geçildiğinde başlat tuşunu her zaman enable et
+        // Re-enable start button for both modes
         const startBtn = document.getElementById('startBtn');
         if (startBtn) {
             startBtn.disabled = false;
@@ -950,8 +996,8 @@ async function sendMeetingToLogoutTime(meetings = []) {
         const payload = {
             email: user.email,
             staff_id: String(user.staffid),
-            total_duration: formatTime(totalSeconds),
-            total_seconds: totalSeconds,
+            total_duration: formatTime(meetingTotalSeconds),
+            total_seconds: meetingTotalSeconds,
             meetings: meetings
         };
 
@@ -1182,13 +1228,26 @@ window.addEventListener("beforeunload", async (event) => {
                         staff_id: String(user.staffid),
                         task_id: currentTaskId,
                         end_time: end_time_unix,
-                        note: detailText
+                        note: detailText,
+                        is_meeting: false,
+                        meetings: undefined
                     })
                 });
             } else {
-                // Meeting modunda ise meeting bilgilerini gönder
-                const meetings = [{ duration_seconds: totalSeconds, notes: detailText }];
-                await sendMeetingToLogoutTime(meetings);
+                // Meeting mode - save meeting session on exit
+                await fetch('/end_task_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        staff_id: String(user.staffid),
+                        task_id: currentTaskId,
+                        end_time: end_time_unix,
+                        note: detailText,
+                        is_meeting: true,
+                        meetings: [{ duration_seconds: meetingTotalSeconds, notes: detailText }]
+                    })
+                });
             }
         } catch (err) {
             console.error("❌ Failed to save task before exit:", err);
