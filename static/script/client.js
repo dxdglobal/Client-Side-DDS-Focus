@@ -882,7 +882,7 @@ async function submitTaskDetails() {
                 body: JSON.stringify({
                     email: user.email,
                     staff_id: String(user.staffid),
-                    task_id: taskId,
+                    task_id: currentTaskId,
                     end_time: end_time_unix,
                     note: detailText,
                     is_meeting: false,
@@ -924,7 +924,7 @@ async function submitTaskDetails() {
                 body: JSON.stringify({
                     email: user.email,
                     staff_id: String(user.staffid),
-                    task_id: taskId,
+                    task_id: currentTaskId,
                     end_time: end_time_unix,
                     note: detailText,
                     is_meeting: true,
