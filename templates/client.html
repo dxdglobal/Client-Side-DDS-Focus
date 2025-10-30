@@ -246,9 +246,8 @@
     <div class="drawer-content">
       <div class="drawer-section">
         <div class="drawer-item project-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
-          </svg>
+          <!-- Modern folder/project icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" fill="#eaf7f0"/><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v2"/></svg>
           <div class="project-details">
             <!-- Only show the project name here per new requirement -->
             <div class="project-name" id="drawerProjectName">Proje Seçilmedi</div>
@@ -260,9 +259,8 @@
   
         <div class="drawer-item task-info">
           <div class="task-details" style="cursor:pointer" onclick="openTaskDetailsModal(document.getElementById('drawerTaskName').textContent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
-            </svg>
+            <!-- Modern clipboard/task icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2" fill="#eaf7f0"/><path d="M9 2h6v2H9z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
             <div class="task-name" id="drawerTaskName">No Task Selected</div>
             <div class="task-status" id="drawerTaskStatus">Lütfen çalışmaya başlamak için bir görev seçin</div>
           </div>
@@ -272,9 +270,8 @@
       <div class="drawer-section">
     
         <div class="drawer-item time-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12.5,7H11V12.5L15.75,15.85L16.5,14.6L12.5,11.75V7Z"/>
-          </svg>
+          <!-- Modern clock/time icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#eaf7f0"/><path d="M12 6v6l4 2"/></svg>
           <div class="time-details">
             <div class="current-time" id="drawerCurrentTime">00:00:00</div>
             <div class="total-time" id="drawerTotalTime">Toplam: 00:00</div>
@@ -1131,12 +1128,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
 
+          // Render customfields with spacing, no bullets
+          let customFieldsHtml = '';
+          if (Array.isArray(task.customfields) && task.customfields.length > 0) {
+            customFieldsHtml = '<div class="task-customfields" style="margin-bottom:18px;">';
+            task.customfields.forEach(field => {
+              if (field.value && field.value.trim() !== '') {
+                customFieldsHtml += `<div style="margin-bottom:8px;">
+                  <span style="font-weight:600; color:#444;">${field.label}:</span>
+                  <span style="margin-left:6px; color:#222;">${field.value}</span>
+                </div>`;
+              }
+            });
+            customFieldsHtml += '</div>';
+          }
+
           body.innerHTML = `
-            <div class="task-meta">
+            <div class="task-meta" style="margin-bottom:16px;">
               <div><strong>Due:</strong> ${due || 'N/A'}</div>
               <div><strong>Remaining:</strong> ${remainingText}</div>
             </div>
-            <div class="task-desc">${description}</div>
+            ${customFieldsHtml}
+            <div class="task-desc" style="margin-top:10px;">${description}</div>
           `;
         } else if (data && data.error) {
           body.innerHTML = `<p class="error">API Error: ${data.error}</p>`;
