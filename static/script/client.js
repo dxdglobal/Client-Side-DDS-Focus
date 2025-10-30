@@ -7,10 +7,7 @@ function setMode(mode) {
     // Toplantı devam ederken çalışma moduna geçmeyi engelle
     if (isMeetingTimerRunning && mode === 'work') {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-        const message = lang === 'tr' 
-            ? "⛔ Lütfen önce toplantıyı bitirin."
-            : "⛔ Please finish the meeting first.";
-        showToast(message, "error");
+        showToast(translations[lang].finishMeetingFirst, "error");
         return;
     }
 
@@ -130,8 +127,8 @@ const translations = {
         selectTask: "-- Select a Task --",
         loadingProjects: "Loading projects...",
         user: "User",
-        project: "Project",
-        task: "Task",
+        projectLabel: "Project",
+        taskLabel: "Task",
         client: "Staff",
         modalPlaceholder: "Type your task details here...",
         meetingModalPlaceholder: "Type your meeting notes here...",
@@ -164,7 +161,44 @@ const translations = {
         workTime: "Work Time",
         meetingTime: "Meeting Time",
         screenRecording: "Screen Recording",
-        screenshotInterval: "Screenshot Interval"
+        screenshotInterval: "Screenshot Interval",
+        finishMeetingFirst: "⛔ Please finish the meeting first.",
+        selectTaskFirst: "⚠️ Please select a task first!",
+        enterDetails: "⚠️ Please enter details!",
+        savingMeetingDetails: "💾 Saving meeting details...",
+        meetingDetailsSaved: "✅ Meeting details saved!",
+        savingDetails: "💾 Saving details...",
+        detailsSaved: "✅ Task details saved!",
+        failedSaveMeeting: "❌ Failed to save meeting details",
+        failedSave: "❌ Failed to save details",
+        errorSavingMeeting: "❌ Error saving meeting details",
+        errorSaving: "❌ Error saving details",
+        timesheetSent: "✅ Timesheet sent!",
+        emailSent: "📧 Email sent for timesheet.",
+        errorSendingTimesheet: "❌ Error sending timesheet or email:",
+        syncingTimesheets: "🔄 Syncing timesheets...Please wait",
+        failedUpload: "❌ Failed: ",
+        unexpectedErrorUpload: "❌ Unexpected error during log upload",
+        selectTaskWarning: "⚠️ Please select a task!",
+        cannotLogoutRunning: "⛔ You cannot logout while the timer is running. Please finish your task first.",
+        missingReviewInfo: "❗ Missing review or user info.",
+        feedbackSent: "✅ Feedback sent successfully!",
+        feedbackError: "❌ Feedback error occurred.",
+        countdownCanceled: "⏱️ Countdown canceled. Back to work!",
+        loading: "Loading...",
+        meetingSession: "Meeting Session",
+        currentlyInMeeting: "Currently in a meeting",
+        noTaskSelected: "No Task Selected",
+        meeting: "Meeting",
+        meetingInProgress: "Meeting in progress",
+        unnamedProject: "Unnamed Project",
+        unnamedTask: "Unnamed Task",
+        errorLoadingProjects: "❌ Error loading projects",
+        errorLoadingTasks: "Error loading tasks",
+        autoSavedAppExit: "Auto-saved due to app exit.",
+        workingOn: "Working on:",
+        currentTask: "Current task:",
+        meetingNotesSavedTemporarily: "✅ Meeting notes saved temporarily!"
     },
     tr: {
         welcome: "Hoş geldin...",
@@ -191,8 +225,8 @@ const translations = {
         selectTask: "-- İş Emri Seçin --",
         loadingProjects: "Projeler yükleniyor...",
         user: "Kullanıcı",
-        project: "Proje",
-        task: "İş Emri",
+        projectLabel: "Proje",
+        taskLabel: "İş Emri",
         client: "Personel",
         modalPlaceholder: "İş Emri detaylarını buraya yazın...",
         meetingModalPlaceholder: "Toplantı notlarını buraya yazın...",
@@ -224,7 +258,45 @@ const translations = {
         workTime: "Çalışma Süresi",
         meetingTime: "Toplantı Süresi",
         screenRecording: "Ekran Kaydı",
-        screenshotInterval: "Ekran Görüntüsü Aralığı"
+        screenshotInterval: "Ekran Görüntüsü Aralığı",
+        finishMeetingFirst: "⛔ Lütfen önce toplantıyı bitirin.",
+        selectTaskFirst: "⚠️ Lütfen önce bir görev seçin!",
+        enterDetails: "⚠️ Lütfen detayları girin!",
+        savingMeetingDetails: "💾 Toplantı detayları kaydediliyor...",
+        meetingDetailsSaved: "✅ Toplantı detayları kaydedildi!",
+        savingDetails: "💾 Detaylar kaydediliyor...",
+        detailsSaved: "✅ Görev detayları kaydedildi!",
+        failedSaveMeeting: "❌ Toplantı detayları kaydedilemedi",
+        failedSave: "❌ Detaylar kaydedilemedi",
+        errorSavingMeeting: "❌ Toplantı detayları kaydedilirken hata",
+        errorSaving: "❌ Detaylar kaydedilirken hata",
+        timesheetSent: "✅ Zaman çizelgesi gönderildi!",
+        emailSent: "📧 Zaman çizelgesi için e-posta gönderildi.",
+        errorSendingTimesheet: "❌ Zaman çizelgesi veya e-posta gönderilirken hata:",
+        syncingTimesheets: "🔄 Zaman çizelgeleri senkronize ediliyor... Lütfen bekleyin",
+        failedUpload: "❌ Başarısız: ",
+        unexpectedErrorUpload: "❌ Log yükleme sırasında beklenmeyen hata",
+        selectTaskWarning: "⚠️ Lütfen bir görev seçin!",
+        cannotLogoutRunning: "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin.",
+        missingReviewInfo: "❗ Geri bildirim veya kullanıcı bilgileri eksik.",
+        feedbackSent: "✅ Geri bildirim başarıyla gönderildi!",
+        feedbackError: "❌ Geri bildirim hatası oluştu.",
+        countdownCanceled: "⏱️ Geri sayım iptal edildi. Çalışmaya geri dön!",
+        autoSavedIdle: "✅ Boşta kalma nedeniyle otomatik kaydedildi",
+        loading: "Yükleniyor...",
+        meetingSession: "Toplantı Oturumu",
+        currentlyInMeeting: "Şu anda toplantıda",
+        noTaskSelected: "Görev Seçilmedi",
+        meeting: "Toplantı",
+        meetingInProgress: "Toplantı devam ediyor",
+        unnamedProject: "İsimsiz Proje",
+        unnamedTask: "İsimsiz Görev",
+        errorLoadingProjects: "❌ Projeler yüklenirken hata",
+        errorLoadingTasks: "Görevler yüklenirken hata",
+        autoSavedAppExit: "Uygulama çıkış nedeniyle otomatik kaydedildi.",
+        workingOn: "Çalışılan:",
+        currentTask: "Mevcut görev:",
+        meetingNotesSavedTemporarily: "✅ Toplantı notları geçici olarak kaydedildi!"
     }
 };
 
@@ -250,14 +322,14 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
     
     if (drawerProjectName) {
         if (isMeeting) {
-            drawerProjectName.textContent = 'Meeting Session';
+            drawerProjectName.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingSession;
             if (drawerProjectDesc) {
-                drawerProjectDesc.textContent = 'Currently in a meeting';
+                drawerProjectDesc.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].currentlyInMeeting;
             }
         } else {
-            drawerProjectName.textContent = projectName || 'No Project Selected';
+            drawerProjectName.textContent = projectName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noProjectSelected;
             if (drawerProjectDesc) {
-                drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
+                drawerProjectDesc.textContent = `${translations[sessionStorage.getItem('selectedLanguage') || 'en'].workingOn} ${projectName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noProjectSelected}`;
             }
         }
     }
@@ -267,14 +339,14 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
     
     if (drawerTaskName) {
         if (isMeeting) {
-            drawerTaskName.textContent = 'Meeting';
+            drawerTaskName.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meeting;
             if (drawerTaskDesc) {
-                drawerTaskDesc.textContent = 'Meeting in progress';
+                drawerTaskDesc.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingInProgress;
             }
         } else {
-            drawerTaskName.textContent = taskName || 'No Task Selected';
+            drawerTaskName.textContent = taskName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noTaskSelected;
             if (drawerTaskDesc) {
-                drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
+                drawerTaskDesc.textContent = `${translations[sessionStorage.getItem('selectedLanguage') || 'en'].currentTask} ${taskName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noTaskSelected}`;
             }
         }
     }
@@ -462,7 +534,7 @@ async function handleAutoIdleSubmit() {
         resetTimer();
         stopScreenRecording();
         stopDailyLogsCapture();
-        showToast('✅ Auto-saved due to idle', 'success');
+        showToast(translations[lang].autoSavedIdle, 'success');
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
     }
@@ -476,10 +548,7 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
     if (!taskId || taskId === "" || selectedTaskOption.disabled) {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-        const message = lang === 'tr' 
-            ? '⚠️ Lütfen önce bir görev seçin!'
-            : '⚠️ Please select a task first!';
-        showToast(message, 'error');
+        showToast(translations[lang].selectTaskFirst, 'error');
         return;
     }
 
@@ -735,13 +804,13 @@ function fetchAIProjects(user) {
             });
 
             uniqueProjects.forEach(project => {
-                const option = new Option(project.name || project.projectname || 'Unnamed Project', project.id);
+                const option = new Option(project.name || project.projectname || translations[lang].unnamedProject, project.id);
                 projectSelect.appendChild(option);
             });
         })
         .catch(error => {
             console.error(error);
-            showToast('❌ Error loading projects', 'error');
+            showToast(translations[lang].errorLoadingProjects, 'error');
         });
 }
 
@@ -770,7 +839,7 @@ function loadTasksForProject() {
 
             const tasks = data.tasks || [];
             tasks.forEach(task => {
-                const option = new Option(task.name || task.subject || 'Unnamed Task', task.id);
+                const option = new Option(task.name || task.subject || translations[lang].unnamedTask, task.id);
                 taskSelect.appendChild(option);
             });
 
@@ -781,7 +850,7 @@ function loadTasksForProject() {
         })
         .catch(error => {
             console.error("❌ Error loading tasks:", error);
-            taskSelect.innerHTML = '<option disabled>Error loading tasks</option>';
+            taskSelect.innerHTML = `<option disabled>${translations[lang].errorLoadingTasks}</option>`;
         });
 }
 
@@ -854,7 +923,7 @@ function closeModal() {
 async function submitTaskDetails() {
     const detailText = document.getElementById('taskDetailInput').value.trim();
     if (!detailText) {
-        showToast('⚠️ Please enter details!', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].enterDetails, 'error');
         return;
     }
 
@@ -867,7 +936,7 @@ async function submitTaskDetails() {
             try {
                 closeModal();
                 resetTimer();
-                showToast('💾 Saving meeting details...', 'info');
+                showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].savingMeetingDetails, 'info');
                 const payload = {
                     email: user.email,
                     staff_id: String(user.staffid),
@@ -882,10 +951,10 @@ async function submitTaskDetails() {
                     body: JSON.stringify(payload)
                 });
                 if (saveRes.ok) {
-                    showToast('✅ Meeting details saved!');
+                    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingDetailsSaved);
                 } else {
                     const saveJson = await saveRes.json();
-                    showToast('❌ Failed to save meeting details', 'error');
+                    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].failedSaveMeeting, 'error');
                     console.error('❌ Save response:', saveJson);
                 }
                 // Re-enable start button
@@ -896,7 +965,7 @@ async function submitTaskDetails() {
                 }
             } catch (error) {
                 console.error('❌ Error saving meeting details:', error);
-                showToast('❌ Error saving meeting details', 'error');
+                showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].errorSavingMeeting, 'error');
             }
             return;
         } else {
@@ -913,7 +982,7 @@ async function submitTaskDetails() {
             closeModal();
             document.getElementById('taskDetailInput').value = '';
             setMode('work');
-            showToast('✅ Meeting notes saved temporarily!');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingNotesSavedTemporarily);
             return;
         }
     }
@@ -929,7 +998,7 @@ async function submitTaskDetails() {
     try {
         closeModal();
         resetTimer();
-        showToast('💾 Saving details...', 'info');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].savingDetails, 'info');
         const payload = {
             email: user.email,
             staff_id: String(user.staffid),
@@ -944,7 +1013,7 @@ async function submitTaskDetails() {
             body: JSON.stringify(payload)
         });
         if (saveRes.ok) {
-            showToast('✅ Task details saved!');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].detailsSaved);
             showLoader();
             Promise.all([
                 fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
@@ -959,7 +1028,7 @@ async function submitTaskDetails() {
             });
         } else {
             const saveJson = await saveRes.json();
-            showToast('❌ Failed to save details', 'error');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].failedSave, 'error');
             console.error('❌ Save response:', saveJson);
         }
         const startBtn = document.getElementById('startBtn');
@@ -970,7 +1039,7 @@ async function submitTaskDetails() {
         totalSeconds = 0;
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
-        showToast('❌ Error saving details', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].errorSaving, 'error');
         hideLoader();
     }
 }
@@ -997,7 +1066,7 @@ async function sendTimesheetToBackend(meetings = []) {
         });
         const result = await res.json();
         console.log("✅ Timesheet sent:", result);
-        showToast("✅ Timesheet sent!");
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].timesheetSent);
 
         // Send email after timesheet submission
         // await fetch('/send_timesheet_email', {
@@ -1058,8 +1127,8 @@ function syncAllUsers() {
 function showLoader() {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     const messages = {
-        en: '🔄 Syncing timesheets...Please wait',
-        tr: '🔄 Zaman çizelgeleri senkronize ediliyor... Lütfen bekleyin'
+        en: translations.en.syncingTimesheets,
+        tr: translations.tr.syncingTimesheets
     };
     document.getElementById('syncLoader').innerHTML = `
 <div style="padding: 20px; background: white; border-radius: 8px; font-weight: bold;">
@@ -1220,6 +1289,12 @@ function applyClientLanguage(lang) {
             loggingInput.value = lang === 'tr' ? 'HAYIR' : 'NO';
         }
     }
+
+    // Update displayUserName if it's still loading
+    const displayUserName = document.getElementById('displayUserName');
+    if (displayUserName && displayUserName.textContent === 'Loading...') {
+        displayUserName.textContent = t.loading;
+    }
 }
 
 window.addEventListener("load", () => {
@@ -1235,7 +1310,7 @@ window.addEventListener("beforeunload", async (event) => {
     if (isTimerRunning) {
         console.log("❌ App closing: Auto-stopping timer & saving session");
 
-        const detailText = "Auto-saved due to app exit.";
+        const detailText = translations[sessionStorage.getItem('selectedLanguage') || 'en'].autoSavedAppExit;
         const end_time_unix = Math.floor(Date.now() / 1000);
 
         try {
@@ -1291,7 +1366,7 @@ async function uploadUsageLogToS3() {
     }
 
     if (!taskName || !user?.email) {
-        showToast(lang === 'tr' ? "⚠️ Lütfen görev seçin!" : "⚠️ Please select a task!", "error");
+        showToast(translations[lang].selectTaskWarning, "error");
         return;
     }
 
@@ -1309,11 +1384,11 @@ async function uploadUsageLogToS3() {
         if (data.success) {
             console.log("📤 AI Summary:", data.summary);
         } else {
-            showToast("❌ Failed: " + data.message, 'error');
+            showToast(translations[lang].failedUpload + data.message, 'error');
         }
     } catch (err) {
         console.error("❌ Error uploading usage log:", err);
-        showToast("❌ Unexpected error during log upload", "error");
+        showToast(translations[lang].unexpectedErrorUpload, "error");
     }
 }
 
@@ -1757,7 +1832,7 @@ function submitUserReview() {
     const user = JSON.parse(sessionStorage.getItem('user'));
 
     if (!reviewText || !user?.email || !user?.firstName) {
-        showToast('❗ Missing review or user info.', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].missingReviewInfo, 'error');
         return;
     }
 
@@ -1773,7 +1848,7 @@ function submitUserReview() {
     .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
-            showToast('✅ Feedback sent successfully!');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].feedbackSent);
             closeReviewModal();
             document.getElementById('reviewInput').value = '';
         } else {
@@ -1781,7 +1856,7 @@ function submitUserReview() {
     })
     .catch(err => {
         console.error('Feedback error:', err);
-        showToast('❌ Feedback error occurred.', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].feedbackError, 'error');
     });
 }
 
@@ -1796,11 +1871,7 @@ function openInNewTab(url) {
 function openLogoutModal() {
   if (isTimerRunning) {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    const warning = lang === 'tr'
-      ? "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin."
-      : "⛔ You cannot logout while the timer is running. Please finish your task first.";
-
-    showToast(warning, "error");
+    showToast(translations[lang].cannotLogoutRunning, "error");
     return;
   }
 
@@ -1834,7 +1905,7 @@ function cancelIdleCountdown() {
 
     startTimer();
     setState('work');
-    showToast("⏱️ Countdown canceled. Back to work!", "success");
+    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].countdownCanceled, "success");
 }
 
 setInterval(() => {

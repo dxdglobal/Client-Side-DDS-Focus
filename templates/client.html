@@ -85,13 +85,15 @@
             <input type="text" class="form-control" id="clientNameInput" style="width: 90%" readonly />
           </div>
           <div class="form-group">
-            <label for="project">Project</label>
-            <select id="project" class="form-control" onchange="loadTasksForProject()" style="width: 90%"></select>
+            <label for="project" data-translatable="projectLabel">Project</label>
+            <select id="project" class="form-control" onchange="loadTasksForProject()" style="width: 90%">
+              <option disabled selected value="">-- Proje Seçin --</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="task">Task</label>
+            <label for="task" data-translatable="taskLabel">Task</label>
             <select id="task" class="form-control" style="width: 90%">
-              <option disabled selected value="">-- Select a Task --</option>
+              <option disabled selected value="">-- İş Emri Seçin --</option>
             </select>
           </div>
           <!-- Work Timer -->
@@ -578,7 +580,9 @@ function openSettings() {
 function showAbout() {
     closeDrawer();
     // Add about functionality here
-    alert('DDS FocusPro v1.3\\n\\nA professional time tracking application for enhanced productivity.');
+    const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const translation = clientTranslations[currentLang] || clientTranslations.en;
+    alert(translation.aboutMessage);
 }
 
 // ====== DRAWER INFO UPDATE FUNCTIONS ======
@@ -616,10 +620,10 @@ function updateDrawerTaskInfo() {
         const selectedTask = taskSelect.selectedOptions[0].text;
         const currentState = stateLabel ? stateLabel.textContent : 'IDLE';
         
-        drawerTaskName.textContent = selectedTask !== translation.selectTask ? selectedTask : 'No Task Selected';
+        drawerTaskName.textContent = selectedTask !== translation.selectTask ? selectedTask : translation.noTaskSelected;
         drawerTaskStatus.textContent = selectedTask !== translation.selectTask ? `${translation.status} ${currentState}` : translation.pleaseSelectTask;
     } else {
-        drawerTaskName.textContent = 'No Task Selected';
+        drawerTaskName.textContent = translation.noTaskSelected;
         drawerTaskStatus.textContent = translation.pleaseSelectTask;
     }
 }
@@ -888,7 +892,9 @@ function selectLanguage(langCode) {
 
     // Save and apply language
     sessionStorage.setItem('selectedLanguage', langCode);
-    applyClientLanguage(langCode);
+    setTimeout(() => {
+        applyClientLanguage(langCode);
+    }, 100);
 
     // Close dropdown
     document.getElementById('languageDropdown')?.classList.remove('show');
@@ -910,7 +916,31 @@ const clientTranslations = {
         language: "Dil",
         status: "Durum:",
         total: "Toplam:",
-        pleaseSelectTask: "Lütfen çalışmaya başlamak için bir görev seçin"
+        pleaseSelectTask: "Lütfen çalışmaya başlamak için bir görev seçin",
+        meetingSession: "Toplantı Oturumu",
+        currentlyInMeeting: "Şu anda toplantıda",
+        noTaskSelected: "Görev Seçilmedi",
+        meeting: "Toplantı",
+        meetingInProgress: "Toplantı devam ediyor",
+        loading: "Yükleniyor...",
+        projectLabel: "Proje",
+        taskLabel: "Görev",
+        timeLeft: "Kalan Süre:",
+        dueLabel: "Bitiş:",
+        aboutMessage: "DDS FocusPro v1.3\\n\\nProfesyonel zaman takip uygulaması, üretkenliği artırmak için.",
+        client: "Personel",
+        workTime: "Çalışma Süresi",
+        today: "Bugün",
+        totalLogged: "Toplam Giriş Süresi",
+        meetingTime: "Toplantı Süresi",
+        screenRecording: "Ekran Kaydı",
+        screenshotInterval: "Ekran Görüntüsü Aralığı",
+        logoutTitle: "Çıkışı Onayla",
+        logoutDesc: "Çıkış yapmak istediğinizden emin misiniz?",
+        logoutCancel: "İptal",
+        logoutConfirm: "Çıkış",
+        idleTitle: "Boş Durumdasınız",
+        idleDesc: "Aktif değilsiniz. Zamanlayıcı durduruldu."
     },
     en: {
         noProjectSelected: "No Project Selected",
@@ -920,7 +950,31 @@ const clientTranslations = {
         language: "Language",
         status: "Status:",
         total: "Total:",
-        pleaseSelectTask: "Please select a task to start working"
+        pleaseSelectTask: "Please select a task to start working",
+        meetingSession: "Meeting Session",
+        currentlyInMeeting: "Currently in a meeting",
+        noTaskSelected: "No Task Selected",
+        meeting: "Meeting",
+        meetingInProgress: "Meeting in progress",
+        loading: "Loading...",
+        projectLabel: "Project",
+        taskLabel: "Task",
+        timeLeft: "Time left:",
+        dueLabel: "Due:",
+        aboutMessage: "DDS FocusPro v1.3\\n\\nA professional time tracking application for enhanced productivity.",
+        client: "Client",
+        workTime: "Work Time",
+        today: "Today",
+        totalLogged: "Total Logged In Time",
+        meetingTime: "Meeting Time",
+        screenRecording: "Screen Recording",
+        screenshotInterval: "Screenshot Interval",
+        logoutTitle: "Confirm Logout",
+        logoutDesc: "Are you sure you want to logout?",
+        logoutCancel: "Cancel",
+        logoutConfirm: "Logout",
+        idleTitle: "You're Idle",
+        idleDesc: "You've been inactive. Timer is paused."
     }
 };
 
@@ -958,6 +1012,27 @@ function applyClientLanguage(langCode) {
     if (currentLanguage && (currentLanguage.textContent === 'Language' || 
                            currentLanguage.textContent === 'Dil')) {
         // Don't change the language button text as it shows flags + text, handled in selectLanguage function
+    }
+
+    // Update ALL form labels with data-translatable attributes
+    document.querySelectorAll('label[data-translatable]').forEach(label => {
+        const key = label.getAttribute('data-translatable');
+        if (translation[key]) {
+            label.textContent = translation[key];
+        }
+    });
+
+    // Update drawer task name if it's default
+    const drawerTaskName = document.getElementById('drawerTaskName');
+    if (drawerTaskName && (drawerTaskName.textContent === 'No Task Selected' || 
+                          drawerTaskName.textContent === 'Görev Seçilmedi')) {
+        drawerTaskName.textContent = translation.noTaskSelected;
+    }
+
+    // Update drawer task remaining if it's default
+    const drawerTaskRemaining = document.getElementById('drawerTaskRemaining');
+    if (drawerTaskRemaining && drawerTaskRemaining.textContent === 'Time left: --') {
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
     }
 }
 
@@ -1071,19 +1146,18 @@ document.addEventListener('DOMContentLoaded', function() {
     async function fetchTaskDetailsForDrawer() {
       const taskSelect = document.getElementById('task');
       const drawerTaskRemaining = document.getElementById('drawerTaskRemaining');
-      
+      const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+      const translation = clientTranslations[currentLang] || clientTranslations.en;
       if (!taskSelect || !drawerTaskRemaining || taskSelect.selectedIndex <= 0) {
         // Reset to default if no task selected
-        drawerTaskRemaining.textContent = 'Time left: --';
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
         return;
       }
 
       const selectedTask = taskSelect.selectedOptions[0].text;
-      const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
-      const translation = clientTranslations[currentLang] || clientTranslations.en;
       
       if (selectedTask === translation.selectTask) {
-        drawerTaskRemaining.textContent = 'Time left: --';
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
         return;
       }
 
@@ -1132,13 +1206,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
 
-          drawerTaskRemaining.innerHTML = `Due: ${dueText} | Time left: ${remainingText}`;
+          drawerTaskRemaining.innerHTML = `${translation.dueLabel} ${dueText} | ${translation.timeLeft} ${remainingText}`;
         } else {
-          drawerTaskRemaining.textContent = 'Time left: --';
+          drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
         }
       } catch (err) {
         console.error('Error fetching task details for drawer', err);
-        drawerTaskRemaining.textContent = 'Time left: --';
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
       }
     }
 
