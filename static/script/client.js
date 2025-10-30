@@ -360,6 +360,15 @@ window.onload = function () {
         saveUserProjectsToCache(user);
         // Kullanıcı objesi dolduktan hemen sonra intervali çek
         fetchScreenshotInterval();
+        
+        // Load saved meeting records
+        const savedMeetings = localStorage.getItem(`meetingRecords_${user.email}`);
+        if (savedMeetings) {
+            meetingRecords = JSON.parse(savedMeetings);
+            console.log('DEBUG: Loaded saved meeting records:', meetingRecords.length);
+        } else {
+            console.log('DEBUG: No saved meeting records found');
+        }
     }
 
     setTimeout(() => {
@@ -605,6 +614,7 @@ function resetTimer() {
     clearInterval(timerInterval);
     totalSeconds = 0;
     isTimerRunning = false;
+    sessionStartTime = null; // Reset session start time
 
     document.getElementById('hours').innerText = '00';
     document.getElementById('minutes').innerText = '00';
@@ -848,106 +858,116 @@ async function submitTaskDetails() {
         return;
     }
 
-    if (currentMode === 'meeting') {
-        stopMeetingTimer();
-        // Toplantı notlarını işle (örneğin, kaydet)
-        console.log("Meeting Notes:", detailText);
-        showToast('✅ Meeting notes saved!');
+    console.log('DEBUG: sessionStartTime:', sessionStartTime, 'currentMode:', currentMode, 'totalSeconds:', totalSeconds);
 
-        closeModal();
-        document.getElementById('taskDetailInput').value = '';
-        
-        // Çalışma moduna geri dön ve sayacı devam ettir
-        setMode('work');
-        return;
+    if (currentMode === 'meeting') {
+        if (totalSeconds === 0) {
+            // Sadece toplantı: note boş, meetings tek obje
+            const end_time_unix = Math.floor(Date.now() / 1000);
+            try {
+                closeModal();
+                resetTimer();
+                showToast('💾 Saving meeting details...', 'info');
+                const payload = {
+                    email: user.email,
+                    staff_id: String(user.staffid),
+                    task_id: currentTaskId,
+                    end_time: end_time_unix,
+                    note: '',
+                    meetings: [{ notes: detailText, duration: `${Math.round(meetingTotalSeconds/60)} minutes` }]
+                };
+                const saveRes = await fetch('/end_task_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (saveRes.ok) {
+                    showToast('✅ Meeting details saved!');
+                } else {
+                    const saveJson = await saveRes.json();
+                    showToast('❌ Failed to save meeting details', 'error');
+                    console.error('❌ Save response:', saveJson);
+                }
+                // Re-enable start button
+                const startBtn = document.getElementById('startBtn');
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.style.backgroundColor = '#006039';
+                }
+            } catch (error) {
+                console.error('❌ Error saving meeting details:', error);
+                showToast('❌ Error saving meeting details', 'error');
+            }
+            return;
+        } else {
+            // Work devam ederken toplantı: geçici kaydet
+            meetingRecords.push({
+                notes: detailText,
+                duration: `${Math.round(meetingTotalSeconds/60)} minutes`,
+                timestamp: Date.now()
+            });
+            if (user) {
+                localStorage.setItem(`meetingRecords_${user.email}`, JSON.stringify(meetingRecords));
+            }
+            stopMeetingTimer();
+            closeModal();
+            document.getElementById('taskDetailInput').value = '';
+            setMode('work');
+            showToast('✅ Meeting notes saved temporarily!');
+            return;
+        }
     }
 
     const end_time_unix = Math.floor(Date.now() / 1000);
 
-    let meetings = [];
-    if (currentMode === 'meeting') {
-        meetings.push({ duration_seconds: meetingTotalSeconds, notes: detailText });
+    // Work modunda: hem iş hem toplantı notlarını gönder
+    let meetings = meetingRecords.slice();
+    meetingRecords = [];
+    if (user) {
+        localStorage.removeItem(`meetingRecords_${user.email}`);
     }
-
     try {
         closeModal();
         resetTimer();
         showToast('💾 Saving details...', 'info');
-
-        if (currentMode === 'work') {
-            // Work mode - normal task save
-            const saveRes = await fetch('/end_task_session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: user.email,
-                    staff_id: String(user.staffid),
-                    task_id: currentTaskId,
-                    end_time: end_time_unix,
-                    note: detailText,
-                    is_meeting: false,
-                    meetings: undefined
-                })
+        const payload = {
+            email: user.email,
+            staff_id: String(user.staffid),
+            task_id: currentTaskId,
+            end_time: end_time_unix,
+            note: detailText,
+            meetings: meetings
+        };
+        const saveRes = await fetch('/end_task_session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (saveRes.ok) {
+            showToast('✅ Task details saved!');
+            showLoader();
+            Promise.all([
+                fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
+                fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
+                uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
+            ]).then(() => {
+                hideLoader();
+                console.log('✅ All background operations completed');
+            }).catch(err => {
+                console.warn('⚠️ Some background operations failed:', err);
+                hideLoader();
             });
-
-            if (saveRes.ok) {
-                showToast('✅ Task details saved!');
-                
-                // Send timesheet data first, then other operations in background
-                await sendTimesheetToBackend();
-                
-                // Show loader for background operations
-                showLoader();
-
-                // Run these operations in parallel
-                Promise.all([
-                    fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
-                    fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
-                    uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
-                ]).then(() => {
-                    hideLoader();
-                    console.log('✅ All background operations completed');
-                }).catch(err => {
-                    console.warn('⚠️ Some background operations failed:', err);
-                    hideLoader();
-                });
-            } else {
-                const saveJson = await saveRes.json();
-                showToast('❌ Failed to save details', 'error');
-                console.error('❌ Save response:', saveJson);
-            }
         } else {
-            // Meeting mode - save meeting session
-            const saveRes = await fetch('/end_task_session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: user.email,
-                    staff_id: String(user.staffid),
-                    task_id: currentTaskId,
-                    end_time: end_time_unix,
-                    note: detailText,
-                    is_meeting: true,
-                    meetings: meetings.length > 0 ? meetings : undefined
-                })
-            });
-
-            if (saveRes.ok) {
-                showToast('✅ Meeting details saved!');
-                await sendTimesheetToBackend(meetings);
-            } else {
-                const saveJson = await saveRes.json();
-                showToast('❌ Failed to save meeting details', 'error');
-                console.error('❌ Save response:', saveJson);
-            }
+            const saveJson = await saveRes.json();
+            showToast('❌ Failed to save details', 'error');
+            console.error('❌ Save response:', saveJson);
         }
-
-        // Re-enable start button for both modes
         const startBtn = document.getElementById('startBtn');
         if (startBtn) {
             startBtn.disabled = false;
             startBtn.style.backgroundColor = '#006039';
         }
+        totalSeconds = 0;
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
         showToast('❌ Error saving details', 'error');
