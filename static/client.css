@@ -1469,7 +1469,7 @@ transition: all 0.3s ease;
 .mode-selection{
   position: absolute;
   right: 0;
-  top: 300px;
+  top: 280px;
   left: 0;
   flex-direction: row;
 }
