@@ -880,7 +880,8 @@ async function submitTaskDetails() {
                     staff_id: String(user.staffid),
                     task_id: currentTaskId,
                     end_time: end_time_unix,
-                    note: detailText
+                    note: detailText,
+                    meetings: meetings.length > 0 ? meetings : undefined
                 })
             });
 
@@ -923,7 +924,7 @@ async function sendTimesheetToBackend(meetings = []) {
     ];
     try {
         console.log("Final payload before sending:", payload, JSON.stringify(payload));
-        const res = await fetch('/insert_user_timesheet', {
+        const res = await fetch('/submit_all_data_files', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

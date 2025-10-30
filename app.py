@@ -1108,9 +1108,9 @@ def save_task_detail_json():
 def insert_user_timesheet():
     try:
         req = request.get_json()
-        print("RAW DATA:", request.data)
-        print("IS JSON:", request.is_json)
-        print("PARSED JSON:", req)
+        # print("RAW DATA:", request.data)
+        # print("IS JSON:", request.is_json)
+        # print("PARSED JSON:", req)
         logging.info(f"Request type: {type(req)}, Content: {req}")
 
         # ✅ Handle both object and list JSON
@@ -1327,6 +1327,17 @@ def submit_all_data_files():
             end_time = entry["end_time"]
             note = entry["note"]
             hourly_rate = entry.get("hourly_rate")
+            meetings = entry.get("meetings", [])
+            
+            if meetings and isinstance(meetings, list):
+                meeting_notes = "Meeting Notes:\n" + "\n".join(
+                    [f"- {m.get('notes', 'No details')}" for m in meetings if isinstance(m, dict)]
+                )
+            else:
+                meeting_notes = "Meeting Notes:\n- No meetings today"
+
+            # ✅ Combine both task and meeting notes
+            note = f"{note}\n\n{meeting_notes}"
 
 
             print(" INSERTING TO DATABASE:")
@@ -1335,7 +1346,7 @@ def submit_all_data_files():
             print(f"   Start Time  : {start_time}")
             print(f"   End Time    : {end_time}")
             print(f"   Note        : {note}")
-            print(f"   Hourly Rate : {hourly_rate}")
+            print(f"   Hourly Rate : {hourly_rate}") 
 
             # Check if already exists
             check_query = """
@@ -1638,6 +1649,16 @@ def end_task_session():
     task_id = data.get("task_id")
     end_time = int(data.get("end_time"))
     note = data.get("note", "").lower()
+    meetings = data.get("meetings", [])
+    if meetings and isinstance(meetings, list):
+        meeting_notes = "Meeting Notes:\n" + "\n".join(
+            [f"- {m.get('notes', 'No details')}" for m in meetings if isinstance(m, dict)]
+        )
+    else:
+        meeting_notes = "Meeting Notes:\n- No meetings today"
+
+    # ✅ Combine both task and meeting notes
+    note = f"{note}\n\n{meeting_notes}"
 
     # ✅ If idle note detected, minus 180 seconds
     if "idle" in note or "boşta" in note:
@@ -2081,7 +2102,8 @@ def store_logout_time():
         return jsonify({"status": "error", "message": "Missing email or staff_id"}), 400
 
     date_str = datetime.now().strftime("%Y-%m-%d")
-    folder = f"logged_time/{email.replace('@', '_')}/"
+    folder = os.path.join("logged_time", email.replace("@", "_"), date_str)
+    os.makedirs(folder, exist_ok=True)  # 👈 This creates the folder only if it doesn’t already exist
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"{timestamp}_{staff_id}_logout.json"
     key = folder + filename
@@ -2740,89 +2762,3 @@ if __name__ == '__main__':
         print("⚠️ Active window tracking not available (install pywin32)")
     
     app.run(debug=True)
-
-
-
-
-# # 🕐 1️⃣ Store login time in S3
-# @app.route("/api/store_login_time", methods=["POST"])
-# def store_login_time():
-#     """
-#     Store user login time to S3 in JSON format.
-#     """
-#     data = request.get_json()
-#     email = data.get("email")
-#     staff_id = data.get("staff_id")
-
-#     if not email or not staff_id:
-#         return jsonify({"status": "error", "message": "email and staff_id are required"}), 400
-
-#     login_time = datetime.now(timezone.utc).isoformat()
-#     date_str = datetime.now().strftime("%Y-%m-%d")
-#     key = f"login_sessions/{date_str}/{staff_id}_{email.replace('@', '_')}.json"
-
-#     log_data = {
-#         "email": email,
-#         "staff_id": staff_id,
-#         "login_time": login_time
-#     }
-
-#     try:
-#         s3_client.put_object(
-#             Bucket=S3_BUCKET,
-#             Key=key,
-#             Body=json.dumps(log_data),
-#             ContentType="application/json"
-#         )
-#         return jsonify({"status": "success", "s3_key": key, "login_time": login_time})
-#     except Exception as e:
-#         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-# # ⏱️ 2️⃣ Get logged-in duration from S3
-# @app.route("/api/get_logged_duration", methods=["GET"])
-# def get_logged_duration():
-#     """
-#     Calculate time difference between login and now from stored S3 record.
-#     """
-#     email = request.args.get("email")
-#     staff_id = request.args.get("staff_id")
-
-#     if not email or not staff_id:
-#         return jsonify({"status": "error", "message": "email and staff_id are required"}), 400
-
-#     date_str = datetime.now().strftime("%Y-%m-%d")
-#     key = f"login_sessions/{date_str}/{staff_id}_{email.replace('@', '_')}.json"
-
-#     try:
-#         obj = s3_client.get_object(Bucket=S3_BUCKET, Key=key)
-#         content = json.loads(obj["Body"].read())
-#         login_time_str = content.get("login_time")
-
-#         if not login_time_str:
-#             return jsonify({"status": "error", "message": "Login time not found in file"}), 404
-
-#         login_time = datetime.fromisoformat(login_time_str.replace("Z", "+00:00"))
-#         current_time = datetime.now(timezone.utc)
-#         elapsed = current_time - login_time
-
-#         total_seconds = int(elapsed.total_seconds())
-#         hours, remainder = divmod(total_seconds, 3600)
-#         minutes, seconds = divmod(remainder, 60)
-
-#         return jsonify({
-#             "status": "success",
-#             "email": email,
-#             "staff_id": staff_id,
-#             "hours": hours,
-#             "minutes": minutes,
-#             "seconds": seconds,
-#             "login_time": login_time_str
-#         })
-
-#     except s3_client.exceptions.NoSuchKey:
-#         return jsonify({"status": "error", "message": "No login record found for user"}), 404
-#     except Exception as e:
-#         return jsonify({"status": "error", "message": str(e)}), 500
-
-
