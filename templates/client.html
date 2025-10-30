@@ -1078,9 +1078,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const body = document.getElementById('taskDetailsBody');
       const title = document.getElementById('taskDetailsTitle');
 
+      if (!modal || !body || !title) {
+        return;
+      }
+
       title.textContent = taskName || 'Görev Detayları';
       body.innerHTML = '<p>Yükleniyor...</p>';
+      // Ensure modal overlay is visible and uses modal animation classes
       modal.style.display = 'flex';
+      modal.classList.remove('hide');
+      modal.classList.add('show');
 
       try {
         // obtain token from sessionStorage; if not present, set a hardcoded token automatically
@@ -1144,7 +1151,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeTaskDetailsModal() {
       const modal = document.getElementById('taskDetailsModal');
-      if (modal) modal.style.display = 'none';
+      if (!modal) return;
+      // use hide animation then remove from flow
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('hide');
+      }, 300);
     }
 
     // Close task details modal when clicking outside content
