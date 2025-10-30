@@ -1193,6 +1193,21 @@ cubic-bezier(0.25, 0.8, 0.25, 1);
   padding: 18px; /* a touch more padding for readability */
 }
 
+/* Ensure very long inner content doesn't force modal to expand
+   and make images/content wrap nicely. */
+#taskDetailsModal .modal-content * {
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+/* Make sure images inside task details are responsive */
+#taskDetailsModal .modal-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+}
+
 .modal.show .modal-content,
 .modal-review.show .modal-content {
   transform: scale(1) translateY(0);
