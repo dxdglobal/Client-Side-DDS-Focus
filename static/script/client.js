@@ -456,24 +456,29 @@ async function handleAutoIdleSubmit() {
 }
 
 document.getElementById('startBtn').addEventListener('click', function () {
-    // Çalışma modunda task seçimini kontrol et
-    if (currentMode === 'work') {
-        const taskSelect = document.getElementById('task');
-        const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
-        const taskId = taskSelect.value;
+    // Check task selection for both work and meeting modes
+    const taskSelect = document.getElementById('task');
+    const selectedTaskOption = taskSelect.options[taskSelect.selectedIndex];
+    const taskId = taskSelect.value;
 
-        if (!taskId || taskId === "" || selectedTaskOption.disabled) {
-            showToast('⚠️ Please select a task first!', 'error');
-            return;
-        }
+    if (!taskId || taskId === "" || selectedTaskOption.disabled) {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        const message = lang === 'tr' 
+            ? '⚠️ Lütfen önce bir görev seçin!'
+            : '⚠️ Please select a task first!';
+        showToast(message, 'error');
+        return;
+    }
+
+    if (currentMode === 'work') {
         currentTaskId = taskId;
         selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
         selectedTaskName = selectedTaskOption.textContent;
     } else {
-        // Toplantı modunda
-        currentTaskId = 'meeting';
-        selectedProjectName = 'Meeting';
-        selectedTaskName = 'Meeting Session';
+        // Meeting mode - also requires task selection
+        currentTaskId = taskId;
+        selectedProjectName = document.getElementById('project').selectedOptions[0]?.textContent || '';
+        selectedTaskName = selectedTaskOption.textContent + ' (Meeting)';
     }
 
     if (!isTimerRunning) {
