@@ -257,26 +257,20 @@
 
       <div class="drawer-section">
   
-        <div class="drawer-item task-info">
+        <div class="drawer-item task-info" style="padding: 24px 20px;">
           <div class="task-details" style="cursor:pointer" onclick="openTaskDetailsModal(document.getElementById('drawerTaskName').textContent)">
             <!-- Modern clipboard/task icon -->
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2" fill="#eaf7f0"/><path d="M9 2h6v2H9z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
-            <div class="task-name" id="drawerTaskName">No Task Selected</div>
-            <div class="task-status" id="drawerTaskStatus">Lütfen çalışmaya başlamak için bir görev seçin</div>
+            <div class="task-name" id="drawerTaskName" style="margin-bottom:10px;">No Task Selected</div>
+            <div class="task-status" id="drawerTaskStatus" style="margin-bottom:10px;">Lütfen çalışmaya başlamak için bir görev seçin</div>
+            <div class="task-remaining" id="drawerTaskRemaining" style="font-size:15px; color:#006039; font-weight:600; margin-top:8px;">Time left: --</div>
           </div>
         </div>
       </div>
 
       <div class="drawer-section">
     
-        <div class="drawer-item time-info">
-          <!-- Modern clock/time icon -->
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#eaf7f0"/><path d="M12 6v6l4 2"/></svg>
-          <div class="time-details">
-            <div class="current-time" id="drawerCurrentTime">00:00:00</div>
-            <div class="total-time" id="drawerTotalTime">Toplam: 00:00</div>
-          </div>
-        </div>
+        <!-- Removed spent time, only show remaining time in task card above -->
       </div>
 
   
@@ -658,7 +652,7 @@ function updateDrawerTimeInfo() {
 
 // Auto-update drawer info every second
 setInterval(function() {
-    updateDrawerTimeInfo();
+    // updateDrawerTimeInfo(); // Disabled - elements not present in drawer
     updateDrawerTaskInfo(); // Update task status in case state changes
 }, 1000);
 
@@ -672,14 +666,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (taskSelect) {
-        taskSelect.addEventListener('change', updateDrawerTaskInfo);
+        taskSelect.addEventListener('change', function() {
+            updateDrawerTaskInfo();
+            fetchTaskDetailsForDrawer();
+        });
     }
     
     // Initial update
     setTimeout(function() {
         updateDrawerProjectInfo();
         updateDrawerTaskInfo();
-        updateDrawerTimeInfo();
+        // updateDrawerTimeInfo(); // Disabled - elements not present in drawer
+        fetchTaskDetailsForDrawer();
     }, 500);
 });
 
@@ -1068,6 +1066,81 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Call initialize theme
         initializeClientTheme();
+
+    // ====== Fetch Task Details for Drawer (without opening modal) ======
+    async function fetchTaskDetailsForDrawer() {
+      const taskSelect = document.getElementById('task');
+      const drawerTaskRemaining = document.getElementById('drawerTaskRemaining');
+      
+      if (!taskSelect || !drawerTaskRemaining || taskSelect.selectedIndex <= 0) {
+        // Reset to default if no task selected
+        drawerTaskRemaining.textContent = 'Time left: --';
+        return;
+      }
+
+      const selectedTask = taskSelect.selectedOptions[0].text;
+      const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+      const translation = clientTranslations[currentLang] || clientTranslations.en;
+      
+      if (selectedTask === translation.selectTask) {
+        drawerTaskRemaining.textContent = 'Time left: --';
+        return;
+      }
+
+      try {
+        // obtain token from sessionStorage; if not present, set a hardcoded token automatically
+        let token = sessionStorage.getItem('authToken') || '';
+        if (!token) {
+          // Hardcoded token (inserted by frontend as requested)
+          token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o';
+          try {
+            sessionStorage.setItem('authToken', token);
+          } catch (e) {
+            console.warn('Could not persist authToken to sessionStorage:', e);
+          }
+        }
+
+        const url = '/api/search-task?task_name=' + encodeURIComponent(selectedTask);
+        const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+        const resp = await fetch(url, { headers });
+        const data = await resp.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const task = data[0];
+          const due = task.duedate || task.due_date || task.startdate || '';
+
+          let remainingText = '--';
+          let dueText = '--';
+          
+          if (due) {
+            // Try to parse date (handles 'YYYY-MM-DD' and full timestamps)
+            const dueDate = new Date(due);
+            if (!isNaN(dueDate.getTime())) {
+              dueText = dueDate.toLocaleDateString();
+              
+              const now = new Date();
+              const diffMs = dueDate - now;
+              if (diffMs < 0) {
+                remainingText = 'Overdue';
+              } else {
+                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                remainingText = `${days}d ${hours}h ${mins}m`;
+              }
+            }
+          }
+
+          drawerTaskRemaining.innerHTML = `Due: ${dueText} | Time left: ${remainingText}`;
+        } else {
+          drawerTaskRemaining.textContent = 'Time left: --';
+        }
+      } catch (err) {
+        console.error('Error fetching task details for drawer', err);
+        drawerTaskRemaining.textContent = 'Time left: --';
+      }
+    }
 
     // ====== Task Details Modal: fetch and render task notes, due date and remaining time ======
     async function openTaskDetailsModal(taskName) {
