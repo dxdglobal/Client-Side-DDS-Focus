@@ -2124,11 +2124,11 @@ def store_logout_time():
         return jsonify({"status": "error", "message": "Missing email or staff_id"}), 400
 
     date_str = datetime.now().strftime("%Y-%m-%d")
-    folder = os.path.join("logged_time", email.replace("@", "_"), date_str)
-    os.makedirs(folder, exist_ok=True)  # 👈 This creates the folder only if it doesn’t already exist
+    safe_email = email.replace("@", "_").replace(".", "_")  # make S3-safe folder name
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    folder_path = f"logged_time/{safe_email}/{date_str}/"
     filename = f"{timestamp}_{staff_id}_logout.json"
-    key = folder + filename
+    key = f"{folder_path}{filename}"
 
     record = {
         "email": email,
