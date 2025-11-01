@@ -5,7 +5,7 @@ a = Analysis(
     ['desktop.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('data', 'data'), ('logs', 'logs')],
+    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('data', 'data'), ('logs', 'logs')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

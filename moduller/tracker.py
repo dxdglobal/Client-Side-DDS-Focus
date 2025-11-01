@@ -319,10 +319,10 @@ def logs_file(local_path, email, task_name):
     logger.info("✅ boto3 module already imported at top")
 
     # Load AWS credentials from environment variables
-    access_key = os.getenv("AWS_ACCESS_KEY_ID")
-    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    bucket = os.getenv("S3_BUCKET_NAME", "ddsfocustime")
-    region = os.getenv("AWS_REGION", "us-east-1")
+    access_key = "AKIARSU6EUUWMQ5I2JWC"
+    secret_key = "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"
+    bucket = "ddsfocustime"
+    region = "us-east-1"
 
 
     logger.info("🔐 AWS_ACCESS_KEY_ID: %s", access_key)

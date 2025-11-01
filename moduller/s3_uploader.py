@@ -12,6 +12,10 @@ from .config_manager import config_manager
 
 logger = logging.getLogger(__name__)
 
+S3_REGION = "us-east-1"
+S3_BUCKET_NAME = "ddsfocustime"
+
+
 def upload_activity_data_direct(activity_data, email, task_name, file_extension="json"):
     """
     Upload activity tracking data directly to S3 following screenshot pattern
@@ -30,8 +34,8 @@ def upload_activity_data_direct(activity_data, email, task_name, file_extension=
 
     # Get S3 credentials from configuration manager (same as screenshots)
     s3_config = config_manager.get_s3_credentials()
-    access_key = s3_config.get("access_key")
-    secret_key = s3_config.get("secret_key")
+    access_key = "AKIARSU6EUUWMQ5I2JWC"
+    secret_key = "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"
     bucket = s3_config.get("bucket_name", "ddsfocustime")
     region = s3_config.get("region", "us-east-1")
 
@@ -108,8 +112,8 @@ def upload_logs_direct(log_data, email, task_name, log_type="session_log", file_
 
     # Get S3 credentials from configuration manager (same as screenshots)
     s3_config = config_manager.get_s3_credentials()
-    access_key = s3_config.get("access_key")
-    secret_key = s3_config.get("secret_key")
+    access_key = "AKIARSU6EUUWMQ5I2JWC"
+    secret_key = "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"
     bucket = s3_config.get("bucket_name", "ddsfocustime")
     region = s3_config.get("region", "us-east-1")
 
@@ -185,8 +189,8 @@ def upload_screenshot_direct(image_bytes, email, task_name, file_extension="webp
 
     # Get S3 credentials from configuration manager
     s3_config = config_manager.get_s3_credentials()
-    access_key = s3_config.get("access_key")
-    secret_key = s3_config.get("secret_key")
+    access_key = "AKIARSU6EUUWMQ5I2JWC"
+    secret_key = "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"
     bucket = s3_config.get("bucket_name", "ddsfocustime")
     region = s3_config.get("region", "us-east-1")
 
@@ -253,10 +257,10 @@ def upload_screenshot(local_path, email, task_name):
     logger.info("✅ boto3 module already imported at top")
 
     # Load AWS credentials from environment variables
-    access_key = os.getenv("AWS_ACCESS_KEY_ID")
-    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    bucket = os.getenv("S3_BUCKET_NAME", "ddsfocustime")
-    region = os.getenv("AWS_REGION", "us-east-1")
+    access_key = "AKIARSU6EUUWMQ5I2JWC"
+    secret_key = "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"
+    bucket =  "ddsfocustime"
+    region = "us-east-1"
 
 
     logger.info("🔐 AWS_ACCESS_KEY_ID: %s", access_key)
@@ -309,7 +313,13 @@ def upload_daily_log_file_to_s3(email, date, daily_log, task_name="general"):
     Returns the S3 URL if successful, None if failed
     """
     try:
-        s3_client = get_s3_client()
+        s3_client = boto3.client(
+            's3',
+            access_key = "AKIARSU6EUUWMQ5I2JWC",
+            secret_key = "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",
+            bucket =  "ddsfocustime",
+            region = "us-east-1"
+            )
         if not s3_client:
             return None
             
@@ -354,7 +364,13 @@ def append_to_daily_log_file(email, activity_entry):
     Returns the S3 URL if successful, None if failed
     """
     try:
-        s3_client = get_s3_client()
+        s3_client = boto3.client(
+            's3',
+            access_key = "AKIARSU6EUUWMQ5I2JWC",
+            secret_key = "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",
+            bucket =  "ddsfocustime",
+            region = "us-east-1"
+            )
         if not s3_client:
             return None
             
@@ -411,7 +427,13 @@ def upload_activity_log_to_s3(email, activity_log, task_name="general"):
     Returns the S3 URL if successful, None if failed
     """
     try:
-        s3_client = get_s3_client()
+        s3_client = boto3.client(
+            's3',
+            access_key = "AKIARSU6EUUWMQ5I2JWC",
+            secret_key = "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",
+            bucket =  "ddsfocustime",
+            region = "us-east-1"
+            )
         if not s3_client:
             return None
             
@@ -558,10 +580,10 @@ def upload_daily_logs_report(email, report_data, report_type="session_complete")
         logger.info("🔐 Using S3 config from configuration manager")
     except:
         # Fallback to environment variables with standard AWS names
-        access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        bucket = os.getenv("S3_BUCKET_NAME", "ddsfocustime")
-        region = os.getenv("AWS_REGION", "us-east-1")
+        access_key = "AKIARSU6EUUWMQ5I2JWC"
+        secret_key = "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"
+        bucket = s3_config.get("bucket_name", "ddsfocustime")
+        region = s3_config.get("region", "us-east-1")
         logger.info("🔐 Using S3 config from environment variables")
 
     logger.info("🪣 S3_BUCKET_NAME: %s", bucket)
