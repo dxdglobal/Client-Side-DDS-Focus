@@ -415,6 +415,23 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+/* ✅ Disabled logout button styles */
+#logout:disabled {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#logout:disabled:hover {
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* Theme Toggle Button for Client Page */
 .theme-toggle-client {
   width: 36px;
@@ -784,7 +801,7 @@ button:disabled {
 .drawer-arrow-btn {
     position: fixed;
     left: 0;
-    top: 50%;
+    top: 55%;
     transform: translateY(-50%);
     background: #003366 !important;
     background-color: #003366 !important;

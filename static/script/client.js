@@ -3,11 +3,66 @@ let currentMode = 'work'; // 'work' veya 'meeting'
 let meetingRecords = [];
 let workTimerPaused = false;
 
+// Function to update button states based on current activity
+function updateButtonStates() {
+    const workBtn = document.getElementById('workModeBtn');
+    const meetingBtn = document.getElementById('meetingModeBtn');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const logoutBtn = document.getElementById('logout'); // ✅ Add logout button reference
+
+    // If work timer is running, disable meeting button
+    if (isTimerRunning && currentMode === 'work') {
+        meetingBtn.disabled = true;
+        meetingBtn.style.opacity = '0.5';
+        meetingBtn.style.cursor = 'not-allowed';
+    }
+    // If meeting timer is running, disable work button  
+    else if (isMeetingTimerRunning && currentMode === 'meeting') {
+        workBtn.disabled = true;
+        workBtn.style.opacity = '0.5';
+        workBtn.style.cursor = 'not-allowed';
+    }
+    // If nothing is running, enable both mode buttons
+    else {
+        workBtn.disabled = false;
+        workBtn.style.opacity = '1';
+        workBtn.style.cursor = 'pointer';
+        meetingBtn.disabled = false;
+        meetingBtn.style.opacity = '1';
+        meetingBtn.style.cursor = 'pointer';
+    }
+
+    // ✅ Handle logout button state
+    if (logoutBtn) {
+        if (isTimerRunning || isMeetingTimerRunning) {
+            // Disable logout button when any timer is running
+            logoutBtn.disabled = true;
+            logoutBtn.style.opacity = '0.5';
+            logoutBtn.style.cursor = 'not-allowed';
+            logoutBtn.title = 'Cannot logout while timer is running';
+        } else {
+            // Enable logout button when no timers are running
+            logoutBtn.disabled = false;
+            logoutBtn.style.opacity = '1';
+            logoutBtn.style.cursor = 'pointer';
+            logoutBtn.title = '';
+        }
+    }
+}
+
 function setMode(mode) {
-    // Toplantı devam ederken çalışma moduna geçmeyi engelle
+    // Prevent switching to work mode if meeting timer is running
     if (isMeetingTimerRunning && mode === 'work') {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
         showToast(translations[lang].finishMeetingFirst, "error");
+        return;
+    }
+    
+    // Prevent switching to meeting mode if work timer is running
+    if (isTimerRunning && mode === 'meeting') {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        showToast("Please finish your current work session before starting a meeting", "error");
         return;
     }
 
@@ -40,6 +95,9 @@ function setMode(mode) {
         document.getElementById('startBtn').disabled = false;
         document.getElementById('startBtn').style.backgroundColor = '#006039';
     }
+    
+    // Update button states after mode change
+    updateButtonStates();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -49,6 +107,9 @@ document.addEventListener('DOMContentLoaded', function() {
         workBtn.addEventListener('click', () => setMode('work'));
         meetingBtn.addEventListener('click', () => setMode('meeting'));
     }
+
+    // Initialize button states
+    updateButtonStates();
 
     // Screenshot interval fetch
     fetchScreenshotInterval();
@@ -360,31 +421,97 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
 let timerInterval, totalSeconds = 0;
 let isTimerRunning = false;
 let meetingTimerInterval, meetingTotalSeconds = 0, isMeetingTimerRunning = false;
+let meetingStartTime = null; // Track actual meeting start time for accurate duration
 let currentTaskId = null, sessionStartTime = null;
 let selectedProjectName = '', selectedTaskName = '', user = null;
 
 function startMeetingTimer() {
     if (isMeetingTimerRunning) return;
+    
+    // ✅ Use existing sessionStartTime if already set, otherwise create one
+    if (!sessionStartTime) {
+        sessionStartTime = Math.floor(Date.now() / 1000);
+    }
+    
+    // ✅ Store the actual meeting start time for accurate duration calculation
+    meetingStartTime = Math.floor(Date.now() / 1000);
+    
+    // ✅ Call start_task_session for meetings as well
+    console.log("📤 Sending meeting start to /start_task_session:");
+    console.log({
+        email: user.email,
+        staff_id: String(user.staffid),
+        task_id: currentTaskId,
+        start_time: sessionStartTime
+    });
+
+    fetch('/start_task_session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: user.email,
+            staff_id: String(user.staffid),
+                task_id: currentTaskId,
+                start_time: sessionStartTime,
+                is_meeting: true
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("📤 Sent meeting start time:", sessionStartTime);
+        console.log("📤 Sent task ID   :", currentTaskId);
+        console.log("📤 Sent staff ID  :", user.staffid);
+        console.log("📥 Server response:", data);
+    })
+    .catch(console.error);
+    
     isMeetingTimerRunning = true;
     meetingTimerInterval = setInterval(updateMeetingTimerDisplay, 1000);
+    
+    // ✅ Set screen recording status to YES for meetings too
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
+    
+    updateButtonStates(); // Update button states when meeting starts
 }
 
 function stopMeetingTimer() {
     clearInterval(meetingTimerInterval);
     isMeetingTimerRunning = false;
     meetingTotalSeconds = 0;
+    meetingStartTime = null; // Clear the start time
     document.getElementById('meeting-hours').innerText = '00';
     document.getElementById('meeting-minutes').innerText = '00';
     document.getElementById('meeting-seconds').innerText = '00';
+    
+    // ✅ Set screen recording status to NO when meeting stops
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
+    
+    updateButtonStates(); // Update button states when meeting stops
 }
 
 function pauseMeetingTimer() {
     clearInterval(meetingTimerInterval);
     isMeetingTimerRunning = false;
+    
+    // ✅ Set screen recording status to NO when meeting pauses
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
+    
+    updateButtonStates(); // Update button states when meeting pauses
 }
 
 function updateMeetingTimerDisplay() {
-    meetingTotalSeconds++;
+    // ✅ Calculate actual elapsed time based on real timestamps
+    if (meetingStartTime) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        meetingTotalSeconds = currentTime - meetingStartTime;
+    } else {
+        // Fallback to counter-based approach if start time is missing
+        meetingTotalSeconds++;
+    }
+    
     document.getElementById('meeting-hours').innerText = String(Math.floor(meetingTotalSeconds / 3600)).padStart(2, '0');
     document.getElementById('meeting-minutes').innerText = String(Math.floor((meetingTotalSeconds % 3600) / 60)).padStart(2, '0');
     document.getElementById('meeting-seconds').innerText = String(meetingTotalSeconds % 60).padStart(2, '0');
@@ -396,6 +523,7 @@ function resumeTimer() {
         timerInterval = setInterval(updateTimerDisplay, 1000);
         document.getElementById('startBtn').disabled = true;
         document.getElementById('startBtn').style.backgroundColor = 'gray';
+        updateButtonStates(); // Update button states when work timer resumes
     }
 }
 
@@ -642,7 +770,8 @@ function startTimer() {
                 email: user.email,
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
-                start_time: sessionStartTime
+                start_time: sessionStartTime,
+                is_meeting: false
             })
         })
         .then(res => res.json())
@@ -669,6 +798,7 @@ function startTimer() {
     document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
 
     timerInterval = setInterval(updateTimerDisplay, 1000);
+    updateButtonStates(); // Update button states when work timer starts
 }
 
 function pauseTimer() {
@@ -677,6 +807,7 @@ function pauseTimer() {
     isTimerRunning = false;
     document.getElementById('startBtn').disabled = false;
     document.getElementById('startBtn').style.backgroundColor = '#006039';
+    updateButtonStates(); // Update button states when work timer pauses
 }
 
 function resetTimer() {
@@ -691,6 +822,7 @@ function resetTimer() {
 
     document.getElementById('startBtn').disabled = false;
     document.getElementById('startBtn').style.backgroundColor = '#006039';
+    updateButtonStates(); // Update button states when timer resets
 
     // Sadece çalışma modunda dropdown'ları enable et
     if (currentMode === 'work') {
@@ -933,6 +1065,15 @@ async function submitTaskDetails() {
         if (totalSeconds === 0) {
             // Sadece toplantı: note boş, meetings tek obje
             const end_time_unix = Math.floor(Date.now() / 1000);
+            
+            // ✅ Debug: Show actual vs counter time
+            const actualDurationSeconds = meetingStartTime ? (end_time_unix - meetingStartTime) : meetingTotalSeconds;
+            console.log('🕐 Meeting Duration Debug:');
+            console.log('   Counter time:', meetingTotalSeconds, 'seconds');
+            console.log('   Actual time: ', actualDurationSeconds, 'seconds');
+            console.log('   Start time:  ', meetingStartTime);
+            console.log('   End time:    ', end_time_unix);
+            
             try {
                 closeModal();
                 resetTimer();
@@ -943,7 +1084,7 @@ async function submitTaskDetails() {
                     task_id: currentTaskId,
                     end_time: end_time_unix,
                     note: '',
-                    meetings: [{ notes: detailText, duration: `${Math.round(meetingTotalSeconds/60)} minutes` }]
+                    meetings: [{ notes: detailText, duration: `${Math.round(meetingTotalSeconds/60)} minutes`, duration_seconds: meetingTotalSeconds }]
                 };
                 const saveRes = await fetch('/end_task_session', {
                     method: 'POST',
@@ -973,6 +1114,7 @@ async function submitTaskDetails() {
             meetingRecords.push({
                 notes: detailText,
                 duration: `${Math.round(meetingTotalSeconds/60)} minutes`,
+                duration_seconds: meetingTotalSeconds,
                 timestamp: Date.now()
             });
             if (user) {
@@ -1307,7 +1449,8 @@ window.addEventListener("load", () => {
 });
 
 window.addEventListener("beforeunload", async (event) => {
-    if (isTimerRunning) {
+    // ✅ Check for both work timer and meeting timer running
+    if (isTimerRunning || isMeetingTimerRunning) {
         console.log("❌ App closing: Auto-stopping timer & saving session");
 
         const detailText = translations[sessionStorage.getItem('selectedLanguage') || 'en'].autoSavedAppExit;
@@ -1330,6 +1473,8 @@ window.addEventListener("beforeunload", async (event) => {
                 });
             } else {
                 // Meeting mode - save meeting session on exit
+                // ✅ Calculate actual meeting duration if meetingStartTime is available
+                const actualMeetingDuration = meetingStartTime ? (end_time_unix - meetingStartTime) : meetingTotalSeconds;
                 await fetch('/end_task_session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1340,7 +1485,7 @@ window.addEventListener("beforeunload", async (event) => {
                         end_time: end_time_unix,
                         note: detailText,
                         is_meeting: true,
-                        meetings: [{ duration_seconds: meetingTotalSeconds, notes: detailText }]
+                        meetings: [{ duration_seconds: actualMeetingDuration, notes: detailText }]
                     })
                 });
             }
@@ -1349,6 +1494,7 @@ window.addEventListener("beforeunload", async (event) => {
         }
 
         resetTimer();
+        stopMeetingTimer(); // ✅ Also stop meeting timer
         stopScreenRecording();
         stopDailyLogsCapture();
     }
@@ -1869,7 +2015,8 @@ function openInNewTab(url) {
 }
 
 function openLogoutModal() {
-  if (isTimerRunning) {
+  // ✅ Check for both work timer and meeting timer running
+  if (isTimerRunning || isMeetingTimerRunning) {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     showToast(translations[lang].cannotLogoutRunning, "error");
     return;
