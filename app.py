@@ -520,13 +520,55 @@ def upload_log_file():
 
 
 
+def get_dynamic_screenshot_interval(email, staff_id=None):
+    """
+    Fetch screenshot interval dynamically from external API per user
+    Falls back to config_manager if API fails
+    
+    Args:
+        email: User email
+        staff_id: Optional staff ID
+        
+    Returns:
+        int: Screenshot interval in seconds
+    """
+    try:
+        # External API URL
+        url = "https://dxdtime.ddsolutions.io/api/sync-staffs"
+        response = requests.get(url, timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json().get("data", [])
+            
+            # Find matching staff
+            for staff in data:
+                if (staff_id and str(staff.get("staff_id")) == str(staff_id)) or \
+                   (email and staff.get("email") == email):
+                    # Get screenshot_interval from API (in minutes)
+                    interval_minutes = staff.get("screenshot_interval")
+                    if interval_minutes:
+                        interval_seconds = int(interval_minutes) * 60
+                        logging.info(f"📸 Dynamic screenshot interval for {email}: {interval_minutes} minutes ({interval_seconds} seconds)")
+                        return interval_seconds
+        
+        # Fallback to config_manager
+        fallback_interval = config_manager.get_screenshot_interval()
+        logging.warning(f"⚠️ Using fallback screenshot interval: {fallback_interval} seconds")
+        return fallback_interval
+        
+    except Exception as e:
+        logging.error(f"❌ Error fetching dynamic screenshot interval: {e}")
+        # Fallback to config_manager
+        return config_manager.get_screenshot_interval()
+
+
 def start_screen_recording(folder_path, email, task_name):
     def record():
         global recording_active
 
         print(f" Starting screenshot capture - uploading directly to S3")
-        # Get screenshot interval from configuration
-        screenshot_interval = config_manager.get_screenshot_interval()
+        # Get screenshot interval dynamically from API per user
+        screenshot_interval = get_dynamic_screenshot_interval(email)
         print(f"[DEBUG] Screenshot interval: {screenshot_interval} seconds")
         
         with mss.mss() as sct:
@@ -835,8 +877,8 @@ def start_screen_recording(folder_path, email, task_name):
     def record():
         global recording_active
 
-        # Get screenshot interval from configuration
-        screenshot_interval = config_manager.get_screenshot_interval()
+        # Get screenshot interval dynamically from API per user
+        screenshot_interval = get_dynamic_screenshot_interval(email)
         print(f"[DEBUG] Starting screenshot capture - uploading directly to S3 (interval: {screenshot_interval}s)")
         
         with mss.mss() as sct:
