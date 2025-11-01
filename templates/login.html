@@ -76,7 +76,7 @@
       <span class="theme-icon moon-icon">🌙</span>
     </button>
 
-    <div class="version">DeluxeTime v1.4</div>
+    <div class="version">DeluxeTime v1.5</div>
   </div>
 
   <!-- Staff Data Display -->
@@ -152,7 +152,7 @@
           console.log("Database connection check response:", data);
           if (data.status === 'success') {
             Toastify({
-              text: "Login Page",
+              text: window.currentTranslation?.loginPage || "Login Page",
               backgroundColor: "green",
               duration: 3000
             }).showToast();
@@ -166,7 +166,7 @@
         })
         .catch(() => {
           Toastify({
-            text: "Error checking database connection.",
+            text: window.currentTranslation?.dbConnectionError || "Error checking database connection.",
             backgroundColor: "red",
             duration: 3000
           }).showToast();
@@ -185,7 +185,14 @@
         loginButton: "LOGIN",
         guestButton: "Login as Guest",
         staffData: "Staff Data:",
-        version: "DeluxeTime v1.5.0"
+        version: "DeluxeTime v1.5.0",
+        enterCredentials: "Please enter both username and password",
+        emailNotFound: "Email not found in staff data",
+        userAvailable: "User is available:",
+        loginSuccessful: "Login successful!",
+        invalidPassword: "Invalid password",
+        dbConnectionError: "Error checking database connection.",
+        loginPage: "Login Page"
       },
       tr: {
         title: "İş Emri Takip Yazılımı",
@@ -198,7 +205,14 @@
         loginButton: "GİRİŞ",
         guestButton: "Misafir Olarak Giriş Yap",
         staffData: "Personel Verileri:",
-        version: "DeluxeTime v1.5.0"
+        version: "DeluxeTime v1.5.0",
+        enterCredentials: "Lütfen kullanıcı adı ve şifreyi girin",
+        emailNotFound: "E-posta personel verilerinde bulunamadı",
+        userAvailable: "Kullanıcı mevcut:",
+        loginSuccessful: "Giriş başarılı!",
+        invalidPassword: "Geçersiz şifre",
+        dbConnectionError: "Veritabanı bağlantısı kontrol edilirken hata oluştu.",
+        loginPage: "Giriş Sayfası"
       }
     };
 
@@ -218,6 +232,9 @@
       document.querySelector(".version").textContent = translation.version;
       // document.getElementById("rememberMeLabel").textContent = translation.savePassword;
       document.getElementById("rememberMeLabel").textContent = translation.rememberMe;
+      
+      // Store current translation for toast messages
+      window.currentTranslation = translation;
     }
 
     async function handleLogin() {
@@ -226,7 +243,7 @@
 
       if (!username || !password) {
         Toastify({
-          text: "Please enter both username and password",
+          text: window.currentTranslation?.enterCredentials || "Please enter both username and password",
           backgroundColor: "red",
           duration: 3000
         }).showToast();
@@ -237,7 +254,7 @@
       const user = staffData.find(staff => staff.email === username);
       if (!user) {
         Toastify({
-          text: "Email not found in staff data",
+          text: window.currentTranslation?.emailNotFound || "Email not found in staff data",
           backgroundColor: "red",  // Red for error
           duration: 3000
         }).showToast();
@@ -246,7 +263,7 @@
 
       // If email exists, show "User is available" toast
       Toastify({
-        text: `User is available:`,
+        text: window.currentTranslation?.userAvailable || "User is available:",
         backgroundColor: "green",  // Green for success
         duration: 3000
       }).showToast();
@@ -264,7 +281,7 @@
       // Compare the password directly without encryption
       if (user.password != password) {
         Toastify({
-          text: "Login successful!",
+          text: window.currentTranslation?.loginSuccessful || "Login successful!",
           backgroundColor: "green",  // Green for success
           duration: 3000
         }).showToast();
@@ -288,7 +305,7 @@
         window.location.href = 'client';  // Fixed redirection to client.html
       } else {
         Toastify({
-          text: "Invalid password",  // Red for error
+          text: window.currentTranslation?.invalidPassword || "Invalid password",  // Red for error
           backgroundColor: "red",
           duration: 3000
         }).showToast();
@@ -301,7 +318,7 @@
       
       let defaultLang = sessionStorage.getItem('selectedLanguage') || 'tr';
       document.getElementById("languageSelector").value = defaultLang;
-      changeLanguage(defaultLang); // Apply Turkish or saved language
+      changeLanguage(); // Apply Turkish or saved language
 
     const savedUsername = localStorage.getItem("savedUsername");
     const savedPassword = localStorage.getItem("savedPassword");

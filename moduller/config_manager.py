@@ -95,7 +95,7 @@ class ConfigManager:
             
             if response.status_code == 200:
                 api_response = response.json()
-                self.logger.info("✅ Successfully fetched styling configuration from DDS API")
+                self.logger.info("[SUCCESS] Successfully fetched styling configuration from DDS API")
                 
                 # Check if response has the expected structure
                 if api_response.get('status') == 'success' and 'data' in api_response:
@@ -127,26 +127,26 @@ class ConfigManager:
                         }
                     }
                     
-                    self.logger.info(f"🎨 Loaded theme: {styling_data.get('theme_name', 'Unknown')}")
-                    self.logger.info(f"🎨 Primary color: {styling_data.get('primary_color')}")
-                    self.logger.info(f"🎨 Secondary color: {styling_data.get('secondary_color')}")
+                    self.logger.info(f"[THEME] Loaded theme: {styling_data.get('theme_name', 'Unknown')}")
+                    self.logger.info(f"[THEME] Primary color: {styling_data.get('primary_color')}")
+                    self.logger.info(f"[THEME] Secondary color: {styling_data.get('secondary_color')}")
                     
                     return transformed_config
                 else:
-                    self.logger.warning(f"⚠️ Unexpected API response format")
+                    self.logger.warning(f"[WARNING] Unexpected API response format")
                     return None
             else:
-                self.logger.warning(f"⚠️ DDS API returned status code: {response.status_code}")
+                self.logger.warning(f"[WARNING] DDS API returned status code: {response.status_code}")
                 return None
                 
         except requests.exceptions.Timeout:
-            self.logger.error("❌ DDS API request timed out")
+            self.logger.error("[ERROR] DDS API request timed out")
             return None
         except requests.exceptions.ConnectionError:
-            self.logger.error("❌ Failed to connect to DDS styling API")
+            self.logger.error("[ERROR] Failed to connect to DDS styling API")
             return None
         except Exception as e:
-            self.logger.error(f"❌ Error fetching styling configuration: {str(e)}")
+            self.logger.error(f"[ERROR] Error fetching styling configuration: {str(e)}")
             return None
     
     def merge_configs(self, api_config: Dict[str, Any]) -> Dict[str, Any]:
@@ -180,7 +180,7 @@ class ConfigManager:
         if self.config_cache and not force_refresh:
             return self.config_cache
         
-        self.logger.info("🔄 Loading configuration...")
+        self.logger.info("[DEBUG] Loading configuration...")
         
         # Try to fetch from API first
         api_config = self.fetch_config_from_api()
@@ -188,11 +188,11 @@ class ConfigManager:
         if api_config:
             # Merge API config with defaults
             final_config = self.merge_configs(api_config)
-            self.logger.info("✅ Using API configuration with default fallbacks")
+            self.logger.info("[SUCCESS] Using API configuration with default fallbacks")
         else:
             # Use default configuration
             final_config = self.default_config
-            self.logger.info("⚠️  Using default configuration (API unavailable)")
+            self.logger.info("[WARNING] Using default configuration (API unavailable)")
         
         # Cache the configuration
         self.config_cache = final_config
@@ -236,7 +236,7 @@ class ConfigManager:
     def update_config_cache(self, new_config: Dict[str, Any]):
         """Update the cached configuration"""
         self.config_cache = new_config
-        self.logger.info("📝 Configuration cache updated")
+        self.logger.info("[SUCCESS] Configuration cache updated")
     
     def get_config_for_frontend(self) -> Dict[str, Any]:
         """

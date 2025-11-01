@@ -2,6 +2,8 @@ import ctypes
 import time
 import threading
 import requests
+import os
+import json
 
 IDLE_THRESHOLD = 180  # seconds
 
@@ -17,6 +19,19 @@ def get_idle_duration():
 def start_idle_monitor(flask_server_url, email, staff_id, task_id):
     def monitor():
         while True:
+            # Before checking idle, verify the session is still the same and not a meeting.
+            session_file = os.path.join(os.getcwd(), 'data', 'current_session.json')
+            try:
+                if os.path.exists(session_file):
+                    with open(session_file, 'r', encoding='utf-8') as sf:
+                        current = json.load(sf)
+                    # If task_id changed or session became a meeting, stop this monitor
+                    if str(current.get('task_id')) != str(task_id) or current.get('is_meeting'):
+                        print("🛑 Idle monitor: session changed or is a meeting — stopping monitor.")
+                        break
+            except Exception as e:
+                print(f"⚠️ Idle monitor: failed to read session file: {e}")
+
             idle = get_idle_duration()
             if idle >= IDLE_THRESHOLD:
                 print(f"💤 System idle for {int(idle)} seconds. Triggering auto-pause...")

@@ -3,13 +3,38 @@ import os
 import sys
 import io
 
+# Safe stdout/stderr configuration for PyInstaller compatibility  
 try:
-    if sys.stdout:
-        sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8')
-    if sys.stderr:
-        sys.stderr = io.TextIOWrapper(sys.stderr.detach(), encoding='utf-8')
+    # Set environment variable for UTF-8 support on Windows
+    if sys.platform.startswith('win'):
+        os.environ['PYTHONIOENCODING'] = 'utf-8'
+    
+    # For PyInstaller executables running without console, redirect stdout/stderr to null
+    if getattr(sys, 'frozen', False):
+        # Running as PyInstaller executable
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, 'w')
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, 'w')
+    else:
+        # Only reconfigure if running as script (not as PyInstaller executable)
+        if hasattr(sys.stdout, 'reconfigure') and sys.stdout is not None:
+            sys.stdout.reconfigure(line_buffering=True, encoding='utf-8')
+        
+        if sys.stdout and hasattr(sys.stdout, 'detach'):
+            sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8')
+        if sys.stderr and hasattr(sys.stderr, 'detach'):
+            sys.stderr = io.TextIOWrapper(sys.stderr.detach(), encoding='utf-8')
+            
 except Exception as e:
-    print(f"[Warning] Could not set UTF-8 encoding for stdout/stderr: {e}")
+    # Fallback: create safe stdout/stderr if all else fails
+    try:
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, 'w')
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, 'w')
+    except:
+        pass  # Last resort: ignore any stdout/stderr issues
 
 # Create necessary folders on startup
 def create_required_folders():
@@ -17,7 +42,7 @@ def create_required_folders():
     for folder in folders_to_create:
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
-            print(f"✅ Created folder: {folder}")
+            print(f"[SUCCESS] Created folder: {folder}")
 
 # Call folder creation
 create_required_folders()
@@ -82,16 +107,41 @@ is_user_idle = False  # Global idle flag
 #  Ensures .env works even after converting to .exe
 if getattr(sys, 'frozen', False):
     # Running as .exe from PyInstaller
-     base_path = os.path.dirname(sys.executable)
+    base_path = os.path.dirname(sys.executable)
+    # For PyInstaller, also check the _MEIPASS temporary directory
+    if hasattr(sys, '_MEIPASS'):
+        # Check if .env exists in the temp directory first
+        temp_env_path = os.path.join(sys._MEIPASS, '.env')
+        if os.path.exists(temp_env_path):
+            base_path = sys._MEIPASS
 else:
     # Running in normal Python
     base_path = os.path.abspath(".")
 
-dotenv_path = os.path.join(base_path, '.env')
-print(f" .env path: {dotenv_path}")
-load_dotenv(dotenv_path)
-logging.info("✅ .env loaded from: %s", dotenv_path)
+# Try multiple possible .env locations
+env_paths = [
+    os.path.join(base_path, '.env'),
+    os.path.join(os.getcwd(), '.env'),
+    '.env'  # Current directory fallback
+]
+
+dotenv_loaded = False
+for dotenv_path in env_paths:
+    if os.path.exists(dotenv_path):
+        print(f"[SUCCESS] Found .env at: {dotenv_path}")
+        load_dotenv(dotenv_path)
+        logging.info("[SUCCESS] .env loaded from: %s", dotenv_path)
+        dotenv_loaded = True
+        break
+    else:
+        print(f"[ERROR] .env not found at: {dotenv_path}")
+
+if not dotenv_loaded:
+    print("[WARNING] No .env file found, using default environment variables")
+    logging.warning("No .env file found, using defaults")
+
 logging.info("🔐 AWS_ACCESS_KEY_ID: %s", os.getenv("AWS_ACCESS_KEY_ID"))
+logging.info("🔐 DB_HOST: %s", os.getenv("DB_HOST"))
 
 DATA_FOLDER = 'data'
 if not os.path.exists(DATA_FOLDER):
@@ -104,7 +154,6 @@ recording_thread = None
 current_recording_folder = None
 
 # --- Configuration ---
-load_dotenv()
 PERFEX_API_URL = "https://crm.deluxebilisim.com/api/timesheets"
 # AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 # DB_HOST = os.getenv("DB_HOST")
@@ -283,7 +332,7 @@ def cache_user_projects():
             return jsonify({"status": "error", "message": "Email is required"}), 400
             
         if not projects:
-            print(f"⚠️ No projects provided for {email}, using empty array")
+            print(f"[WARNING] No projects provided for {email}, using empty array")
             projects = []
 
         # Ensure CACHE_FOLDER exists
@@ -293,8 +342,8 @@ def cache_user_projects():
         return jsonify({"status": "success", "message": "User cache saved successfully"})
         
     except Exception as e:
-        print(f"❌ Error caching user projects: {e}")
-        logging.error(f"❌ Error caching user projects: {e}")
+        print(f"[ERROR] Error caching user projects: {e}")
+        logging.error(f"[ERROR] Error caching user projects: {e}")
         return jsonify({"status": "error", "message": f"Cache error: {str(e)}"}), 500
 
 
@@ -478,7 +527,7 @@ def start_screen_recording(folder_path, email, task_name):
         print(f" Starting screenshot capture - uploading directly to S3")
         # Get screenshot interval from configuration
         screenshot_interval = config_manager.get_screenshot_interval()
-        print(f"🔧 Screenshot interval: {screenshot_interval} seconds")
+        print(f"[DEBUG] Screenshot interval: {screenshot_interval} seconds")
         
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
@@ -489,7 +538,7 @@ def start_screen_recording(folder_path, email, task_name):
                     sct_img = sct.grab(monitor)
 
                     if not PIL_AVAILABLE:
-                        logging.warning("⚠️ PIL not available, skipping screenshot processing")
+                        logging.warning("[WARNING] PIL not available, skipping screenshot processing")
                         continue
 
                     # Convert mss image to PIL image and save to bytes buffer
@@ -510,11 +559,11 @@ def start_screen_recording(folder_path, email, task_name):
                     if result_url:
                         logging.info(f"📸 Screenshot uploaded to S3: {result_url}")
                     else:
-                        logging.error(f"❌ Failed to upload screenshot to S3")
+                        logging.error(f"[ERROR] Failed to upload screenshot to S3")
 
                     time.sleep(screenshot_interval)  # Use configurable interval
                 except Exception as e:
-                    logging.error(f"❌ Screenshot error: {e}")
+                    logging.error(f"[ERROR] Screenshot error: {e}")
                     break
 
 
@@ -660,7 +709,7 @@ def get_tasks(project_id):
     tasks = veritabani.sorgu_calistir(query)
 
     if tasks:
-        print(f"✅ Found {len(tasks)} tasks for project {project_id} (excluding status=5):")
+        print(f"[SUCCESS] Found {len(tasks)} tasks for project {project_id} (excluding status=5):")
         for task in tasks:
             print(f"🧾 Task ID: {task['id']} | Name: {task['name']} | Status: {task['status']}")
         return jsonify({"status": "success", "tasks": tasks})
@@ -788,7 +837,7 @@ def start_screen_recording(folder_path, email, task_name):
 
         # Get screenshot interval from configuration
         screenshot_interval = config_manager.get_screenshot_interval()
-        print(f"🔧 Starting screenshot capture - uploading directly to S3 (interval: {screenshot_interval}s)")
+        print(f"[DEBUG] Starting screenshot capture - uploading directly to S3 (interval: {screenshot_interval}s)")
         
         with mss.mss() as sct:
             monitor = sct.monitors[1]  # full screen
@@ -799,7 +848,7 @@ def start_screen_recording(folder_path, email, task_name):
                     sct_img = sct.grab(monitor)
 
                     if not PIL_AVAILABLE:
-                        logging.warning("⚠️ PIL not available, skipping screenshot processing")
+                        logging.warning("[WARNING] PIL not available, skipping screenshot processing")
                         continue
 
                     # Convert mss image to PIL image and save to bytes buffer
@@ -820,11 +869,11 @@ def start_screen_recording(folder_path, email, task_name):
                     if result_url:
                         print(f"☁️ Screenshot uploaded to S3: {result_url}")
                     else:
-                        print(f"❌ Failed to upload screenshot to S3")
+                        print(f"[ERROR] Failed to upload screenshot to S3")
 
                     time.sleep(screenshot_interval)  # Use configurable interval
                 except Exception as e:
-                    print(f"❌ Screenshot error: {e}")
+                    print(f"[ERROR] Screenshot error: {e}")
                     break
 
     global recording_thread
@@ -1172,7 +1221,7 @@ def insert_user_timesheet():
                     required_fields = ["task_id", "staff_id", "start_time", "end_time", "note"]
                     missing_fields = [field for field in required_fields if field not in entry]
                     if missing_fields:
-                        print(f"⚠️ Entry {i+1} missing fields: {missing_fields}")
+                        print(f"[WARNING] Entry {i+1} missing fields: {missing_fields}")
                         errors += 1
                         continue
 
@@ -1203,7 +1252,7 @@ def insert_user_timesheet():
                     inserted += 1
 
                 except Exception as entry_error:
-                    print(f"❌ Error processing entry {i+1}: {entry_error}")
+                    print(f"[ERROR] Error processing entry {i+1}: {entry_error}")
                     errors += 1
                     continue
 
@@ -1218,7 +1267,7 @@ def insert_user_timesheet():
         }), 200
 
     except Exception as e:
-        print(f"❌ Error during insert: {str(e)}")
+        print(f"[ERROR] Error during insert: {str(e)}")
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
@@ -1333,11 +1382,8 @@ def submit_all_data_files():
                 meeting_notes = "Meeting Notes:\n" + "\n".join(
                     [f"- {m.get('notes', 'No details')}" for m in meetings if isinstance(m, dict)]
                 )
-            else:
-                meeting_notes = "Meeting Notes:\n- No meetings today"
-
-            # ✅ Combine both task and meeting notes
-            note = f"{note}\n\n{meeting_notes}"
+                # ✅ Combine both task and meeting notes
+                note = f"{note}\n\n{meeting_notes}"
 
 
             print(" INSERTING TO DATABASE:")
@@ -1504,6 +1550,8 @@ def start_task_session():
     staff_id = data.get('staff_id')
     task_id = data.get('task_id')
     start_time = data.get('start_time')  # should be ISO 8601 string
+    # New optional flag telling server this session is a meeting
+    is_meeting = bool(data.get('is_meeting', False))
 
     # ✅ Get actual task name from database - with proper fallback
     task_name = f"Task_{task_id}"  # Default fallback before trying database
@@ -1536,7 +1584,9 @@ def start_task_session():
     # ✅ DEBUG: Create session file so background logger starts
     session_data = {
         "email": email,
-        "task": task_name  # Use actual task name instead of Task_ID
+        "task": task_name,  # Use actual task name instead of Task_ID
+        "task_id": task_id,
+        "is_meeting": is_meeting
     }
 
     os.makedirs("data", exist_ok=True)  # Ensure folder exists
@@ -1589,13 +1639,15 @@ def start_task_session():
             cursor.execute(insert_query, (task_id, staff_id, start_time))
             connection.commit()
         
-        # ✅ Start system-level idle monitor
-        start_idle_monitor(
-            flask_server_url="http://127.0.0.1:5000",
-            email=email,
-            staff_id=staff_id,
-            task_id=task_id
-        )
+        # ✅ Start system-level idle monitor only for normal work sessions.
+        # Meetings should NOT trigger the system idle auto-submit.
+        if not is_meeting:
+            start_idle_monitor(
+                flask_server_url="http://127.0.0.1:5000",
+                email=email,
+                staff_id=staff_id,
+                task_id=task_id
+            )
         
         # ✅ Start automatic logging when timer starts
         # start_logging()  # Disabled old tracker
@@ -1644,27 +1696,46 @@ def check_idle_state():
 def end_task_session():
     # Remove local import since it's now at the top
     data = request.get_json()
+    print("✅ Received end_task_session data:", data)
+    sys.stdout.write(f"✅ Received end_task_session data: {data}\n")
+    sys.stdout.flush() 
     email = data.get("email")
     staff_id = data.get("staff_id")
     task_id = data.get("task_id")
     end_time = int(data.get("end_time"))
     note = data.get("note", "").lower()
     meetings = data.get("meetings", [])
-    if meetings and isinstance(meetings, list):
-        meeting_notes = "Meeting Notes:\n" + "\n".join(
-            [f"- {m.get('notes', 'No details')}" for m in meetings if isinstance(m, dict)]
-        )
-    else:
-        meeting_notes = "Meeting Notes:\n- No meetings today"
+    # # Dummy meeting data
+    # meetings = [
+    #     {"notes": "Discussed project progress and next sprint goals.", "duration": "45 minutes"},
+    #     {"notes": "Client feedback review and design adjustments.", "duration": "30 minutes"},
+    #     {"notes": "Internal QA session for latest module.", "duration": "60 minutes"}
+    # ]
 
-    # ✅ Combine both task and meeting notes
-    note = f"{note}\n\n{meeting_notes}"
+    # 📝 Format meeting notes with newline separation
+    if meetings and isinstance(meetings, list):
+        meeting_lines = [
+            f"- {m.get('notes', 'No details')} ({m.get('duration', 'N/A')})"
+            for m in meetings if isinstance(m, dict)
+        ]
+        meeting_notes = "\nMeeting Notes:\n" + "\n".join(meeting_lines)
+        
+        # ✅ Add meeting notes only if they exist
+        if note:
+            note = f"{note}\n\n{meeting_notes}"
+        else:
+            note = meeting_notes
+
+    print("📝 Final Combined Note:\n", note)
 
     # ✅ If idle note detected, minus 180 seconds
     if "idle" in note or "boşta" in note:
         print("⏳ Idle session detected, subtracting 180 seconds from end_time")
         end_time -= 180
-    note = data.get("note")
+
+    # ❌ REMOVE this line (overwrites your combined note)
+    # note = data.get("note")
+
 
     if not all([email, staff_id, task_id, end_time, note]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -2102,11 +2173,14 @@ def store_logout_time():
         return jsonify({"status": "error", "message": "Missing email or staff_id"}), 400
 
     date_str = datetime.now().strftime("%Y-%m-%d")
-    folder = os.path.join("logged_time", email.replace("@", "_"), date_str)
-    os.makedirs(folder, exist_ok=True)  # 👈 This creates the folder only if it doesn’t already exist
+    email_folder = email.replace("@", "_").replace(".", "_")
+
+    # Create filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"{timestamp}_{staff_id}_logout.json"
-    key = folder + filename
+
+    # ✅ Correct S3 Key Path
+    key = f"logged_time/{email_folder}/{date_str}/{filename}"
 
     record = {
         "email": email,
@@ -2135,21 +2209,21 @@ if __name__ == "__main__":
     try:
         # Find a free port
         port = find_free_port()
-        print(f"🚀 Starting DDS Focus Pro on port {port}")
+        print(f"[LAUNCH] Starting DDS Focus Pro on port {port}")
         
         # Check if running as PyInstaller bundle
         import sys
         if getattr(sys, 'frozen', False):
             # Running as PyInstaller bundle
-            print("📦 Running as packaged application")
+            print("[PACKAGE] Running as packaged application")
             app.run(debug=False, port=port, host='127.0.0.1', use_reloader=False)
         else:
             # Running as script
-            print("🐍 Running as Python script")
+            print("[SCRIPT] Running as Python script")
             app.run(debug=True, port=port, host='127.0.0.1')
             
     except KeyboardInterrupt:
-        print("\n🛑 Application stopped by user")
+        print("\n[STOP] Application stopped by user")
         # upload_logs_on_app_close()  # Disabled - function not available
     except Exception as e:
         print(f"❌ Application error: {e}")
@@ -2750,6 +2824,27 @@ def submit_task_report():
         }), 500
 
 
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    """Endpoint to gracefully shutdown the Flask server"""
+    try:
+        print("🛑 Shutdown request received")
+        # Use werkzeug's shutdown function
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            # Alternative method for newer versions
+            import os
+            import signal
+            print("🛑 Using OS signal to shutdown")
+            os.kill(os.getpid(), signal.SIGTERM)
+        else:
+            func()
+        return jsonify({"status": "success", "message": "Server shutting down..."})
+    except Exception as e:
+        print(f"❌ Error during shutdown: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 
 
 if __name__ == '__main__':
@@ -2761,4 +2856,11 @@ if __name__ == '__main__':
     except ImportError:
         print("⚠️ Active window tracking not available (install pywin32)")
     
-    app.run(debug=True)
+    # Check if running as executable (PyInstaller)
+    import sys
+    if getattr(sys, 'frozen', False):
+        # Running as executable - don't use debug mode
+        app.run(host='127.0.0.1', port=5000, debug=False)
+    else:
+        # Running as script - can use debug mode
+        app.run(debug=True)

@@ -3,14 +3,66 @@ let currentMode = 'work'; // 'work' veya 'meeting'
 let meetingRecords = [];
 let workTimerPaused = false;
 
+// Function to update button states based on current activity
+function updateButtonStates() {
+    const workBtn = document.getElementById('workModeBtn');
+    const meetingBtn = document.getElementById('meetingModeBtn');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const logoutBtn = document.getElementById('logout'); // ✅ Add logout button reference
+
+    // If work timer is running, disable meeting button
+    if (isTimerRunning && currentMode === 'work') {
+        meetingBtn.disabled = true;
+        meetingBtn.style.opacity = '0.5';
+        meetingBtn.style.cursor = 'not-allowed';
+    }
+    // If meeting timer is running, disable work button  
+    else if (isMeetingTimerRunning && currentMode === 'meeting') {
+        workBtn.disabled = true;
+        workBtn.style.opacity = '0.5';
+        workBtn.style.cursor = 'not-allowed';
+    }
+    // If nothing is running, enable both mode buttons
+    else {
+        workBtn.disabled = false;
+        workBtn.style.opacity = '1';
+        workBtn.style.cursor = 'pointer';
+        meetingBtn.disabled = false;
+        meetingBtn.style.opacity = '1';
+        meetingBtn.style.cursor = 'pointer';
+    }
+
+    // ✅ Handle logout button state
+    if (logoutBtn) {
+        if (isTimerRunning || isMeetingTimerRunning) {
+            // Disable logout button when any timer is running
+            logoutBtn.disabled = true;
+            logoutBtn.style.opacity = '0.5';
+            logoutBtn.style.cursor = 'not-allowed';
+            logoutBtn.title = 'Cannot logout while timer is running';
+        } else {
+            // Enable logout button when no timers are running
+            logoutBtn.disabled = false;
+            logoutBtn.style.opacity = '1';
+            logoutBtn.style.cursor = 'pointer';
+            logoutBtn.title = '';
+        }
+    }
+}
+
 function setMode(mode) {
-    // Toplantı devam ederken çalışma moduna geçmeyi engelle
+    // Prevent switching to work mode if meeting timer is running
     if (isMeetingTimerRunning && mode === 'work') {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-        const message = lang === 'tr' 
-            ? "⛔ Lütfen önce toplantıyı bitirin."
-            : "⛔ Please finish the meeting first.";
-        showToast(message, "error");
+        showToast(translations[lang].finishMeetingFirst, "error");
+        return;
+    }
+    
+    // Prevent switching to meeting mode if work timer is running
+    if (isTimerRunning && mode === 'meeting') {
+        const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+        showToast("Please finish your current work session before starting a meeting", "error");
         return;
     }
 
@@ -43,6 +95,9 @@ function setMode(mode) {
         document.getElementById('startBtn').disabled = false;
         document.getElementById('startBtn').style.backgroundColor = '#006039';
     }
+    
+    // Update button states after mode change
+    updateButtonStates();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -52,6 +107,9 @@ document.addEventListener('DOMContentLoaded', function() {
         workBtn.addEventListener('click', () => setMode('work'));
         meetingBtn.addEventListener('click', () => setMode('meeting'));
     }
+
+    // Initialize button states
+    updateButtonStates();
 
     // Screenshot interval fetch
     fetchScreenshotInterval();
@@ -130,8 +188,8 @@ const translations = {
         selectTask: "-- Select a Task --",
         loadingProjects: "Loading projects...",
         user: "User",
-        project: "Project",
-        task: "Task",
+        projectLabel: "Project",
+        taskLabel: "Task",
         client: "Staff",
         modalPlaceholder: "Type your task details here...",
         meetingModalPlaceholder: "Type your meeting notes here...",
@@ -164,7 +222,44 @@ const translations = {
         workTime: "Work Time",
         meetingTime: "Meeting Time",
         screenRecording: "Screen Recording",
-        screenshotInterval: "Screenshot Interval"
+        screenshotInterval: "Screenshot Interval",
+        finishMeetingFirst: "⛔ Please finish the meeting first.",
+        selectTaskFirst: "⚠️ Please select a task first!",
+        enterDetails: "⚠️ Please enter details!",
+        savingMeetingDetails: "💾 Saving meeting details...",
+        meetingDetailsSaved: "✅ Meeting details saved!",
+        savingDetails: "💾 Saving details...",
+        detailsSaved: "✅ Task details saved!",
+        failedSaveMeeting: "❌ Failed to save meeting details",
+        failedSave: "❌ Failed to save details",
+        errorSavingMeeting: "❌ Error saving meeting details",
+        errorSaving: "❌ Error saving details",
+        timesheetSent: "✅ Timesheet sent!",
+        emailSent: "📧 Email sent for timesheet.",
+        errorSendingTimesheet: "❌ Error sending timesheet or email:",
+        syncingTimesheets: "🔄 Syncing timesheets...Please wait",
+        failedUpload: "❌ Failed: ",
+        unexpectedErrorUpload: "❌ Unexpected error during log upload",
+        selectTaskWarning: "⚠️ Please select a task!",
+        cannotLogoutRunning: "⛔ You cannot logout while the timer is running. Please finish your task first.",
+        missingReviewInfo: "❗ Missing review or user info.",
+        feedbackSent: "✅ Feedback sent successfully!",
+        feedbackError: "❌ Feedback error occurred.",
+        countdownCanceled: "⏱️ Countdown canceled. Back to work!",
+        loading: "Loading...",
+        meetingSession: "Meeting Session",
+        currentlyInMeeting: "Currently in a meeting",
+        noTaskSelected: "No Task Selected",
+        meeting: "Meeting",
+        meetingInProgress: "Meeting in progress",
+        unnamedProject: "Unnamed Project",
+        unnamedTask: "Unnamed Task",
+        errorLoadingProjects: "❌ Error loading projects",
+        errorLoadingTasks: "Error loading tasks",
+        autoSavedAppExit: "Auto-saved due to app exit.",
+        workingOn: "Working on:",
+        currentTask: "Current task:",
+        meetingNotesSavedTemporarily: "✅ Meeting notes saved temporarily!"
     },
     tr: {
         welcome: "Hoş geldin...",
@@ -191,8 +286,8 @@ const translations = {
         selectTask: "-- İş Emri Seçin --",
         loadingProjects: "Projeler yükleniyor...",
         user: "Kullanıcı",
-        project: "Proje",
-        task: "İş Emri",
+        projectLabel: "Proje",
+        taskLabel: "İş Emri",
         client: "Personel",
         modalPlaceholder: "İş Emri detaylarını buraya yazın...",
         meetingModalPlaceholder: "Toplantı notlarını buraya yazın...",
@@ -224,7 +319,45 @@ const translations = {
         workTime: "Çalışma Süresi",
         meetingTime: "Toplantı Süresi",
         screenRecording: "Ekran Kaydı",
-        screenshotInterval: "Ekran Görüntüsü Aralığı"
+        screenshotInterval: "Ekran Görüntüsü Aralığı",
+        finishMeetingFirst: "⛔ Lütfen önce toplantıyı bitirin.",
+        selectTaskFirst: "⚠️ Lütfen önce bir görev seçin!",
+        enterDetails: "⚠️ Lütfen detayları girin!",
+        savingMeetingDetails: "💾 Toplantı detayları kaydediliyor...",
+        meetingDetailsSaved: "✅ Toplantı detayları kaydedildi!",
+        savingDetails: "💾 Detaylar kaydediliyor...",
+        detailsSaved: "✅ Görev detayları kaydedildi!",
+        failedSaveMeeting: "❌ Toplantı detayları kaydedilemedi",
+        failedSave: "❌ Detaylar kaydedilemedi",
+        errorSavingMeeting: "❌ Toplantı detayları kaydedilirken hata",
+        errorSaving: "❌ Detaylar kaydedilirken hata",
+        timesheetSent: "✅ Zaman çizelgesi gönderildi!",
+        emailSent: "📧 Zaman çizelgesi için e-posta gönderildi.",
+        errorSendingTimesheet: "❌ Zaman çizelgesi veya e-posta gönderilirken hata:",
+        syncingTimesheets: "🔄 Zaman çizelgeleri senkronize ediliyor... Lütfen bekleyin",
+        failedUpload: "❌ Başarısız: ",
+        unexpectedErrorUpload: "❌ Log yükleme sırasında beklenmeyen hata",
+        selectTaskWarning: "⚠️ Lütfen bir görev seçin!",
+        cannotLogoutRunning: "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin.",
+        missingReviewInfo: "❗ Geri bildirim veya kullanıcı bilgileri eksik.",
+        feedbackSent: "✅ Geri bildirim başarıyla gönderildi!",
+        feedbackError: "❌ Geri bildirim hatası oluştu.",
+        countdownCanceled: "⏱️ Geri sayım iptal edildi. Çalışmaya geri dön!",
+        autoSavedIdle: "✅ Boşta kalma nedeniyle otomatik kaydedildi",
+        loading: "Yükleniyor...",
+        meetingSession: "Toplantı Oturumu",
+        currentlyInMeeting: "Şu anda toplantıda",
+        noTaskSelected: "Görev Seçilmedi",
+        meeting: "Toplantı",
+        meetingInProgress: "Toplantı devam ediyor",
+        unnamedProject: "İsimsiz Proje",
+        unnamedTask: "İsimsiz Görev",
+        errorLoadingProjects: "❌ Projeler yüklenirken hata",
+        errorLoadingTasks: "Görevler yüklenirken hata",
+        autoSavedAppExit: "Uygulama çıkış nedeniyle otomatik kaydedildi.",
+        workingOn: "Çalışılan:",
+        currentTask: "Mevcut görev:",
+        meetingNotesSavedTemporarily: "✅ Toplantı notları geçici olarak kaydedildi!"
     }
 };
 
@@ -250,14 +383,14 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
     
     if (drawerProjectName) {
         if (isMeeting) {
-            drawerProjectName.textContent = 'Meeting Session';
+            drawerProjectName.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingSession;
             if (drawerProjectDesc) {
-                drawerProjectDesc.textContent = 'Currently in a meeting';
+                drawerProjectDesc.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].currentlyInMeeting;
             }
         } else {
-            drawerProjectName.textContent = projectName || 'No Project Selected';
+            drawerProjectName.textContent = projectName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noProjectSelected;
             if (drawerProjectDesc) {
-                drawerProjectDesc.textContent = `Working on: ${projectName || 'No project selected'}`;
+                drawerProjectDesc.textContent = `${translations[sessionStorage.getItem('selectedLanguage') || 'en'].workingOn} ${projectName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noProjectSelected}`;
             }
         }
     }
@@ -267,14 +400,14 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
     
     if (drawerTaskName) {
         if (isMeeting) {
-            drawerTaskName.textContent = 'Meeting';
+            drawerTaskName.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meeting;
             if (drawerTaskDesc) {
-                drawerTaskDesc.textContent = 'Meeting in progress';
+                drawerTaskDesc.textContent = translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingInProgress;
             }
         } else {
-            drawerTaskName.textContent = taskName || 'No Task Selected';
+            drawerTaskName.textContent = taskName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noTaskSelected;
             if (drawerTaskDesc) {
-                drawerTaskDesc.textContent = `Current task: ${taskName || 'No task selected'}`;
+                drawerTaskDesc.textContent = `${translations[sessionStorage.getItem('selectedLanguage') || 'en'].currentTask} ${taskName || translations[sessionStorage.getItem('selectedLanguage') || 'en'].noTaskSelected}`;
             }
         }
     }
@@ -288,31 +421,97 @@ function updateDrawerContent(projectName, taskName, isMeeting = false) {
 let timerInterval, totalSeconds = 0;
 let isTimerRunning = false;
 let meetingTimerInterval, meetingTotalSeconds = 0, isMeetingTimerRunning = false;
+let meetingStartTime = null; // Track actual meeting start time for accurate duration
 let currentTaskId = null, sessionStartTime = null;
 let selectedProjectName = '', selectedTaskName = '', user = null;
 
 function startMeetingTimer() {
     if (isMeetingTimerRunning) return;
+    
+    // ✅ Use existing sessionStartTime if already set, otherwise create one
+    if (!sessionStartTime) {
+        sessionStartTime = Math.floor(Date.now() / 1000);
+    }
+    
+    // ✅ Store the actual meeting start time for accurate duration calculation
+    meetingStartTime = Math.floor(Date.now() / 1000);
+    
+    // ✅ Call start_task_session for meetings as well
+    console.log("📤 Sending meeting start to /start_task_session:");
+    console.log({
+        email: user.email,
+        staff_id: String(user.staffid),
+        task_id: currentTaskId,
+        start_time: sessionStartTime
+    });
+
+    fetch('/start_task_session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: user.email,
+            staff_id: String(user.staffid),
+                task_id: currentTaskId,
+                start_time: sessionStartTime,
+                is_meeting: true
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("📤 Sent meeting start time:", sessionStartTime);
+        console.log("📤 Sent task ID   :", currentTaskId);
+        console.log("📤 Sent staff ID  :", user.staffid);
+        console.log("📥 Server response:", data);
+    })
+    .catch(console.error);
+    
     isMeetingTimerRunning = true;
     meetingTimerInterval = setInterval(updateMeetingTimerDisplay, 1000);
+    
+    // ✅ Set screen recording status to YES for meetings too
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
+    
+    updateButtonStates(); // Update button states when meeting starts
 }
 
 function stopMeetingTimer() {
     clearInterval(meetingTimerInterval);
     isMeetingTimerRunning = false;
     meetingTotalSeconds = 0;
+    meetingStartTime = null; // Clear the start time
     document.getElementById('meeting-hours').innerText = '00';
     document.getElementById('meeting-minutes').innerText = '00';
     document.getElementById('meeting-seconds').innerText = '00';
+    
+    // ✅ Set screen recording status to NO when meeting stops
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
+    
+    updateButtonStates(); // Update button states when meeting stops
 }
 
 function pauseMeetingTimer() {
     clearInterval(meetingTimerInterval);
     isMeetingTimerRunning = false;
+    
+    // ✅ Set screen recording status to NO when meeting pauses
+    const lang = sessionStorage.getItem('selectedLanguage') || 'en';
+    document.getElementById('loggingInput').value = lang === 'tr' ? 'HAYIR' : 'NO';
+    
+    updateButtonStates(); // Update button states when meeting pauses
 }
 
 function updateMeetingTimerDisplay() {
-    meetingTotalSeconds++;
+    // ✅ Calculate actual elapsed time based on real timestamps
+    if (meetingStartTime) {
+        const currentTime = Math.floor(Date.now() / 1000);
+        meetingTotalSeconds = currentTime - meetingStartTime;
+    } else {
+        // Fallback to counter-based approach if start time is missing
+        meetingTotalSeconds++;
+    }
+    
     document.getElementById('meeting-hours').innerText = String(Math.floor(meetingTotalSeconds / 3600)).padStart(2, '0');
     document.getElementById('meeting-minutes').innerText = String(Math.floor((meetingTotalSeconds % 3600) / 60)).padStart(2, '0');
     document.getElementById('meeting-seconds').innerText = String(meetingTotalSeconds % 60).padStart(2, '0');
@@ -324,6 +523,7 @@ function resumeTimer() {
         timerInterval = setInterval(updateTimerDisplay, 1000);
         document.getElementById('startBtn').disabled = true;
         document.getElementById('startBtn').style.backgroundColor = 'gray';
+        updateButtonStates(); // Update button states when work timer resumes
     }
 }
 
@@ -360,6 +560,15 @@ window.onload = function () {
         saveUserProjectsToCache(user);
         // Kullanıcı objesi dolduktan hemen sonra intervali çek
         fetchScreenshotInterval();
+        
+        // Load saved meeting records
+        const savedMeetings = localStorage.getItem(`meetingRecords_${user.email}`);
+        if (savedMeetings) {
+            meetingRecords = JSON.parse(savedMeetings);
+            console.log('DEBUG: Loaded saved meeting records:', meetingRecords.length);
+        } else {
+            console.log('DEBUG: No saved meeting records found');
+        }
     }
 
     setTimeout(() => {
@@ -442,14 +651,18 @@ async function handleAutoIdleSubmit() {
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
                 end_time: adjustedEndTime,
-                note: idleMsg
+                note: idleMsg,
+                is_meeting: document.getElementById("stateCircle").classList.contains("meeting"),
+                meetings: document.getElementById("stateCircle").classList.contains("meeting") 
+                    ? [{ duration_seconds: meetingTotalSeconds, notes: idleMsg }] 
+                    : undefined
             })
         });
 
         resetTimer();
         stopScreenRecording();
         stopDailyLogsCapture();
-        showToast('✅ Auto-saved due to idle', 'success');
+        showToast(translations[lang].autoSavedIdle, 'success');
     } catch (error) {
         console.error("❌ Failed to auto-save:", error);
     }
@@ -463,10 +676,7 @@ document.getElementById('startBtn').addEventListener('click', function () {
 
     if (!taskId || taskId === "" || selectedTaskOption.disabled) {
         const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-        const message = lang === 'tr' 
-            ? '⚠️ Lütfen önce bir görev seçin!'
-            : '⚠️ Please select a task first!';
-        showToast(message, 'error');
+        showToast(translations[lang].selectTaskFirst, 'error');
         return;
     }
 
@@ -560,7 +770,8 @@ function startTimer() {
                 email: user.email,
                 staff_id: String(user.staffid),
                 task_id: currentTaskId,
-                start_time: sessionStartTime
+                start_time: sessionStartTime,
+                is_meeting: false
             })
         })
         .then(res => res.json())
@@ -587,6 +798,7 @@ function startTimer() {
     document.getElementById('loggingInput').value = lang === 'tr' ? 'EVET' : 'YES';
 
     timerInterval = setInterval(updateTimerDisplay, 1000);
+    updateButtonStates(); // Update button states when work timer starts
 }
 
 function pauseTimer() {
@@ -595,12 +807,14 @@ function pauseTimer() {
     isTimerRunning = false;
     document.getElementById('startBtn').disabled = false;
     document.getElementById('startBtn').style.backgroundColor = '#006039';
+    updateButtonStates(); // Update button states when work timer pauses
 }
 
 function resetTimer() {
     clearInterval(timerInterval);
     totalSeconds = 0;
     isTimerRunning = false;
+    sessionStartTime = null; // Reset session start time
 
     document.getElementById('hours').innerText = '00';
     document.getElementById('minutes').innerText = '00';
@@ -608,6 +822,7 @@ function resetTimer() {
 
     document.getElementById('startBtn').disabled = false;
     document.getElementById('startBtn').style.backgroundColor = '#006039';
+    updateButtonStates(); // Update button states when timer resets
 
     // Sadece çalışma modunda dropdown'ları enable et
     if (currentMode === 'work') {
@@ -721,13 +936,13 @@ function fetchAIProjects(user) {
             });
 
             uniqueProjects.forEach(project => {
-                const option = new Option(project.name || project.projectname || 'Unnamed Project', project.id);
+                const option = new Option(project.name || project.projectname || translations[lang].unnamedProject, project.id);
                 projectSelect.appendChild(option);
             });
         })
         .catch(error => {
             console.error(error);
-            showToast('❌ Error loading projects', 'error');
+            showToast(translations[lang].errorLoadingProjects, 'error');
         });
 }
 
@@ -756,7 +971,7 @@ function loadTasksForProject() {
 
             const tasks = data.tasks || [];
             tasks.forEach(task => {
-                const option = new Option(task.name || task.subject || 'Unnamed Task', task.id);
+                const option = new Option(task.name || task.subject || translations[lang].unnamedTask, task.id);
                 taskSelect.appendChild(option);
             });
 
@@ -767,7 +982,7 @@ function loadTasksForProject() {
         })
         .catch(error => {
             console.error("❌ Error loading tasks:", error);
-            taskSelect.innerHTML = '<option disabled>Error loading tasks</option>';
+            taskSelect.innerHTML = `<option disabled>${translations[lang].errorLoadingTasks}</option>`;
         });
 }
 
@@ -840,71 +1055,133 @@ function closeModal() {
 async function submitTaskDetails() {
     const detailText = document.getElementById('taskDetailInput').value.trim();
     if (!detailText) {
-        showToast('⚠️ Please enter details!', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].enterDetails, 'error');
         return;
     }
 
+    console.log('DEBUG: sessionStartTime:', sessionStartTime, 'currentMode:', currentMode, 'totalSeconds:', totalSeconds);
+
     if (currentMode === 'meeting') {
-        stopMeetingTimer();
-        // Toplantı notlarını işle (örneğin, kaydet)
-        console.log("Meeting Notes:", detailText);
-        showToast('✅ Meeting notes saved!');
-
-        closeModal();
-        document.getElementById('taskDetailInput').value = '';
-        
-        // Çalışma moduna geri dön ve sayacı devam ettir
-        setMode('work');
-        return;
-    }
-
-    const end_time_unix = Math.floor(Date.now() / 1000);
-
-    let meetings = [];
-    if (currentMode === 'meeting') {
-        meetings.push({ duration_seconds: totalSeconds, notes: detailText });
-    }
-
-    try {
-        closeModal();
-        resetTimer();
-        showToast('💾 Saving details...', 'info');
-
-        if (currentMode === 'work') {
-            // Çalışma modunda normal task kaydı
-            const saveRes = await fetch('/end_task_session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+        if (totalSeconds === 0) {
+            // Sadece toplantı: note boş, meetings tek obje
+            const end_time_unix = Math.floor(Date.now() / 1000);
+            
+            // ✅ Debug: Show actual vs counter time
+            const actualDurationSeconds = meetingStartTime ? (end_time_unix - meetingStartTime) : meetingTotalSeconds;
+            console.log('🕐 Meeting Duration Debug:');
+            console.log('   Counter time:', meetingTotalSeconds, 'seconds');
+            console.log('   Actual time: ', actualDurationSeconds, 'seconds');
+            console.log('   Start time:  ', meetingStartTime);
+            console.log('   End time:    ', end_time_unix);
+            
+            try {
+                closeModal();
+                resetTimer();
+                showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].savingMeetingDetails, 'info');
+                const payload = {
                     email: user.email,
                     staff_id: String(user.staffid),
                     task_id: currentTaskId,
                     end_time: end_time_unix,
-                    note: detailText,
-                    meetings: meetings.length > 0 ? meetings : undefined
-                })
-            });
-
-            if (saveRes.ok) {
-                showToast('✅ Details saved!');
-            } else {
-                const saveJson = await saveRes.json();
-                showToast('❌ Failed to save details', 'error');
-                console.error('Save error:', saveJson);
+                    note: '',
+                    meetings: [{ notes: detailText, duration: `${Math.round(meetingTotalSeconds/60)} minutes`, duration_seconds: meetingTotalSeconds }]
+                };
+                const saveRes = await fetch('/end_task_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (saveRes.ok) {
+                    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingDetailsSaved);
+                } else {
+                    const saveJson = await saveRes.json();
+                    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].failedSaveMeeting, 'error');
+                    console.error('❌ Save response:', saveJson);
+                }
+                // Re-enable start button
+                const startBtn = document.getElementById('startBtn');
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.style.backgroundColor = '#006039';
+                }
+            } catch (error) {
+                console.error('❌ Error saving meeting details:', error);
+                showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].errorSavingMeeting, 'error');
             }
+            return;
+        } else {
+            // Work devam ederken toplantı: geçici kaydet
+            meetingRecords.push({
+                notes: detailText,
+                duration: `${Math.round(meetingTotalSeconds/60)} minutes`,
+                duration_seconds: meetingTotalSeconds,
+                timestamp: Date.now()
+            });
+            if (user) {
+                localStorage.setItem(`meetingRecords_${user.email}`, JSON.stringify(meetingRecords));
+            }
+            stopMeetingTimer();
+            closeModal();
+            document.getElementById('taskDetailInput').value = '';
+            setMode('work');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].meetingNotesSavedTemporarily);
+            return;
         }
+    }
 
-        // Her iki modda da timesheet ve meeting bilgilerini gönder
-        await sendTimesheetToBackend(meetings);
-        // Çalışma moduna geçildiğinde başlat tuşunu her zaman enable et
+    const end_time_unix = Math.floor(Date.now() / 1000);
+
+    // Work modunda: hem iş hem toplantı notlarını gönder
+    let meetings = meetingRecords.slice();
+    meetingRecords = [];
+    if (user) {
+        localStorage.removeItem(`meetingRecords_${user.email}`);
+    }
+    try {
+        closeModal();
+        resetTimer();
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].savingDetails, 'info');
+        const payload = {
+            email: user.email,
+            staff_id: String(user.staffid),
+            task_id: currentTaskId,
+            end_time: end_time_unix,
+            note: detailText,
+            meetings: meetings
+        };
+        const saveRes = await fetch('/end_task_session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (saveRes.ok) {
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].detailsSaved);
+            showLoader();
+            Promise.all([
+                fetch('/submit_all_data_files', { method: 'POST' }).catch(err => console.warn('Data files error:', err)),
+                fetch('/upload_screenshots', { method: 'POST' }).catch(err => console.warn('Screenshots error:', err)),
+                uploadUsageLogToS3().catch(err => console.warn('S3 upload error:', err))
+            ]).then(() => {
+                hideLoader();
+                console.log('✅ All background operations completed');
+            }).catch(err => {
+                console.warn('⚠️ Some background operations failed:', err);
+                hideLoader();
+            });
+        } else {
+            const saveJson = await saveRes.json();
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].failedSave, 'error');
+            console.error('❌ Save response:', saveJson);
+        }
         const startBtn = document.getElementById('startBtn');
         if (startBtn) {
             startBtn.disabled = false;
             startBtn.style.backgroundColor = '#006039';
         }
+        totalSeconds = 0;
     } catch (error) {
         console.error('❌ Error in submitTaskDetails:', error);
-        showToast('❌ Error saving details', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].errorSaving, 'error');
         hideLoader();
     }
 }
@@ -931,7 +1208,7 @@ async function sendTimesheetToBackend(meetings = []) {
         });
         const result = await res.json();
         console.log("✅ Timesheet sent:", result);
-        showToast("✅ Timesheet sent!");
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].timesheetSent);
 
         // Send email after timesheet submission
         // await fetch('/send_timesheet_email', {
@@ -950,8 +1227,8 @@ async function sendMeetingToLogoutTime(meetings = []) {
         const payload = {
             email: user.email,
             staff_id: String(user.staffid),
-            total_duration: formatTime(totalSeconds),
-            total_seconds: totalSeconds,
+            total_duration: formatTime(meetingTotalSeconds),
+            total_seconds: meetingTotalSeconds,
             meetings: meetings
         };
 
@@ -992,8 +1269,8 @@ function syncAllUsers() {
 function showLoader() {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
     const messages = {
-        en: '🔄 Syncing timesheets...Please wait',
-        tr: '🔄 Zaman çizelgeleri senkronize ediliyor... Lütfen bekleyin'
+        en: translations.en.syncingTimesheets,
+        tr: translations.tr.syncingTimesheets
     };
     document.getElementById('syncLoader').innerHTML = `
 <div style="padding: 20px; background: white; border-radius: 8px; font-weight: bold;">
@@ -1154,6 +1431,12 @@ function applyClientLanguage(lang) {
             loggingInput.value = lang === 'tr' ? 'HAYIR' : 'NO';
         }
     }
+
+    // Update displayUserName if it's still loading
+    const displayUserName = document.getElementById('displayUserName');
+    if (displayUserName && displayUserName.textContent === 'Loading...') {
+        displayUserName.textContent = t.loading;
+    }
 }
 
 window.addEventListener("load", () => {
@@ -1166,10 +1449,11 @@ window.addEventListener("load", () => {
 });
 
 window.addEventListener("beforeunload", async (event) => {
-    if (isTimerRunning) {
+    // ✅ Check for both work timer and meeting timer running
+    if (isTimerRunning || isMeetingTimerRunning) {
         console.log("❌ App closing: Auto-stopping timer & saving session");
 
-        const detailText = "Auto-saved due to app exit.";
+        const detailText = translations[sessionStorage.getItem('selectedLanguage') || 'en'].autoSavedAppExit;
         const end_time_unix = Math.floor(Date.now() / 1000);
 
         try {
@@ -1182,19 +1466,35 @@ window.addEventListener("beforeunload", async (event) => {
                         staff_id: String(user.staffid),
                         task_id: currentTaskId,
                         end_time: end_time_unix,
-                        note: detailText
+                        note: detailText,
+                        is_meeting: false,
+                        meetings: undefined
                     })
                 });
             } else {
-                // Meeting modunda ise meeting bilgilerini gönder
-                const meetings = [{ duration_seconds: totalSeconds, notes: detailText }];
-                await sendMeetingToLogoutTime(meetings);
+                // Meeting mode - save meeting session on exit
+                // ✅ Calculate actual meeting duration if meetingStartTime is available
+                const actualMeetingDuration = meetingStartTime ? (end_time_unix - meetingStartTime) : meetingTotalSeconds;
+                await fetch('/end_task_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        staff_id: String(user.staffid),
+                        task_id: currentTaskId,
+                        end_time: end_time_unix,
+                        note: detailText,
+                        is_meeting: true,
+                        meetings: [{ duration_seconds: actualMeetingDuration, notes: detailText }]
+                    })
+                });
             }
         } catch (err) {
             console.error("❌ Failed to save task before exit:", err);
         }
 
         resetTimer();
+        stopMeetingTimer(); // ✅ Also stop meeting timer
         stopScreenRecording();
         stopDailyLogsCapture();
     }
@@ -1212,7 +1512,7 @@ async function uploadUsageLogToS3() {
     }
 
     if (!taskName || !user?.email) {
-        showToast(lang === 'tr' ? "⚠️ Lütfen görev seçin!" : "⚠️ Please select a task!", "error");
+        showToast(translations[lang].selectTaskWarning, "error");
         return;
     }
 
@@ -1230,11 +1530,11 @@ async function uploadUsageLogToS3() {
         if (data.success) {
             console.log("📤 AI Summary:", data.summary);
         } else {
-            showToast("❌ Failed: " + data.message, 'error');
+            showToast(translations[lang].failedUpload + data.message, 'error');
         }
     } catch (err) {
         console.error("❌ Error uploading usage log:", err);
-        showToast("❌ Unexpected error during log upload", "error");
+        showToast(translations[lang].unexpectedErrorUpload, "error");
     }
 }
 
@@ -1678,7 +1978,7 @@ function submitUserReview() {
     const user = JSON.parse(sessionStorage.getItem('user'));
 
     if (!reviewText || !user?.email || !user?.firstName) {
-        showToast('❗ Missing review or user info.', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].missingReviewInfo, 'error');
         return;
     }
 
@@ -1694,7 +1994,7 @@ function submitUserReview() {
     .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
-            showToast('✅ Feedback sent successfully!');
+            showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].feedbackSent);
             closeReviewModal();
             document.getElementById('reviewInput').value = '';
         } else {
@@ -1702,7 +2002,7 @@ function submitUserReview() {
     })
     .catch(err => {
         console.error('Feedback error:', err);
-        showToast('❌ Feedback error occurred.', 'error');
+        showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].feedbackError, 'error');
     });
 }
 
@@ -1715,13 +2015,10 @@ function openInNewTab(url) {
 }
 
 function openLogoutModal() {
-  if (isTimerRunning) {
+  // ✅ Check for both work timer and meeting timer running
+  if (isTimerRunning || isMeetingTimerRunning) {
     const lang = sessionStorage.getItem('selectedLanguage') || 'en';
-    const warning = lang === 'tr'
-      ? "⛔ Zamanlayıcı çalışırken çıkış yapamazsınız. Lütfen önce görevi bitirin."
-      : "⛔ You cannot logout while the timer is running. Please finish your task first.";
-
-    showToast(warning, "error");
+    showToast(translations[lang].cannotLogoutRunning, "error");
     return;
   }
 
@@ -1755,7 +2052,7 @@ function cancelIdleCountdown() {
 
     startTimer();
     setState('work');
-    showToast("⏱️ Countdown canceled. Back to work!", "success");
+    showToast(translations[sessionStorage.getItem('selectedLanguage') || 'en'].countdownCanceled, "success");
 }
 
 setInterval(() => {

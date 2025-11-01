@@ -1,3 +1,35 @@
+#taskDetailsModal[data-theme="dark"] .modal-content,
+body[data-theme="dark"] #taskDetailsModal .modal-content {
+  background-color: #222a36 !important;
+  color: #eaeaea !important;
+}
+
+#taskDetailsModal[data-theme="dark"] .task-meta,
+body[data-theme="dark"] #taskDetailsModal .task-meta {
+  border-bottom: 1px solid #444 !important;
+  color: #eaeaea !important;
+}
+
+#taskDetailsModal[data-theme="dark"] .task-customfields,
+body[data-theme="dark"] #taskDetailsModal .task-customfields {
+  background: none !important;
+}
+
+#taskDetailsModal[data-theme="dark"] .task-customfields > div,
+body[data-theme="dark"] #taskDetailsModal .task-customfields > div {
+  background: #232b38 !important;
+  color: #eaeaea !important;
+  border-radius: 7px;
+  border: 1px solid #333;
+}
+
+#taskDetailsModal[data-theme="dark"] .task-desc,
+body[data-theme="dark"] #taskDetailsModal .task-desc {
+  background: #232b38 !important;
+  color: #eaeaea !important;
+  border-radius: 7px;
+  border: 1px solid #333;
+}
 /* ============================================
    🎨 DDS FOCUS PRO - API-ONLY COLOR SYSTEM
    ============================================ */
@@ -383,6 +415,23 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
+/* ✅ Disabled logout button styles */
+#logout:disabled {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  border-color: #cccccc !important;
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#logout:disabled:hover {
+  opacity: 0.5 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* Theme Toggle Button for Client Page */
 .theme-toggle-client {
   width: 36px;
@@ -752,7 +801,7 @@ button:disabled {
 .drawer-arrow-btn {
     position: fixed;
     left: 0;
-    top: 50%;
+    top: 55%;
     transform: translateY(-50%);
     background: #003366 !important;
     background-color: #003366 !important;
@@ -1185,12 +1234,57 @@ cubic-bezier(0.25, 0.8, 0.25, 1);
 /* Constrain Task Details modal so very long content scrolls inside the modal
    without growing the entire page. Keep other modals unchanged. */
 #taskDetailsModal .modal-content {
-  max-height: 70vh; /* limit height to viewport fraction */
-  overflow-y: auto; /* enable vertical scrolling when content is long */
-  width: 600px; /* slightly wider for readability */
+  max-height: 70vh;
+  overflow-y: auto;
+  width: 600px;
   max-width: 95%;
-  text-align: left; /* content is typically left-aligned */
-  padding: 18px; /* a touch more padding for readability */
+  text-align: left;
+  padding: 32px 28px 28px 28px; /* more generous padding all around */
+  box-sizing: border-box;
+}
+
+#taskDetailsModal .task-meta {
+  margin-bottom: 22px !important;
+  padding: 12px 0 12px 0;
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid #eee;
+}
+
+#taskDetailsModal .task-customfields {
+  margin-bottom: 22px !important;
+  padding: 10px 0 10px 0;
+}
+
+#taskDetailsModal .task-customfields > div {
+  margin-bottom: 12px !important;
+  padding: 8px 12px;
+  background: #f7f7f7;
+  border-radius: 7px;
+  box-sizing: border-box;
+}
+
+#taskDetailsModal .task-desc {
+  margin-top: 18px !important;
+  padding: 14px 12px;
+  background: #fafcff;
+  border-radius: 7px;
+  box-sizing: border-box;
+}
+
+/* Ensure very long inner content doesn't force modal to expand
+   and make images/content wrap nicely. */
+#taskDetailsModal .modal-content * {
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+/* Make sure images inside task details are responsive */
+#taskDetailsModal .modal-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
 }
 
 .modal.show .modal-content,

@@ -17,7 +17,7 @@ class VeritabaniYoneticisi:
         self.port = port or db_config.get("port", 3306)
         self.connection = None
         
-        print(f"🔧 Database config loaded: {self.host}:{self.port}/{self.database}")
+        print(f"[DEBUG] Database config loaded: {self.host}:{self.port}/{self.database}")
 
     def baglanti_olustur(self):
         """
@@ -32,9 +32,9 @@ class VeritabaniYoneticisi:
                 port=self.port,
                 cursorclass=pymysql.cursors.DictCursor
             )
-            print("✅ Veritabanna baaryla balanld.")
+            print("[SUCCESS] Veritabanna baaryla balanld.")
         except Exception as e:
-            print(f"❌ Veritaban balant hatas: {e}")
+            print(f"[ERROR] Veritaban balant hatas: {e}")
             self.connection = None
 
     def baglanti_testi(self):
@@ -54,7 +54,7 @@ class VeritabaniYoneticisi:
                 cursor.execute(sorgu, degerler)
                 return cursor.fetchall()
         except Exception as e:
-            print(f" Sorgu altrma hatas: {e}")
+            print(f"[ERROR] Sorgu altrma hatas: {e}")
             return None
 
     def komut_calistir(self, komut, degerler=None):
@@ -67,9 +67,9 @@ class VeritabaniYoneticisi:
             with self.connection.cursor() as cursor:
                 cursor.execute(komut, degerler)
                 self.connection.commit()
-                print(f" {cursor.rowcount} satr etkilendi.")
+                print(f"[SUCCESS] {cursor.rowcount} satr etkilendi.")
         except Exception as e:
-            print(f" Komut altrma hatas: {e}")
+            print(f"[ERROR] Komut altrma hatas: {e}")
             self.connection.rollback()
 
     def kapat(self):
@@ -78,5 +78,5 @@ class VeritabaniYoneticisi:
         """
         if self.connection:
             self.connection.close()
-            print(" Veritaban balants kapatld.")
+            print("[SUCCESS] Veritaban balants kapatld.")
 

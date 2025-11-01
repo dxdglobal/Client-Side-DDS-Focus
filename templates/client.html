@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DDS-FocusPro V-1.4</title>
+  <title>DDS-FocusPro V1.5</title>
 
   <!-- Main Application Styles -->
   <link rel="stylesheet" href="../static/client.css" />
@@ -74,8 +74,8 @@
     <!-- Main Content -->
     <div class="main">
       <div class="mode-selection" style="display: flex; justify-content: center; gap: 32px; margin-bottom: 24px;">
-        <button id="workModeBtn" class="mode-btn active" style="padding: 18px 36px; font-size: 1.2rem; border-radius: 12px; border: 2px solid #006039; background: #006039; color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s;">Çalışma</button>
-        <button id="meetingModeBtn" class="mode-btn" style="padding: 18px 36px; font-size: 1.2rem; border-radius: 12px; border: 2px solid #006039; background: #fff; color: #006039; font-weight: 600; cursor: pointer; transition: 0.2s;">Toplantı</button>
+        <button id="workModeBtn" class="mode-btn active" style="padding: 10px 10px; font-size: 1.2rem; border-radius: 12px; border: 2px solid #006039; background: #006039; color: #fff; font-weight: 600; cursor: pointer; transition: 0.2s;">Çalışma</button>
+        <button id="meetingModeBtn" class="mode-btn" style="padding: 10px 10px; font-size: 1.2rem; border-radius: 12px; border: 2px solid #006039; background: #fff; color: #006039; font-weight: 600; cursor: pointer; transition: 0.2s;">Toplantı</button>
       </div>
       <div class="grid-container">
         <!-- Client & Task Info -->
@@ -85,13 +85,15 @@
             <input type="text" class="form-control" id="clientNameInput" style="width: 90%" readonly />
           </div>
           <div class="form-group">
-            <label for="project">Project</label>
-            <select id="project" class="form-control" onchange="loadTasksForProject()" style="width: 90%"></select>
+            <label for="project" data-translatable="projectLabel">Project</label>
+            <select id="project" class="form-control" onchange="loadTasksForProject()" style="width: 90%">
+              <option disabled selected value="">-- Proje Seçin --</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="task">Task</label>
+            <label for="task" data-translatable="taskLabel">Task</label>
             <select id="task" class="form-control" style="width: 90%">
-              <option disabled selected value="">-- Select a Task --</option>
+              <option disabled selected value="">-- İş Emri Seçin --</option>
             </select>
           </div>
           <!-- Work Timer -->
@@ -246,9 +248,8 @@
     <div class="drawer-content">
       <div class="drawer-section">
         <div class="drawer-item project-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
-          </svg>
+          <!-- Modern folder/project icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2" fill="#eaf7f0"/><path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v2"/></svg>
           <div class="project-details">
             <!-- Only show the project name here per new requirement -->
             <div class="project-name" id="drawerProjectName">Proje Seçilmedi</div>
@@ -258,28 +259,20 @@
 
       <div class="drawer-section">
   
-        <div class="drawer-item task-info">
+        <div class="drawer-item task-info" style="padding: 24px 20px;">
           <div class="task-details" style="cursor:pointer" onclick="openTaskDetailsModal(document.getElementById('drawerTaskName').textContent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z"/>
-            </svg>
-            <div class="task-name" id="drawerTaskName">No Task Selected</div>
-            <div class="task-status" id="drawerTaskStatus">Lütfen çalışmaya başlamak için bir görev seçin</div>
+            <!-- Modern clipboard/task icon -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#006039" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2" fill="#eaf7f0"/><path d="M9 2h6v2H9z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+            <div class="task-name" id="drawerTaskName" style="margin-bottom:10px;">No Task Selected</div>
+            <div class="task-status" id="drawerTaskStatus" style="margin-bottom:10px;">Lütfen çalışmaya başlamak için bir görev seçin</div>
+            <div class="task-remaining" id="drawerTaskRemaining" style="font-size:15px; color:#006039; font-weight:600; margin-top:8px;">Time left: --</div>
           </div>
         </div>
       </div>
 
       <div class="drawer-section">
     
-        <div class="drawer-item time-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12.5,7H11V12.5L15.75,15.85L16.5,14.6L12.5,11.75V7Z"/>
-          </svg>
-          <div class="time-details">
-            <div class="current-time" id="drawerCurrentTime">00:00:00</div>
-            <div class="total-time" id="drawerTotalTime">Toplam: 00:00</div>
-          </div>
-        </div>
+        <!-- Removed spent time, only show remaining time in task card above -->
       </div>
 
   
@@ -587,7 +580,9 @@ function openSettings() {
 function showAbout() {
     closeDrawer();
     // Add about functionality here
-    alert('DDS FocusPro v1.3\\n\\nA professional time tracking application for enhanced productivity.');
+    const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+    const translation = clientTranslations[currentLang] || clientTranslations.en;
+    alert(translation.aboutMessage);
 }
 
 // ====== DRAWER INFO UPDATE FUNCTIONS ======
@@ -625,10 +620,10 @@ function updateDrawerTaskInfo() {
         const selectedTask = taskSelect.selectedOptions[0].text;
         const currentState = stateLabel ? stateLabel.textContent : 'IDLE';
         
-        drawerTaskName.textContent = selectedTask !== translation.selectTask ? selectedTask : 'No Task Selected';
+        drawerTaskName.textContent = selectedTask !== translation.selectTask ? selectedTask : translation.noTaskSelected;
         drawerTaskStatus.textContent = selectedTask !== translation.selectTask ? `${translation.status} ${currentState}` : translation.pleaseSelectTask;
     } else {
-        drawerTaskName.textContent = 'No Task Selected';
+        drawerTaskName.textContent = translation.noTaskSelected;
         drawerTaskStatus.textContent = translation.pleaseSelectTask;
     }
 }
@@ -661,7 +656,7 @@ function updateDrawerTimeInfo() {
 
 // Auto-update drawer info every second
 setInterval(function() {
-    updateDrawerTimeInfo();
+    // updateDrawerTimeInfo(); // Disabled - elements not present in drawer
     updateDrawerTaskInfo(); // Update task status in case state changes
 }, 1000);
 
@@ -675,14 +670,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (taskSelect) {
-        taskSelect.addEventListener('change', updateDrawerTaskInfo);
+        taskSelect.addEventListener('change', function() {
+            updateDrawerTaskInfo();
+            fetchTaskDetailsForDrawer();
+        });
     }
     
     // Initial update
     setTimeout(function() {
         updateDrawerProjectInfo();
         updateDrawerTaskInfo();
-        updateDrawerTimeInfo();
+        // updateDrawerTimeInfo(); // Disabled - elements not present in drawer
+        fetchTaskDetailsForDrawer();
     }, 500);
 });
 
@@ -893,7 +892,9 @@ function selectLanguage(langCode) {
 
     // Save and apply language
     sessionStorage.setItem('selectedLanguage', langCode);
-    applyClientLanguage(langCode);
+    setTimeout(() => {
+        applyClientLanguage(langCode);
+    }, 100);
 
     // Close dropdown
     document.getElementById('languageDropdown')?.classList.remove('show');
@@ -915,7 +916,31 @@ const clientTranslations = {
         language: "Dil",
         status: "Durum:",
         total: "Toplam:",
-        pleaseSelectTask: "Lütfen çalışmaya başlamak için bir görev seçin"
+        pleaseSelectTask: "Lütfen çalışmaya başlamak için bir görev seçin",
+        meetingSession: "Toplantı Oturumu",
+        currentlyInMeeting: "Şu anda toplantıda",
+        noTaskSelected: "Görev Seçilmedi",
+        meeting: "Toplantı",
+        meetingInProgress: "Toplantı devam ediyor",
+        loading: "Yükleniyor...",
+        projectLabel: "Proje",
+        taskLabel: "Görev",
+        timeLeft: "Kalan Süre:",
+        dueLabel: "Bitiş:",
+        aboutMessage: "DDS FocusPro v1.3\\n\\nProfesyonel zaman takip uygulaması, üretkenliği artırmak için.",
+        client: "Personel",
+        workTime: "Çalışma Süresi",
+        today: "Bugün",
+        totalLogged: "Toplam Giriş Süresi",
+        meetingTime: "Toplantı Süresi",
+        screenRecording: "Ekran Kaydı",
+        screenshotInterval: "Ekran Görüntüsü Aralığı",
+        logoutTitle: "Çıkışı Onayla",
+        logoutDesc: "Çıkış yapmak istediğinizden emin misiniz?",
+        logoutCancel: "İptal",
+        logoutConfirm: "Çıkış",
+        idleTitle: "Boş Durumdasınız",
+        idleDesc: "Aktif değilsiniz. Zamanlayıcı durduruldu."
     },
     en: {
         noProjectSelected: "No Project Selected",
@@ -925,7 +950,31 @@ const clientTranslations = {
         language: "Language",
         status: "Status:",
         total: "Total:",
-        pleaseSelectTask: "Please select a task to start working"
+        pleaseSelectTask: "Please select a task to start working",
+        meetingSession: "Meeting Session",
+        currentlyInMeeting: "Currently in a meeting",
+        noTaskSelected: "No Task Selected",
+        meeting: "Meeting",
+        meetingInProgress: "Meeting in progress",
+        loading: "Loading...",
+        projectLabel: "Project",
+        taskLabel: "Task",
+        timeLeft: "Time left:",
+        dueLabel: "Due:",
+        aboutMessage: "DDS FocusPro v1.3\\n\\nA professional time tracking application for enhanced productivity.",
+        client: "Client",
+        workTime: "Work Time",
+        today: "Today",
+        totalLogged: "Total Logged In Time",
+        meetingTime: "Meeting Time",
+        screenRecording: "Screen Recording",
+        screenshotInterval: "Screenshot Interval",
+        logoutTitle: "Confirm Logout",
+        logoutDesc: "Are you sure you want to logout?",
+        logoutCancel: "Cancel",
+        logoutConfirm: "Logout",
+        idleTitle: "You're Idle",
+        idleDesc: "You've been inactive. Timer is paused."
     }
 };
 
@@ -963,6 +1012,27 @@ function applyClientLanguage(langCode) {
     if (currentLanguage && (currentLanguage.textContent === 'Language' || 
                            currentLanguage.textContent === 'Dil')) {
         // Don't change the language button text as it shows flags + text, handled in selectLanguage function
+    }
+
+    // Update ALL form labels with data-translatable attributes
+    document.querySelectorAll('label[data-translatable]').forEach(label => {
+        const key = label.getAttribute('data-translatable');
+        if (translation[key]) {
+            label.textContent = translation[key];
+        }
+    });
+
+    // Update drawer task name if it's default
+    const drawerTaskName = document.getElementById('drawerTaskName');
+    if (drawerTaskName && (drawerTaskName.textContent === 'No Task Selected' || 
+                          drawerTaskName.textContent === 'Görev Seçilmedi')) {
+        drawerTaskName.textContent = translation.noTaskSelected;
+    }
+
+    // Update drawer task remaining if it's default
+    const drawerTaskRemaining = document.getElementById('drawerTaskRemaining');
+    if (drawerTaskRemaining && drawerTaskRemaining.textContent === 'Time left: --') {
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
     }
 }
 
@@ -1072,15 +1142,96 @@ document.addEventListener('DOMContentLoaded', function() {
         // Call initialize theme
         initializeClientTheme();
 
+    // ====== Fetch Task Details for Drawer (without opening modal) ======
+    async function fetchTaskDetailsForDrawer() {
+      const taskSelect = document.getElementById('task');
+      const drawerTaskRemaining = document.getElementById('drawerTaskRemaining');
+      const currentLang = sessionStorage.getItem('selectedLanguage') || 'tr';
+      const translation = clientTranslations[currentLang] || clientTranslations.en;
+      if (!taskSelect || !drawerTaskRemaining || taskSelect.selectedIndex <= 0) {
+        // Reset to default if no task selected
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
+        return;
+      }
+
+      const selectedTask = taskSelect.selectedOptions[0].text;
+      
+      if (selectedTask === translation.selectTask) {
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
+        return;
+      }
+
+      try {
+        // obtain token from sessionStorage; if not present, set a hardcoded token automatically
+        let token = sessionStorage.getItem('authToken') || '';
+        if (!token) {
+          // Hardcoded token (inserted by frontend as requested)
+          token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiZGVsdXhldGltZSIsIm5hbWUiOiJkZWx1eGV0aW1lIiwiQVBJX1RJTUUiOjE3NDUzNDQyNjJ9.kJGo5DksaPwkHwufDvLMGaMmjk5q2F7GhjzwdHtfT_o';
+          try {
+            sessionStorage.setItem('authToken', token);
+          } catch (e) {
+            console.warn('Could not persist authToken to sessionStorage:', e);
+          }
+        }
+
+        const url = '/api/search-task?task_name=' + encodeURIComponent(selectedTask);
+        const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+        const resp = await fetch(url, { headers });
+        const data = await resp.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const task = data[0];
+          const due = task.duedate || task.due_date || task.startdate || '';
+
+          let remainingText = '--';
+          let dueText = '--';
+          
+          if (due) {
+            // Try to parse date (handles 'YYYY-MM-DD' and full timestamps)
+            const dueDate = new Date(due);
+            if (!isNaN(dueDate.getTime())) {
+              dueText = dueDate.toLocaleDateString();
+              
+              const now = new Date();
+              const diffMs = dueDate - now;
+              if (diffMs < 0) {
+                remainingText = 'Overdue';
+              } else {
+                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                remainingText = `${days}d ${hours}h ${mins}m`;
+              }
+            }
+          }
+
+          drawerTaskRemaining.innerHTML = `${translation.dueLabel} ${dueText} | ${translation.timeLeft} ${remainingText}`;
+        } else {
+          drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
+        }
+      } catch (err) {
+        console.error('Error fetching task details for drawer', err);
+        drawerTaskRemaining.textContent = `${translation.timeLeft} --`;
+      }
+    }
+
     // ====== Task Details Modal: fetch and render task notes, due date and remaining time ======
     async function openTaskDetailsModal(taskName) {
       const modal = document.getElementById('taskDetailsModal');
       const body = document.getElementById('taskDetailsBody');
       const title = document.getElementById('taskDetailsTitle');
 
+      if (!modal || !body || !title) {
+        return;
+      }
+
       title.textContent = taskName || 'Görev Detayları';
       body.innerHTML = '<p>Yükleniyor...</p>';
+      // Ensure modal overlay is visible and uses modal animation classes
       modal.style.display = 'flex';
+      modal.classList.remove('hide');
+      modal.classList.add('show');
 
       try {
         // obtain token from sessionStorage; if not present, set a hardcoded token automatically
@@ -1124,12 +1275,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
 
+          // Render customfields with spacing, no bullets
+          let customFieldsHtml = '';
+          if (Array.isArray(task.customfields) && task.customfields.length > 0) {
+            customFieldsHtml = '<div class="task-customfields" style="margin-bottom:18px;">';
+            task.customfields.forEach(field => {
+              if (field.value && field.value.trim() !== '') {
+                customFieldsHtml += `<div style="margin-bottom:8px;">
+                  <span style="font-weight:600; color:#444;">${field.label}:</span>
+                  <span style="margin-left:6px; color:#222;">${field.value}</span>
+                </div>`;
+              }
+            });
+            customFieldsHtml += '</div>';
+          }
+
           body.innerHTML = `
-            <div class="task-meta">
+            <div class="task-meta" style="margin-bottom:16px;">
               <div><strong>Due:</strong> ${due || 'N/A'}</div>
               <div><strong>Remaining:</strong> ${remainingText}</div>
             </div>
-            <div class="task-desc">${description}</div>
+            ${customFieldsHtml}
+            <div class="task-desc" style="margin-top:10px;">${description}</div>
           `;
         } else if (data && data.error) {
           body.innerHTML = `<p class="error">API Error: ${data.error}</p>`;
@@ -1144,7 +1311,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeTaskDetailsModal() {
       const modal = document.getElementById('taskDetailsModal');
-      if (modal) modal.style.display = 'none';
+      if (!modal) return;
+      // use hide animation then remove from flow
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('hide');
+      }, 300);
     }
 
     // Close task details modal when clicking outside content

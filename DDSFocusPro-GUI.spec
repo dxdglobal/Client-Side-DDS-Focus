@@ -5,7 +5,7 @@ a = Analysis(
     ['desktop.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('moduller', 'moduller'), ('.env', '.'), ('themes.json', '.'), ('app.py', '.')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['static\\icon.ico'],
+    icon=['icon.ico'],
 )

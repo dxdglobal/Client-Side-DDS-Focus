@@ -301,7 +301,7 @@ body {
 .drawer-arrow-btn {
   position: fixed;
   left: 0;
-  top: 50%;
+  top: 55%;
   transform: translateY(-50%);
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 50%, var(--primary-darker) 100%);
   color: var(--text-color);

@@ -1,6 +1,6 @@
 [Setup]
 AppName=DDS FocusPro
-AppVersion=1.4
+AppVersion=1.5
 DefaultDirName={localappdata}\DDSFocusPro
 DefaultGroupName=DDS FocusPro
 OutputDir=output
